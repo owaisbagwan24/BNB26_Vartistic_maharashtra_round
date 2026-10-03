@@ -164,6 +164,43 @@
       box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
     }
 
+    /* COGNITIVE STATE MACHINE MODE SEGMENTED BAR */
+    .mode-segmented {
+      display: flex;
+      align-items: center;
+      background: rgba(10, 14, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 2px 3px;
+      gap: 3px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+    .mode-tab {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mode-tab:hover {
+      color: var(--text-bright);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .mode-tab.active {
+      background: rgba(109, 94, 240, 0.25);
+      border-color: rgba(109, 94, 240, 0.5);
+      color: #c4b5fd;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(109, 94, 240, 0.25);
+    }
+
     .titlebar-right {
       display: flex;
       align-items: center;
@@ -1051,6 +1088,14 @@
       <button class="preset-chip" id="chip-demo-m09" onclick="switchPreset('demo-m09')">pritn() typo (M-09)</button>
     </div>
 
+    <!-- COGNITIVE STATE MACHINE MODE SWITCHER (AntD Segmented / State-Driven) -->
+    <div class="mode-segmented" id="mode-segmented" title="Current Cognitive State">
+      <button class="mode-tab active" id="mode-btn-code" onclick="setMode('code')"><span>💻</span><span>Code</span></button>
+      <button class="mode-tab" id="mode-btn-diagnose" onclick="setMode('diagnose')"><span>🚨</span><span>Diagnose</span></button>
+      <button class="mode-tab" id="mode-btn-reflect" onclick="setMode('reflect')"><span>💬</span><span>Reflect</span></button>
+      <button class="mode-tab" id="mode-btn-verify" onclick="setMode('verify')"><span>🔁</span><span>Verify</span></button>
+    </div>
+
     <div class="titlebar-right">
       <button class="sound-toggle-btn" id="sound-toggle" onclick="toggleAudio()" title="Soundcn Haptic Audio Toggle">🔊</button>
       <button class="btn-top" onclick="openTeacherModal()">📊 Class Heatmap</button>
@@ -1590,6 +1635,35 @@ if x = 5:
     /* ==========================================================================
        PRESETS & WORKSPACE ACTIONS
        ========================================================================== */
+    /* ==========================================================================
+       COGNITIVE STATE MACHINE (One Active Mode At A Time)
+       ========================================================================== */
+    let currentMode = "code";
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      const activeBtn = document.getElementById(`mode-btn-${mode}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const coachCol = document.querySelector('.coach-col');
+      if (mode === 'code') {
+        if (coachCol) coachCol.style.opacity = '0.5';
+      } else {
+        if (coachCol) coachCol.style.opacity = '1.0';
+        if (mode === 'diagnose') {
+          const el = document.getElementById('diag-card');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (mode === 'reflect') {
+          const el = document.getElementById('chat-input');
+          if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        } else if (mode === 'verify') {
+          const el = document.getElementById('quiz-panel');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
     function switchPreset(key) {
       Soundcn.click();
       currentPresetKey = key;
@@ -1757,6 +1831,7 @@ if x = 5:
         }
 
         // Misconception / Typo Flagged Case
+        setMode('diagnose');
         badge.textContent = diag.label;
         document.getElementById('diag-conf').textContent = `Conf: ${(diag.confidence * 100).toFixed(0)}%`;
         coachBar.className = "";
