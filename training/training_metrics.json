@@ -1,0 +1,19 @@
+{
+  "dataset_samples": 200,
+  "classes": [
+    "M-01",
+    "M-02",
+    "M-03",
+    "M-04",
+    "M-05",
+    "M-06",
+    "M-07",
+    "M-08",
+    "M-09"
+  ],
+  "test_samples": 50,
+  "overall_accuracy": 1.0,
+  "macro_f1": 1.0,
+  "sloppiness_precision": 1.0,
+  "sloppiness_recall": 1.0
+}

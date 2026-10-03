@@ -1,0 +1,65 @@
+id,student_code,error_message,wrong_output,misconception_id,correct_code,socratic_intervention,reassessment_question
+S001,"x = 5
+if x = 5:
+    print('five')",SyntaxError: invalid syntax (if x = 5),no output,M-01,"x = 5
+if x == 5:
+    print('five')",Ask: '=' ka matlab kya hota hai? '==' ka? if ke andar question hota hai ya command?,x=7; is 'x = 7' a comparison? answer yes/no + why
+S002,"x = 5
+if x == 5:
+    print('five')",(none),'five' printed but student expected nothing (thought = means compare),M-01,(already correct code; misconception in belief),Ask: agar '=' compare karta hota toh x=5 line kya karti?,After 'x = 5' what is stored in x?
+S003,"total = 0
+for i in range(1, 10):
+    total += i
+print(total)",(none),45 (expected 55),M-02,"range(1, 11)","Ask: range(1,10) me last number kaunsa hai? 10 kyun nahi aaya?","Does range(0,5) print 5? predict output"
+S004,"for i in range(5):
+    print(i)",(none),"0..4 (student shocked, expected 1..5)",M-02,(code correct),Ask: Python counting kahan se shuru karta hai? range(5) me kitne numbers?,range(3) ke elements list karo
+S005,"a = [1,2]
+b = a
+b.append(3)
+print(a)",(none),"[1, 2, 3] (expected [1, 2])",M-03,b = a.copy(),Ask: b=a ne naya list banaya ya same list ka naya naam diya?,a=[1]; b=a; b.append(9); print(a) => ?
+S006,"def add(item, bag=[]):
+    bag.append(item)
+    return bag
+print(add(1))
+print(add(2))",(none),"[1] then [1,2] (expected [1] then [2])",M-03,"def add(item, bag=None): bag = bag or []",Ask: default [] har call pe naya banta hai ya ek hi baar?,Predict: 3rd call add(3) output?
+S007,"x = 5 or 3
+print(x)",(none),5 (expected True),M-04,Ask first: is '5 or 3' a question?,'0 or 3' ka output? predict
+S008,"age = '5' + 3
+print(age)",TypeError: can only concatenate str to str,no output,M-05,age = int('5') + 3,"Ask: '5' quotes me hai, 3 nahi — ye dono same type hain?",'5' * 3 ka output? explain
+S009,print('5' + '3'),(none),53 (expected 8),M-05,int('5') + int('3'),"Ask: + strings pe kya karta hai, numbers pe kya?",'2' + '2' vs 2 + 2 — farq kya?
+S010,"i = 0
+while i < 5:
+    print('hi')",(runs forever),infinite loop,M-06,add i += 1 inside loop,Ask: i kab badhega? loop rukne ka condition kya hai?,Which line makes this loop stop? point it
+S011,"n = 5
+i = 1
+while i <= n:
+    print(i * '*')
+   i = i + 1",IndentationError: unindent does not match,no output,M-07,consistent 4-space indent,Ask: 'i = i + 1' loop ke andar hai ya bahar? kaise pata?,Reindent: which 2 lines are inside while?
+S012,"x = 10
+if x > 5:
+print('big')",IndentationError: expected an indented block,no output,M-07,indent print inside if,Ask: if ke baad wali line kahan likhi jati hai?,Fix: 'else' ka block kahan aayega?
+S013,"def double(x):
+    print(x * 2)
+y = double(5)
+print(y + 1)",(none),10 then TypeError: unsupported + NoneType,M-08,return x * 2 instead of print,Ask: print value DETATA hai ya sirf DIKHATA hai? y me kya store hua?,What does a function return if no return statement?
+S014,"def square(n):
+    result = n * n
+print(square(4))",(none),None (expected 16),M-08,add return result,"Ask: result calculate toh ho gaya, par function ne diya kahan?",Predict output: def f(): a=5  ->  print(f())
+S015,"x = 5
+if x = 5:
+    print('five')",SyntaxError: invalid syntax,no output,M-09,"x = 5
+if x == 5: ...",Recognize via chat: student explains '=' vs '==' correctly -> treat as slip. Intervention: linter habit tip only.,(no concept quiz; ask self-rating: 'jaan-boojh kar ya slip?' verify by explanation)
+S016,prnt('hello'),NameError: name 'prnt' is not defined,no output,M-09,print('hello'),"Typo -> not a concept gap. Quick fix + move on, do NOT quiz concept.",-
+S017,"for i in range(10):
+    print(i)
+     print('done')",IndentationError: unexpected indent,no output,M-07,align second print (inside or outside deliberately),Ask: 'done' 10 baar chahiye ya 1 baar? us hisaab se indent karo,10 times or 1 time 'done'? choose + justify
+S018,"nums = [1,2,3]
+total = 0
+for n in nums:
+    total = n
+print(total)",(none),3 (expected 6),M-02,total = total + n,Ask: har step pe total me kya ho raha hai — purana total gayab? trace karo,"Trace: total after each iteration, n=1,2,3"
+S019,"flag = False
+if flag == True:
+    print('on')",(none),nothing printed (expected 'on' confusion later),M-04,if flag: (or understand flag itself is the condition),Ask: flag already True/False hai — '== True' bolne ki zaroorat hai?,if not flag: kab chalega?
+S020,"s = 'abc'
+print(s[3])",IndexError: string index out of range,no output,M-02,s[2] or s[-1],Ask: indexing 0 se shuru hoti hai — 'abc' ke valid indices kaunse?,'hello'[5] chalega? kyun?

@@ -1,0 +1,51 @@
+{
+  "taxonomy_source": "Brown & Altadmri (2017) novice misconceptions A-R + 2025 SLR; Python-focused subset",
+  "labels": {
+    "M-01": {
+      "name": "assignment_vs_comparison",
+      "desc": "Confuses '=' (assign) with '==' (compare) in conditions",
+      "example": "if x = 5:"
+    },
+    "M-02": {
+      "name": "off_by_one_range",
+      "desc": "Believes range(a,b) includes b; loop boundary confusion",
+      "example": "for i in range(1,10): expects 10 included"
+    },
+    "M-03": {
+      "name": "mutable_aliasing",
+      "desc": "Thinks b = a copies a list; mutation surprises",
+      "example": "b=a; b.append(1) also changes a"
+    },
+    "M-04": {
+      "name": "and_or_return_values",
+      "desc": "Believes and/or always return booleans",
+      "example": "x = 5 or 3 expected True"
+    },
+    "M-05": {
+      "name": "type_confusion_str_num",
+      "desc": "Mixes strings and numbers in operations",
+      "example": "'5' + 3"
+    },
+    "M-06": {
+      "name": "loop_condition_never_updates",
+      "desc": "Loop variable not updated -> infinite loop concept gap",
+      "example": "while i<10: print(i)  (i never changes)"
+    },
+    "M-07": {
+      "name": "indentation_block_scope",
+      "desc": "Does not understand which lines belong to if/for block",
+      "example": "second line unindented but meant inside loop"
+    },
+    "M-08": {
+      "name": "print_vs_return",
+      "desc": "Confuses printing with returning; expects print to give usable value",
+      "example": "y = print(x) then uses y in math"
+    },
+    "M-09": {
+      "name": "SLOPPINESS_NEGATIVE_CLASS",
+      "desc": "NOT a misconception: typo/habit slip with correct concept. Same surface error, different treatment.",
+      "example": "x == 5 likhna tha, jaldi me x = 5 ho gaya (student knows the rule)"
+    }
+  },
+  "golden_rule": "M-09 is the differentiator: model must NOT treat every error as a conceptual gap. Use error + code pattern + chat signal to separate."
+}

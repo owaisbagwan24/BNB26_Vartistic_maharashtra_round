@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Re:Learn IDE — The Cognitive IDE that Diagnoses WHY, Not Just WHAT</title>
+  <!-- Google Fonts: Inter & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti for Celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Monaco Editor Official AMD Loader (with graceful fallback) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+
+  <style>
+    :root {
+      --bg-titlebar: #181818;
+      --bg-activity: #141414;
+      --bg-sidebar: #1e1e1e;
+      --bg-editor: #1e1e1e;
+      --bg-panel: #181818;
+      --bg-drawer: #141414;
+      --bg-card: #252526;
+      --bg-hover: #2a2d2e;
+      --bg-active: #37373d;
+      
+      --border-color: #2d2d2d;
+      --border-focus: #007acc;
+      --accent-blue: #007acc;
+      --accent-purple: #8b5cf6;
+      --accent-purple-glow: rgba(139, 92, 246, 0.25);
+      --accent-green: #3fb950;
+      --accent-green-glow: rgba(63, 185, 80, 0.2);
+      --accent-red: #f85149;
+      --accent-red-glow: rgba(248, 81, 73, 0.2);
+      --accent-amber: #d29922;
+      --accent-amber-glow: rgba(210, 153, 34, 0.2);
+      
+      --text-main: #cccccc;
+      --text-bright: #ffffff;
+      --text-muted: #858585;
+      
+      --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      font-family: var(--font-ui);
+      background-color: var(--bg-editor);
+      color: var(--text-main);
+      user-select: none;
+    }
+
+    /* 1. TOP TITLEBAR (38px) */
+    .titlebar {
+      height: 38px;
+      background: var(--bg-titlebar);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 0.78rem;
+      z-index: 100;
+      position: relative;
+    }
+    .titlebar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .brand-title {
+      font-weight: 800;
+      color: var(--text-bright);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: -0.01em;
+    }
+    .brand-tag {
+      background: linear-gradient(135deg, #a78bfa, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      font-size: 0.72rem;
+    }
+
+    .titlebar-presets {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #202020;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 3px 6px;
+    }
+    .preset-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding-right: 4px;
+    }
+    .preset-chip {
+      background: #181818;
+      border: 1px solid var(--border-color);
+      color: #bbbbbb;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .preset-chip:hover {
+      background: #2a2d2e;
+      border-color: #007acc;
+      color: white;
+    }
+    .preset-chip.active {
+      background: #094771;
+      border-color: #007acc;
+      color: white;
+      font-weight: 700;
+    }
+
+    .titlebar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-top {
+      background: #252526;
+      border: 1px solid var(--border-color);
+      color: #cccccc;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-top:hover {
+      background: #333333;
+      color: white;
+    }
+    .status-pill {
+      font-size: 0.68rem;
+      color: #7ee787;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600;
+    }
+
+    /* 2. APP WORKSPACE (FLEX ROW) */
+    .app-workspace {
+      flex: 1;
+      display: flex;
+      height: calc(100vh - 38px - 24px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ACTIVITY BAR (48px) */
+    .activity-bar {
+      width: 48px;
+      background: var(--bg-activity);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .act-top, .act-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+    .act-icon {
+      width: 100%;
+      height: 40px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: color 0.15s;
+    }
+    .act-icon:hover { color: var(--text-bright); }
+    .act-icon.active { color: var(--text-bright); }
+    .act-icon.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 8px; bottom: 8px;
+      width: 2px;
+      background: var(--text-bright);
+    }
+
+    /* SIDEBAR EXPLORER (210px) */
+    .sidebar {
+      width: 210px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .sidebar.collapsed { width: 0; border-right: none; }
+    .sidebar-head {
+      height: 35px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      background: #191919;
+    }
+    .file-tree { padding: 6px 0; font-size: 0.78rem; overflow-y: auto; }
+    .tree-folder {
+      padding: 6px 12px;
+      color: #9cdcfe;
+      font-weight: 700;
+      font-size: 0.74rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.02em;
+    }
+    .tree-file {
+      padding: 6px 12px 6px 26px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .tree-file:hover { background: var(--bg-hover); }
+    .tree-file.active {
+      background: var(--bg-active);
+      color: white;
+      border-left-color: #007acc;
+      font-weight: 600;
+    }
+
+    /* CENTER: EDITOR SECTION + TERMINAL */
+    .editor-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-editor);
+      min-width: 0;
+    }
+
+    /* EDITOR TAB STRIP (35px) */
+    .editor-tab-strip {
+      height: 35px;
+      background: var(--bg-titlebar);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .tab-list {
+      display: flex;
+      height: 100%;
+    }
+    .editor-tab {
+      background: var(--bg-editor);
+      color: var(--text-bright);
+      padding: 0 16px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-top: 2px solid var(--accent-blue);
+      border-right: 1px solid var(--border-color);
+      cursor: default;
+    }
+    .editor-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 12px;
+    }
+    .btn-run-main {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 5px 14px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+      transition: all 0.15s ease;
+    }
+    .btn-run-main:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.6);
+    }
+    .btn-run-main:active { transform: translateY(0); }
+
+    /* COACH ALERT BAR (SLIDES DOWN ON ERROR / DIAGNOSIS) */
+    #coach-bar {
+      display: none;
+      background: #2a1215;
+      border-top: 1px solid var(--accent-red);
+      border-bottom: 1px solid var(--accent-red);
+      padding: 8px 16px;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      animation: slideIn 0.25s ease;
+      z-index: 20;
+    }
+    #coach-bar.pass-mode {
+      background: #0d2818;
+      border-top-color: var(--accent-green);
+      border-bottom-color: var(--accent-green);
+    }
+    .coach-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .coach-icon { font-size: 1.25rem; }
+    .coach-text b { color: #ff7b72; font-size: 0.82rem; }
+    #coach-bar.pass-mode .coach-text b { color: #7ee787; }
+    .coach-text span { color: #e6edf3; font-size: 0.76rem; display: block; margin-top: 1px; }
+    .coach-right { display: flex; align-items: center; gap: 8px; }
+    .coach-btn {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .coach-btn-quiz { background: #8b5cf6; color: white; }
+    .coach-btn-quiz:hover { background: #7c3aed; }
+    .coach-btn-hint { background: #333333; color: white; }
+    .coach-btn-hint:hover { background: #444444; }
+    .coach-close {
+      background: transparent;
+      border: none;
+      color: #858585;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+    .coach-close:hover { color: white; }
+
+    /* EDITOR CANVAS BOX: RELATIVE DUAL-MODE CONTAINER */
+    .editor-canvas-box {
+      flex: 1;
+      position: relative;
+      background: #1e1e1e;
+      overflow: hidden;
+      min-height: 150px;
+    }
+    #monaco-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+    }
+
+    /* BUILT-IN GUTTERED CODE IDE CANVAS (ZERO-DELAY, 100% RELIABLE) */
+    .fallback-editor-wrap {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      background: #1e1e1e;
+      z-index: 1;
+    }
+    .gutter {
+      width: 48px;
+      background: #1e1e1e;
+      border-right: 1px solid #2a2a2a;
+      color: #5a5a5a;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 12px 6px 12px 0;
+      text-align: right;
+      user-select: none;
+      overflow: hidden;
+      white-space: pre-wrap;
+    }
+    #code-fallback {
+      flex: 1;
+      height: 100%;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 12px 14px;
+      border: none;
+      outline: none;
+      resize: none;
+      white-space: pre;
+      overflow: auto;
+      tab-size: 4;
+      user-select: text;
+    }
+
+    /* BOTTOM TERMINAL PANEL (INTERACTIVE TABS) */
+    .terminal-panel {
+      height: 180px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .terminal-head {
+      height: 32px;
+      background: #181818;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .term-tabs { display: flex; gap: 16px; height: 100%; }
+    .term-tab {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s;
+    }
+    .term-tab:hover { color: var(--text-bright); }
+    .term-tab.active {
+      color: var(--text-bright);
+      border-bottom-color: var(--accent-blue);
+    }
+    .term-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .term-clear-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .term-clear-btn:hover { color: white; }
+
+    /* TAB CONTENT PANES */
+    .term-content {
+      flex: 1;
+      padding: 8px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      overflow-y: auto;
+      line-height: 1.45;
+      background: #0d1117;
+      display: none;
+    }
+    .term-content.active { display: block; }
+    
+    .out-green { color: #7ee787; }
+    .out-red { color: #ffa198; }
+    .out-blue { color: #79c0ff; }
+    .out-yellow { color: #e3b341; }
+    .out-muted { color: #8b949e; }
+
+    /* PROBLEMS TAB STYLING */
+    .problem-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .problem-item:hover { background: rgba(255, 255, 255, 0.07); }
+    .prob-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .prob-badge-err { background: rgba(248, 81, 73, 0.2); color: #ff7b72; border: 1px solid rgba(248, 81, 73, 0.4); }
+    .prob-badge-warn { background: rgba(210, 153, 34, 0.2); color: #e3b341; border: 1px solid rgba(210, 153, 34, 0.4); }
+    .prob-badge-ok { background: rgba(63, 185, 80, 0.2); color: #7ee787; border: 1px solid rgba(63, 185, 80, 0.4); }
+
+    /* 3. CURSOR AI SIDE DRAWER (RIGHT 390px) */
+    .cursor-drawer {
+      width: 390px;
+      background: var(--bg-drawer);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+      z-index: 10;
+    }
+    .drawer-head {
+      height: 38px;
+      background: #181818;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      flex-shrink: 0;
+    }
+    .drawer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: white;
+    }
+    .model-badge {
+      font-size: 0.65rem;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #c4b5fd;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .drawer-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* CARD 1: COGNITIVE DIAGNOSIS CARD */
+    .diag-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+    .diag-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .diag-badge {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .badge-error {
+      background: rgba(248, 81, 73, 0.2);
+      border: 1px solid rgba(248, 81, 73, 0.5);
+      color: #ff7b72;
+    }
+    .badge-typo {
+      background: rgba(210, 153, 34, 0.2);
+      border: 1px solid rgba(210, 153, 34, 0.5);
+      color: #e3b341;
+    }
+    .badge-pass {
+      background: rgba(63, 185, 80, 0.2);
+      border: 1px solid rgba(63, 185, 80, 0.5);
+      color: #7ee787;
+    }
+
+    .diag-name {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .diag-why {
+      font-size: 0.8rem;
+      color: #c9d1d9;
+      line-height: 1.45;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 10px;
+      border-radius: 6px;
+      border-left: 3px solid #8b5cf6;
+    }
+
+    /* CARD 2: 1-CLICK VERIFICATION QUIZ */
+    .quiz-panel {
+      margin-top: 12px;
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .quiz-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #c4b5fd;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .quiz-question {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .quiz-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .quiz-card {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid #333333;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      color: #e6edf3;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      transition: all 0.15s ease;
+      line-height: 1.35;
+    }
+    .quiz-card:hover {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: #8b5cf6;
+      color: white;
+      transform: translateX(2px);
+    }
+    .quiz-card.selected-correct {
+      border-color: #3fb950;
+      background: rgba(63, 185, 80, 0.25);
+    }
+    .quiz-card.selected-incorrect {
+      border-color: #f85149;
+      background: rgba(248, 81, 73, 0.25);
+    }
+    .card-letter {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #c4b5fd;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    #quiz-alert {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: none;
+    }
+    .alert-pass {
+      background: rgba(63, 185, 80, 0.15);
+      border: 1px solid rgba(63, 185, 80, 0.4);
+      color: #7ee787;
+    }
+    .alert-retry {
+      background: rgba(248, 81, 73, 0.15);
+      border: 1px solid rgba(248, 81, 73, 0.4);
+      color: #ff7b72;
+    }
+
+    /* CARD 3: SOCRATIC CHAT ASSISTANT */
+    .chat-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 200px;
+    }
+    .chat-card-head {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .chat-log {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+      max-height: 250px;
+    }
+    .bubble {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      max-width: 92%;
+      word-break: break-word;
+    }
+    .bubble-ai {
+      align-self: flex-start;
+      background: #1e1e1e;
+      color: #e6edf3;
+      border-bottom-left-radius: 2px;
+      border: 1px solid #333333;
+    }
+    .bubble-user {
+      align-self: flex-end;
+      background: #007acc;
+      color: white;
+      border-bottom-right-radius: 2px;
+    }
+
+    .quick-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .prompt-chip {
+      background: #181818;
+      border: 1px solid var(--border-color);
+      color: #a78bfa;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .prompt-chip:hover {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: #8b5cf6;
+      color: white;
+    }
+
+    .chat-controls {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      background: #181818;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 4px;
+    }
+    .chat-inp {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 0.78rem;
+      padding: 6px 8px;
+      font-family: var(--font-ui);
+      outline: none;
+    }
+    .chat-send-btn {
+      background: #8b5cf6;
+      border: none;
+      color: white;
+      font-weight: 700;
+      font-size: 0.72rem;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .chat-send-btn:hover { background: #7c3aed; }
+
+    /* 4. BOTTOM STATUS BAR (24px) */
+    .statusbar {
+      height: 24px;
+      background: var(--accent-blue);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 0.7rem;
+      z-index: 100;
+    }
+    .sb-section { display: flex; align-items: center; gap: 14px; }
+    .sb-clickable { cursor: pointer; }
+    .sb-clickable:hover { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
+
+    /* TEACHER MODAL (CLASSROOM HEATMAP) */
+    #teacher-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    .t-modal-content {
+      background: #1e1e1e;
+      border: 1px solid #3c3c3c;
+      border-radius: 10px;
+      width: 740px;
+      max-width: 95vw;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      animation: slideIn 0.2s ease;
+    }
+    .t-stat-card {
+      background: #252526;
+      padding: 14px;
+      border-radius: 6px;
+      text-align: center;
+      border: 1px solid #333333;
+    }
+    .t-stat-num { font-size: 1.6rem; font-weight: 800; }
+    .t-stat-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP TITLEBAR -->
+  <div class="titlebar">
+    <div class="titlebar-left">
+      <div class="window-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <div class="brand-title">
+        <span>Re:Learn IDE</span>
+        <span class="brand-tag">— Cognitive Studio</span>
+      </div>
+    </div>
+
+    <!-- PRESET TEST BUTTONS -->
+    <div class="titlebar-presets">
+      <span class="preset-label">Scenarios:</span>
+      <button class="preset-chip active" id="chip-demo-m01" onclick="switchPreset('demo-m01')">if x = 5 (M-01)</button>
+      <button class="preset-chip" id="chip-demo-m05" onclick="switchPreset('demo-m05')">'5' + 3 (M-05)</button>
+      <button class="preset-chip" id="chip-demo-m08" onclick="switchPreset('demo-m08')">print vs return (M-08)</button>
+      <button class="preset-chip" id="chip-demo-m03" onclick="switchPreset('demo-m03')">b = a (M-03)</button>
+      <button class="preset-chip" id="chip-demo-m09" onclick="switchPreset('demo-m09')">pritn() typo (M-09)</button>
+    </div>
+
+    <div class="titlebar-right">
+      <button class="btn-top" onclick="openTeacherModal()">📊 Class Heatmap</button>
+      <div class="status-pill"><span style="font-size: 8px;">●</span> Engine Ready</div>
+    </div>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div class="app-workspace">
+
+    <!-- ACTIVITY BAR (LEFT 48px) -->
+    <div class="activity-bar">
+      <div class="act-top">
+        <button class="act-icon active" id="act-btn-explorer" onclick="toggleSidebar()" title="Toggle Explorer (📁)">📁</button>
+        <button class="act-icon" id="act-btn-chat" onclick="focusChat()" title="Socratic Tutor (💬)">💬</button>
+        <button class="act-icon" id="act-btn-analytics" onclick="openTeacherModal()" title="Teacher Analytics (📊)">📊</button>
+      </div>
+      <div class="act-bottom">
+        <button class="act-icon" onclick="resetCurrentCode()" title="Reset File (↺)">↺</button>
+        <button class="act-icon" onclick="executeCode()" title="Run Code (▶)" style="color: #3fb950;">▶</button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR EXPLORER (210px) -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <span>EXPLORER: WORKSPACE</span>
+        <span style="cursor: pointer;" onclick="toggleSidebar()">✕</span>
+      </div>
+      <div class="file-tree">
+        <div class="tree-folder">▼ 📁 PYTHON_STUDENT</div>
+        <div class="tree-file active" id="tree-m01" onclick="switchPreset('demo-m01')">
+          <span>🐍</span><span>main.py</span>
+        </div>
+        <div class="tree-file" id="tree-m05" onclick="switchPreset('demo-m05')">
+          <span>📄</span><span>types_test.py</span>
+        </div>
+        <div class="tree-file" id="tree-m08" onclick="switchPreset('demo-m08')">
+          <span>📄</span><span>functions.py</span>
+        </div>
+        <div class="tree-file" id="tree-m03" onclick="switchPreset('demo-m03')">
+          <span>📄</span><span>lists_alias.py</span>
+        </div>
+        <div class="tree-file" id="tree-m09" onclick="switchPreset('demo-m09')">
+          <span>📄</span><span>typo_check.py</span>
+        </div>
+        <div class="tree-file" onclick="openTeacherModal()">
+          <span>📊</span><span>class_heatmap.json</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN EDITOR & BOTTOM PANEL -->
+    <div class="editor-section">
+      
+      <!-- TAB STRIP -->
+      <div class="editor-tab-strip">
+        <div class="tab-list">
+          <div class="editor-tab">
+            <span>🐍</span><span id="tab-filename">main.py</span>
+          </div>
+        </div>
+        <div class="editor-actions">
+          <button class="btn-top" onclick="resetCurrentCode()">↺ Reset</button>
+          <button class="btn-run-main" id="btn-run-code" onclick="executeCode()">
+            ▶ Run Code (Ctrl+Enter)
+          </button>
+        </div>
+      </div>
+
+      <!-- COACH ALERT BAR -->
+      <div id="coach-bar">
+        <div class="coach-left">
+          <span class="coach-icon" id="coach-icon">🚨</span>
+          <div class="coach-text">
+            <b id="coach-head">Cognitive Misconception Flagged!</b>
+            <span id="coach-sub">Re:Learn diagnosed the mental model causing this error.</span>
+          </div>
+        </div>
+        <div class="coach-right">
+          <button class="coach-btn coach-btn-quiz" id="coach-btn-quiz" onclick="focusQuiz()">🎯 1-Click Quiz</button>
+          <button class="coach-btn coach-btn-hint" id="coach-btn-hint" onclick="focusChat()">💡 Ask Tutor</button>
+          <button class="coach-close" onclick="dismissCoachBar()" title="Dismiss">✕</button>
+        </div>
+      </div>
+
+      <!-- EDITOR CANVAS (DUAL-MODE WITH ZERO-LATENCY FALLBACK) -->
+      <div class="editor-canvas-box">
+        <!-- Monaco Mount Point -->
+        <div id="monaco-container"></div>
+
+        <!-- Built-in Guttered IDE Canvas -->
+        <div class="fallback-editor-wrap" id="fallback-wrap">
+          <div class="gutter" id="editor-gutter">1</div>
+          <textarea id="code-fallback" spellcheck="false">x = 5
+if x = 5:
+    print('x is five')
+</textarea>
+        </div>
+      </div>
+
+      <!-- BOTTOM TERMINAL PANEL (INTERACTIVE TABS) -->
+      <div class="terminal-panel">
+        <div class="terminal-head">
+          <div class="term-tabs">
+            <span class="term-tab active" id="tab-btn-terminal" onclick="switchTermTab('terminal')">TERMINAL</span>
+            <span class="term-tab" id="tab-btn-output" onclick="switchTermTab('output')">OUTPUT</span>
+            <span class="term-tab" id="tab-btn-problems" onclick="switchTermTab('problems')">PROBLEMS (<span id="prob-count">1</span>)</span>
+          </div>
+          <div class="term-tools">
+            <span id="term-status" style="color: #858585; font-size: 0.7rem;">Ready</span>
+            <button class="term-clear-btn" onclick="clearTermLogs()" title="Clear Logs">🗑️ Clear</button>
+          </div>
+        </div>
+
+        <!-- TAB 1: TERMINAL -->
+        <div class="term-content active" id="pane-terminal">
+          <div class="out-blue">>>> Re:Learn Cognitive Diagnostic Engine Active.</div>
+          <div class="out-muted">>>> Press '▶ Run Code' (or Ctrl+Enter) to evaluate student code.</div>
+        </div>
+
+        <!-- TAB 2: OUTPUT ONLY -->
+        <div class="term-content" id="pane-output">
+          <div class="out-muted">// Program stdout output will appear here.</div>
+        </div>
+
+        <!-- TAB 3: PROBLEMS LIST -->
+        <div class="term-content" id="pane-problems">
+          <div class="problem-item" onclick="focusEditorLine(2)">
+            <span class="prob-badge prob-badge-err">Error</span>
+            <span style="color: white; font-weight: 600;">main.py [Ln 2]</span>
+            <span style="color: #cccccc;">M-01: Single '=' assignment used inside conditional statement</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: CURSOR AI SIDE DRAWER (390px) -->
+    <div class="cursor-drawer">
+      <div class="drawer-head">
+        <div class="drawer-brand">
+          <span>🧠 Re:Learn AI</span>
+          <span class="model-badge">LLaMA-3.3 + AST</span>
+        </div>
+        <span style="font-size: 0.7rem; color: #7ee787;">● Socratic Guardrail ON</span>
+      </div>
+
+      <div class="drawer-content">
+        
+        <!-- CARD 1: DIAGNOSIS CARD -->
+        <div class="diag-card">
+          <div class="diag-card-top">
+            <span id="diag-badge" class="diag-badge badge-error">M-01</span>
+            <span id="diag-conf" style="font-size: 0.72rem; color: var(--text-muted);">Conf: 98%</span>
+          </div>
+          <div class="diag-name" id="diag-name">⚠️ Misconception: Assignment vs Comparison</div>
+          <div class="diag-why" id="diag-why">
+            Single assignment '=' used inside conditional test expression instead of comparison '=='.
+          </div>
+
+          <!-- 1-CLICK VERIFICATION QUIZ -->
+          <div class="quiz-panel" id="quiz-panel">
+            <div class="quiz-title">🎯 1-Click Verification Quiz</div>
+            <div class="quiz-question" id="quiz-question">
+              What is the fundamental difference between '=' and '==' in Python?
+            </div>
+            <div class="quiz-list" id="quiz-list"></div>
+            <div id="quiz-alert"></div>
+          </div>
+        </div>
+
+        <!-- CARD 2: SOCRATIC CHAT ASSISTANT -->
+        <div class="chat-card">
+          <div class="chat-card-head">
+            <span>💬 Socratic Companion</span>
+            <span style="color: #7ee787; font-size: 0.65rem;">Active</span>
+          </div>
+          <div class="chat-log" id="chat-log">
+            <div class="bubble bubble-ai">
+              👋 I am your Socratic companion. I will never write the solution code for you. Instead, I ask questions to help your brain master the logic.
+            </div>
+          </div>
+
+          <!-- Quick Suggestion Chips -->
+          <div class="quick-prompts">
+            <span class="prompt-chip" onclick="sendQuickPrompt('Why is Python throwing this error?')">Why this error?</span>
+            <span class="prompt-chip" onclick="sendQuickPrompt('Give me a real-world analogy')">Mental analogy</span>
+            <span class="prompt-chip" onclick="sendQuickPrompt('What should I check first?')">Where to look?</span>
+          </div>
+
+          <div class="chat-controls">
+            <input type="text" id="chat-input" class="chat-inp" placeholder="Ask a question or explain your thinking..." onkeydown="if(event.key==='Enter') sendChat()">
+            <button class="chat-send-btn" onclick="sendChat()">Ask</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM STATUS BAR (24px) -->
+  <div class="statusbar">
+    <div class="sb-section">
+      <span class="sb-clickable" onclick="toggleSidebar()"><span id="sb-branch">main*</span></span>
+      <span class="sb-clickable" onclick="focusQuiz()"><span id="sb-issue">⚠ M-01 Active</span></span>
+      <span id="sb-status">Ready</span>
+    </div>
+    <div class="sb-section">
+      <span id="sb-pos">Ln 2, Col 7</span>
+      <span>UTF-8</span>
+      <span>Python 3.12 (Zero Latency)</span>
+      <span style="background: rgba(0,0,0,0.25); padding: 0 6px; border-radius: 2px;">Socratic Guardrail: ON</span>
+    </div>
+  </div>
+
+  <!-- TEACHER HEATMAP MODAL -->
+  <div id="teacher-modal" onclick="if(event.target===this) closeTeacherModal()">
+    <div class="t-modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3c3c3c; padding-bottom: 12px;">
+        <h3 style="font-size: 1.15rem; color: white; display: flex; align-items: center; gap: 8px;">
+          <span>👨‍🏫</span> Classroom Misconception Heatmap
+        </h3>
+        <button class="btn-top" onclick="closeTeacherModal()">✕ Close</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0;">
+        <div class="t-stat-card">
+          <div class="t-stat-num" style="color: #a78bfa;" id="tm-students">1</div>
+          <div class="t-stat-lbl">Active Students</div>
+        </div>
+        <div class="t-stat-card">
+          <div class="t-stat-num" style="color: #ff7b72;" id="tm-flagged">0</div>
+          <div class="t-stat-lbl">Misconceptions Flagged</div>
+        </div>
+        <div class="t-stat-card">
+          <div class="t-stat-num" style="color: #7ee787;" id="tm-rate">0%</div>
+          <div class="t-stat-lbl">Resolution Rate</div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.8rem; font-weight: 700; color: #a78bfa; margin-bottom: 8px;">
+        Taxonomy Breakdown (Brown & Altadmri 2017 Benchmark):
+      </div>
+      <div id="tm-heatmap-list" style="max-height: 260px; overflow-y: auto; padding-right: 4px;"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    const SESSION_ID = "student-" + Math.random().toString(36).slice(2, 9);
+
+    let monacoEditor = null;
+    let currentDiag = null;
+    let chatHistory = [];
+    let currentPresetKey = "demo-m01";
+
+    const PRESETS = {
+      "demo-m01": {
+        name: "M-01: '=' vs '=='",
+        file: "main.py",
+        code: "x = 5\nif x = 5:\n    print('x is five')\n",
+        desc: "Single assignment used inside conditional test expression."
+      },
+      "demo-m05": {
+        name: "M-05: '5' + 3",
+        file: "types_test.py",
+        code: "score = '5' + 3\nprint('Total score:', score)\n",
+        desc: "Implicit string + integer concatenation attempted."
+      },
+      "demo-m08": {
+        name: "M-08: print vs return",
+        file: "functions.py",
+        code: "def double(x):\n    print(x * 2)\n\ny = double(5)\nprint('Calculated:', y + 1)\n",
+        desc: "Function prints instead of returning value to caller."
+      },
+      "demo-m03": {
+        name: "M-03: Mutable List Aliasing",
+        file: "lists_alias.py",
+        code: "a = [1, 2]\nb = a\nb.append(3)\nprint('Original list a:', a)\n",
+        desc: "Thinks b = a creates an independent copy."
+      },
+      "demo-m09": {
+        name: "M-09: Careless Typo Slip",
+        file: "typo_check.py",
+        code: "pritn('Hello from Re:Learn!')\n",
+        desc: "Careless typo where student concept is intact."
+      }
+    };
+
+    const QUIZ_BANK = {
+      "M-01": {
+        q: "What is the fundamental difference between '=' and '==' in Python?",
+        options: [
+          { text: "Single '=' sets a variable value; double '==' tests if two values are equal", correct: true },
+          { text: "Single '=' is for numbers; double '==' is only for text strings", correct: false },
+          { text: "They are completely interchangeable in Python conditionals", correct: false }
+        ]
+      },
+      "M-05": {
+        q: "Why does `'5' + 3` fail with a TypeError in Python?",
+        options: [
+          { text: "'5' is a text string and 3 is an integer. Python will not implicitly add text and numbers with '+'", correct: true },
+          { text: "Python cannot add numbers greater than 5 to strings", correct: false },
+          { text: "The '+' operator is only allowed for lists, not numbers", correct: false }
+        ]
+      },
+      "M-08": {
+        q: "What is the difference between `print()` and `return`?",
+        options: [
+          { text: "print() only writes text on screen; return sends the computed value back to the caller", correct: true },
+          { text: "print() and return do the exact same thing in functions", correct: false },
+          { text: "return can only be used in while loops", correct: false }
+        ]
+      },
+      "M-03": {
+        q: "If `a = [1, 2]` and `b = a`, what happens when you do `b.append(3)`?",
+        options: [
+          { text: "Both 'a' and 'b' now show [1, 2, 3] because 'b = a' shares the same list in memory", correct: true },
+          { text: "Only 'b' gets updated; 'a' remains [1, 2] as an independent copy", correct: false },
+          { text: "Python throws an AliasingError and crashes", correct: false }
+        ]
+      },
+      "M-09": {
+        q: "What kind of issue occurred with `pritn('...')`?",
+        options: [
+          { text: "A harmless typographical slip; the conceptual logic of the program is intact", correct: true },
+          { text: "A deep fundamental flaw in computer science theory", correct: false },
+          { text: "Python requires all functions to start with uppercase letters", correct: false }
+        ]
+      }
+    };
+
+    const TAXONOMY = [
+      { id: "M-01", name: "Assignment vs Comparison" },
+      { id: "M-02", name: "Off-by-One / Range Bounds" },
+      { id: "M-03", name: "Mutable List Aliasing" },
+      { id: "M-04", name: "Boolean / Or Return Value" },
+      { id: "M-05", name: "Type Confusion (Str + Num)" },
+      { id: "M-06", name: "Loop Condition Invariant" },
+      { id: "M-07", name: "Indentation Block Scope" },
+      { id: "M-08", name: "Print vs Return Duality" },
+      { id: "M-09", name: "Sloppiness Slip (Negative)" }
+    ];
+
+    // Web Audio Synthesized Chime (100% reliable, zero downloads)
+    function playAudioTone(isSuccess = true) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        if (isSuccess) {
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.1);
+          osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+          osc.start(); osc.stop(ctx.currentTime + 0.35);
+        } else {
+          osc.frequency.setValueAtTime(420, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(310, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+          osc.start(); osc.stop(ctx.currentTime + 0.2);
+        }
+      } catch (e) {}
+    }
+
+    // Gutter Line Number Synchronizer for Built-in Editor
+    function updateGutter() {
+      const textarea = document.getElementById('code-fallback');
+      const gutter = document.getElementById('editor-gutter');
+      const lineCount = textarea.value.split('\n').length;
+      let numbers = '';
+      for (let i = 1; i <= Math.max(lineCount, 1); i++) {
+        numbers += i + '\n';
+      }
+      gutter.textContent = numbers;
+    }
+
+    function setupFallbackEditor() {
+      const textarea = document.getElementById('code-fallback');
+      const gutter = document.getElementById('editor-gutter');
+
+      textarea.addEventListener('input', () => {
+        updateGutter();
+        updateCursorPosition();
+      });
+
+      textarea.addEventListener('scroll', () => {
+        gutter.scrollTop = textarea.scrollTop;
+      });
+
+      textarea.addEventListener('click', updateCursorPosition);
+      textarea.addEventListener('keyup', updateCursorPosition);
+
+      // Handle Tab key (4 spaces indentation instead of losing focus)
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          textarea.value = textarea.value.substring(0, start) + "    " + textarea.value.substring(end);
+          textarea.selectionStart = textarea.selectionEnd = start + 4;
+          updateGutter();
+        } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          executeCode();
+        }
+      });
+
+      updateGutter();
+    }
+
+    function updateCursorPosition() {
+      const textarea = document.getElementById('code-fallback');
+      const text = textarea.value.substring(0, textarea.selectionStart);
+      const lines = text.split('\n');
+      const row = lines.length;
+      const col = lines[lines.length - 1].length + 1;
+      document.getElementById('sb-pos').textContent = `Ln ${row}, Col ${col}`;
+    }
+
+    // Monaco Editor Loader with Graceful Dual-Mode Binding
+    function initEditor() {
+      setupFallbackEditor();
+
+      if (typeof require !== 'undefined' && require.config) {
+        try {
+          require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+          require(['vs/editor/editor.main'], function () {
+            const container = document.getElementById('monaco-container');
+            monacoEditor = monaco.editor.create(container, {
+              value: PRESETS["demo-m01"].code,
+              language: 'python',
+              theme: 'vs-dark',
+              fontSize: 13,
+              fontFamily: "'Fira Code', Consolas, monospace",
+              minimap: { enabled: false },
+              lineNumbers: "on",
+              automaticLayout: true,
+              scrollBeyondLastLine: false,
+              padding: { top: 12, bottom: 12 }
+            });
+
+            // Hide fallback wrap once Monaco is mounted
+            document.getElementById('fallback-wrap').style.display = 'none';
+
+            monacoEditor.onDidChangeCursorPosition((e) => {
+              document.getElementById('sb-pos').textContent = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+            });
+
+            monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, executeCode);
+          }, function(err) {
+            console.log("Monaco load deferred, fallback IDE is fully active.");
+          });
+        } catch(e) {
+          console.log("Using built-in high-performance IDE engine.");
+        }
+      }
+    }
+
+    function getCode() {
+      return monacoEditor ? monacoEditor.getValue() : document.getElementById('code-fallback').value;
+    }
+
+    function setCode(val) {
+      if (monacoEditor) monacoEditor.setValue(val);
+      const fallback = document.getElementById('code-fallback');
+      if (fallback) {
+        fallback.value = val;
+        updateGutter();
+      }
+    }
+
+    function focusEditorLine(lineNum) {
+      if (monacoEditor) {
+        monacoEditor.revealLineInCenter(lineNum);
+        monacoEditor.setPosition({ lineNumber: lineNum, column: 1 });
+        monacoEditor.focus();
+      } else {
+        const textarea = document.getElementById('code-fallback');
+        const lines = textarea.value.split('\n');
+        let pos = 0;
+        for (let i = 0; i < Math.min(lineNum - 1, lines.length); i++) {
+          pos += lines[i].length + 1;
+        }
+        textarea.focus();
+        textarea.setSelectionRange(pos, pos + (lines[lineNum - 1] ? lines[lineNum - 1].length : 0));
+      }
+    }
+
+    // Switch Scenario Preset
+    function switchPreset(key) {
+      currentPresetKey = key;
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      const activeChip = document.getElementById(`chip-${key}`);
+      if (activeChip) activeChip.classList.add('active');
+
+      // Update sidebar tree active item
+      document.querySelectorAll('.tree-file').forEach(f => f.classList.remove('active'));
+      const fileIdMap = {
+        'demo-m01': 'tree-m01',
+        'demo-m05': 'tree-m05',
+        'demo-m08': 'tree-m08',
+        'demo-m03': 'tree-m03',
+        'demo-m09': 'tree-m09'
+      };
+      if (fileIdMap[key] && document.getElementById(fileIdMap[key])) {
+        document.getElementById(fileIdMap[key]).classList.add('active');
+      }
+
+      const p = PRESETS[key];
+      if (!p) return;
+
+      document.getElementById('tab-filename').textContent = p.file;
+      setCode(p.code);
+      dismissCoachBar();
+
+      clearTermLogs();
+      addTermLog(`>>> Loaded Scenario: ${p.name}\n>>> File: ${p.file}\n>>> Description: ${p.desc}\n>>> Executing now...`, 'out-blue');
+
+      // Automatically run code for instantaneous feedback
+      executeCode();
+    }
+
+    function resetCurrentCode() {
+      const p = PRESETS[currentPresetKey];
+      if (p) setCode(p.code);
+    }
+
+    // Terminal Logging
+    function clearTermLogs() {
+      document.getElementById('pane-terminal').innerHTML = '';
+      document.getElementById('pane-output').innerHTML = '<div class="out-muted">// Program stdout output will appear here.</div>';
+    }
+
+    function addTermLog(msg, cls = 'out-green') {
+      const box = document.getElementById('pane-terminal');
+      const d = document.createElement('div');
+      d.className = cls; d.textContent = msg;
+      box.appendChild(d);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function setOutputPane(stdout) {
+      const outBox = document.getElementById('pane-output');
+      if (!stdout || stdout.trim() === '') {
+        outBox.innerHTML = '<div class="out-muted">// Program stdout output will appear here (no output produced).</div>';
+      } else {
+        outBox.innerHTML = `<div class="out-green">${escapeHtml(stdout)}</div>`;
+      }
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Terminal Tab Switcher
+    function switchTermTab(tabName) {
+      document.querySelectorAll('.term-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.term-content').forEach(c => c.classList.remove('active'));
+
+      document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+      document.getElementById(`pane-${tabName}`).classList.add('active');
+    }
+
+    // Zero-Latency Execution Pipeline (Calls FastAPI backend /run directly)
+    async function executeCode() {
+      clearTermLogs();
+      document.getElementById('term-status').textContent = 'Executing...';
+      const code = getCode();
+
+      try {
+        const resp = await fetch(`${API_BASE}/run`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: code })
+        });
+        const result = await resp.json();
+
+        if (result.stdout) {
+          addTermLog(result.stdout, 'out-green');
+          setOutputPane(result.stdout);
+        } else {
+          setOutputPane("");
+        }
+
+        if (result.stderr) {
+          addTermLog(result.stderr, 'out-red');
+        }
+
+        const execTimeStr = result.execution_time_ms ? ` (${result.execution_time_ms}ms)` : '';
+        document.getElementById('term-status').textContent = (result.exit_code === 0 ? 'Exit 0' : 'Exception') + execTimeStr;
+        document.getElementById('sb-status').textContent = `Ready` + execTimeStr;
+
+        // Trigger Cognitive Misconception Diagnosis
+        await runDiagnosis(code, result.stderr, result.stdout, result.parsed_error);
+      } catch (err) {
+        addTermLog(`Local Runner Notice: ${err.message}`, 'out-red');
+        await runDiagnosis(code, String(err), "");
+      }
+    }
+
+    // Cognitive Misconception Diagnosis
+    async function runDiagnosis(code, error, output, parsedError = null) {
+      try {
+        const resp = await fetch(`${API_BASE}/diagnose`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session: SESSION_ID,
+            code: code,
+            error: error,
+            output: output,
+            history: chatHistory
+          })
+        });
+        const diag = await resp.json();
+        currentDiag = diag;
+
+        const badge = document.getElementById('diag-badge');
+        const coachBar = document.getElementById('coach-bar');
+        const probPane = document.getElementById('pane-problems');
+        const probCount = document.getElementById('prob-count');
+
+        if (diag.is_clean) {
+          // Clean Execution Case: Celebrate!
+          badge.textContent = "VERIFIED";
+          badge.className = "diag-badge badge-pass";
+          document.getElementById('diag-conf').textContent = `100% Mastery`;
+          document.getElementById('diag-name').textContent = "🎉 Clean Code — Mental Model Sound!";
+          document.getElementById('diag-why').textContent = diag.reasoning || "Code executed cleanly with no syntax errors or cognitive misconceptions detected.";
+          
+          coachBar.className = "pass-mode";
+          document.getElementById('coach-icon').textContent = "✅";
+          document.getElementById('coach-head').textContent = "All Checks Passed! Mental Model Verified";
+          document.getElementById('coach-sub').textContent = "No syntax errors or cognitive misconceptions detected in this program.";
+          coachBar.style.display = 'flex';
+
+          document.getElementById('sb-issue').textContent = "✅ All Clear (Exit 0)";
+          document.getElementById('quiz-panel').style.display = 'none';
+
+          probCount.textContent = '0';
+          probPane.innerHTML = `<div class="out-green">✓ No problems detected. All tests pass!</div>`;
+          return;
+        }
+
+        // Misconception / Typo Flagged Case
+        badge.textContent = diag.label;
+        document.getElementById('diag-conf').textContent = `Conf: ${(diag.confidence * 100).toFixed(0)}%`;
+        coachBar.className = "";
+
+        if (diag.is_sloppiness) {
+          badge.className = "diag-badge badge-typo";
+          document.getElementById('diag-name').textContent = "⚡ Sloppiness Slip (Mental Model Intact)";
+          document.getElementById('coach-icon').textContent = "⚡";
+          document.getElementById('coach-head').textContent = `Typo Slip ${diag.label} Flagged!`;
+          document.getElementById('sb-issue').textContent = `⚡ ${diag.label} Typo Slip`;
+        } else {
+          badge.className = "diag-badge badge-error";
+          const match = TAXONOMY.find(t => t.id === diag.label);
+          document.getElementById('diag-name').textContent = `⚠️ Misconception: ${match ? match.name : diag.label}`;
+          document.getElementById('coach-icon').textContent = "🚨";
+          document.getElementById('coach-head').textContent = `Cognitive Misconception ${diag.label} Detected!`;
+          document.getElementById('sb-issue').textContent = `⚠ ${diag.label} Active`;
+        }
+
+        document.getElementById('diag-why').textContent = diag.reasoning || "Misconception diagnosed.";
+        document.getElementById('coach-sub').textContent = diag.reasoning || "Cognitive error diagnosed.";
+        coachBar.style.display = 'flex';
+
+        // Update Problems Panel with Parsed Line and Column
+        const errLine = (parsedError && parsedError.line) ? parsedError.line : 2;
+        const errCol = (parsedError && parsedError.column) ? `, Col ${parsedError.column}` : '';
+        probCount.textContent = '1';
+        probPane.innerHTML = `
+          <div class="problem-item" onclick="focusEditorLine(${errLine})">
+            <span class="prob-badge ${diag.is_sloppiness ? 'prob-badge-warn' : 'prob-badge-err'}">${diag.is_sloppiness ? 'Warning' : 'Error'}</span>
+            <span style="color: white; font-weight: 600;">${PRESETS[currentPresetKey]?.file || 'main.py'} [Ln ${errLine}${errCol}]</span>
+            <span style="color: #cccccc;">${diag.label}: ${diag.reasoning}</span>
+          </div>
+        `;
+
+        if (diag.socratic_hint) addChatMsg('ai', `💡 ${diag.socratic_hint}`);
+        renderQuizCards(diag.label);
+      } catch (e) {
+        console.error("Diagnosis error:", e);
+      }
+    }
+
+    // Render 1-Click Interactive Quiz Cards (A, B, C)
+    function renderQuizCards(label) {
+      const qData = QUIZ_BANK[label] || QUIZ_BANK["M-01"];
+      document.getElementById('quiz-question').textContent = qData.q;
+      const list = document.getElementById('quiz-list');
+      list.innerHTML = '';
+      document.getElementById('quiz-alert').style.display = 'none';
+
+      const letters = ['A', 'B', 'C'];
+      qData.options.forEach((opt, idx) => {
+        const card = document.createElement('div');
+        card.className = 'quiz-card';
+        card.innerHTML = `<span class="card-letter">${letters[idx]}</span><span>${opt.text}</span>`;
+        card.onclick = () => selectQuizCard(opt.text, opt.correct, card);
+        list.appendChild(card);
+      });
+      document.getElementById('quiz-panel').style.display = 'block';
+    }
+
+    // 1-Click Quiz Card Selection with Confetti & Synthesized Audio Tone
+    async function selectQuizCard(text, isCorrect, cardEl) {
+      document.querySelectorAll('.quiz-card').forEach(c => {
+        c.classList.remove('selected-correct', 'selected-incorrect');
+      });
+
+      const alertBox = document.getElementById('quiz-alert');
+      alertBox.style.display = 'block';
+
+      if (isCorrect) {
+        cardEl.classList.add('selected-correct');
+        playAudioTone(true);
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+        }
+        alertBox.className = 'alert-pass';
+        alertBox.innerHTML = `<b>🎉 Misconception RESOLVED!</b> Brilliant work. Cognitive mastery verified.`;
+        document.getElementById('diag-badge').className = "diag-badge badge-pass";
+        document.getElementById('sb-issue').textContent = `✅ ${currentDiag?.label || 'Concept'} Resolved`;
+        addChatMsg('ai', `✅ Outstanding! You demonstrated clear resolution of ${currentDiag?.label || 'the concept'}.`);
+
+        try {
+          await fetch(`${API_BASE}/assess`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              session: SESSION_ID,
+              misconception_id: currentDiag?.label || "M-01",
+              question: document.getElementById('quiz-question').textContent,
+              student_answer: text
+            })
+          });
+        } catch(e){}
+      } else {
+        cardEl.classList.add('selected-incorrect');
+        playAudioTone(false);
+        alertBox.className = 'alert-retry';
+        alertBox.innerHTML = `<b>⚠️ Almost there:</b> Look closely at the clue or ask the Socratic tutor in the chat below.`;
+      }
+    }
+
+    // Socratic Chat Assistant
+    function addChatMsg(role, text) {
+      const box = document.getElementById('chat-log');
+      const b = document.createElement('div');
+      b.className = `bubble ${role === 'ai' ? 'bubble-ai' : 'bubble-user'}`;
+      b.textContent = text;
+      box.appendChild(b);
+      box.scrollTop = box.scrollHeight;
+      chatHistory.push({ role: role === 'ai' ? 'assistant' : 'student', text: text });
+    }
+
+    async function sendChat() {
+      const inp = document.getElementById('chat-input');
+      const msg = inp.value.trim();
+      if (!msg) return;
+      addChatMsg('user', msg);
+      inp.value = '';
+
+      try {
+        const resp = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session: SESSION_ID,
+            misconception: currentDiag?.label || "General",
+            message: msg,
+            code: getCode()
+          })
+        });
+        const data = await resp.json();
+        addChatMsg('ai', data.reply || "Consider how Python evaluates that statement.");
+      } catch (e) {
+        addChatMsg('ai', "Ponder this: what is the fundamental difference between assigning state and testing a condition?");
+      }
+    }
+
+    function sendQuickPrompt(promptText) {
+      document.getElementById('chat-input').value = promptText;
+      sendChat();
+    }
+
+    function focusChat() {
+      const inp = document.getElementById('chat-input');
+      inp.focus();
+      inp.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function focusQuiz() {
+      const q = document.getElementById('quiz-panel');
+      q.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function dismissCoachBar() {
+      document.getElementById('coach-bar').style.display = 'none';
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      sb.classList.toggle('collapsed');
+      const actBtn = document.getElementById('act-btn-explorer');
+      if (sb.classList.contains('collapsed')) {
+        actBtn.classList.remove('active');
+      } else {
+        actBtn.classList.add('active');
+      }
+    }
+
+    // Teacher Classroom Heatmap Modal
+    async function openTeacherModal() {
+      const m = document.getElementById('teacher-modal');
+      m.style.display = 'flex';
+      try {
+        const res = await fetch(`${API_BASE}/teacher/dashboard`);
+        const data = await res.json();
+        document.getElementById('tm-students').textContent = data.total_active_students || 1;
+        document.getElementById('tm-flagged').textContent = data.total_diagnoses || 0;
+        const total = data.total_diagnoses || 1;
+        const resCount = Object.values(data.resolved_counts || {}).reduce((a, b) => a + b, 0);
+        document.getElementById('tm-rate').textContent = `${Math.round((resCount / total) * 100)}%`;
+
+        const list = document.getElementById('tm-heatmap-list');
+        list.innerHTML = '';
+        TAXONOMY.forEach(t => {
+          const count = (data.class_misconception_counts || {})[t.id] || 0;
+          const row = document.createElement('div');
+          row.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #2b2b2b; font-size: 0.78rem;";
+          row.innerHTML = `
+            <span><b>${t.id}</b>: ${t.name}</span>
+            <span style="background: rgba(167, 139, 250, 0.15); color: #c4b5fd; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-family: var(--font-mono);">
+              ${count} occurrences
+            </span>
+          `;
+          list.appendChild(row);
+        });
+      } catch(e){}
+    }
+
+    function closeTeacherModal() {
+      document.getElementById('teacher-modal').style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeTeacherModal();
+    });
+
+    // Auto-bootstrap on DOM Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initEditor();
+      renderQuizCards("M-01");
+      // Execute initial M-01 preset right away so screen is immediately rich & interactive
+      setTimeout(() => { executeCode(); }, 400);
+    });
+  </script>
+</body>
+</html>

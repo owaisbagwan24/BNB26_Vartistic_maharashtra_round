@@ -1,0 +1,17 @@
+relearn_starter_kit/
+├── README.md                  <- requirements, stack, data, training, run, 3-day plan
+├── PITCH.md                   <- 8-slide winning deck outline + demo tips
+├── dataset/
+│   ├── label_schema.json      <- 9 labels (M-01..M-09), M-09 = sloppiness negative class
+│   └── misconceptions.csv     <- 20 gold rows (schema: id, student_code, error_message,
+│                                 wrong_output, misconception_id, correct_code,
+│                                 socratic_intervention, reassessment_question)
+├── backend/
+│   ├── main.py                <- FastAPI: /diagnose /chat /assess /progress /teacher/dashboard
+│   └── requirements.txt
+├── frontend/
+│   └── index.html             <- Monaco editor + Pyodide runner + diagnosis card + Socratic chat
+├── training/
+│   └── train_colab.py         <- DistilBERT fine-tune, concept-wise split, confusion matrix PNG
+└── scripts/
+    └── generate_synthetic.py  <- LLM-based synthetic dataset generator (human verify after!)

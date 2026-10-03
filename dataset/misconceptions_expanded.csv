@@ -1,0 +1,534 @@
+id,student_code,error_message,wrong_output,misconception_id,correct_code,socratic_intervention,reassessment_question
+S001,"x = 5
+if x = 5:
+    print('five')",SyntaxError: invalid syntax (if x = 5),no output,M-01,"x = 5
+if x == 5:
+    print('five')",Ask: '=' ka matlab kya hota hai? '==' ka? if ke andar question hota hai ya command?,x=7; is 'x = 7' a comparison? answer yes/no + why
+S002,"x = 5
+if x == 5:
+    print('five')",(none),'five' printed but student expected nothing (thought = means compare),M-01,(already correct code; misconception in belief),Ask: agar '=' compare karta hota toh x=5 line kya karti?,After 'x = 5' what is stored in x?
+S003,"total = 0
+for i in range(1, 10):
+    total += i
+print(total)",(none),45 (expected 55),M-02,"range(1, 11)","Ask: range(1,10) me last number kaunsa hai? 10 kyun nahi aaya?","Does range(0,5) print 5? predict output"
+S004,"for i in range(5):
+    print(i)",(none),"0..4 (student shocked, expected 1..5)",M-02,(code correct),Ask: Python counting kahan se shuru karta hai? range(5) me kitne numbers?,range(3) ke elements list karo
+S005,"a = [1,2]
+b = a
+b.append(3)
+print(a)",(none),"[1, 2, 3] (expected [1, 2])",M-03,b = a.copy(),Ask: b=a ne naya list banaya ya same list ka naya naam diya?,a=[1]; b=a; b.append(9); print(a) => ?
+S006,"def add(item, bag=[]):
+    bag.append(item)
+    return bag
+print(add(1))
+print(add(2))",(none),"[1] then [1,2] (expected [1] then [2])",M-03,"def add(item, bag=None): bag = bag or []",Ask: default [] har call pe naya banta hai ya ek hi baar?,Predict: 3rd call add(3) output?
+S007,"x = 5 or 3
+print(x)",(none),5 (expected True),M-04,Ask first: is '5 or 3' a question?,'0 or 3' ka output? predict,
+S008,"age = '5' + 3
+print(age)",TypeError: can only concatenate str to str,no output,M-05,age = int('5') + 3,"Ask: '5' quotes me hai, 3 nahi — ye dono same type hain?",'5' * 3 ka output? explain
+S009,print('5' + '3'),(none),53 (expected 8),M-05,int('5') + int('3'),"Ask: + strings pe kya karta hai, numbers pe kya?",'2' + '2' vs 2 + 2 — farq kya?
+S010,"i = 0
+while i < 5:
+    print('hi')",(runs forever),infinite loop,M-06,add i += 1 inside loop,Ask: i kab badhega? loop rukne ka condition kya hai?,Which line makes this loop stop? point it
+S011,"n = 5
+i = 1
+while i <= n:
+    print(i * '*')
+   i = i + 1",IndentationError: unindent does not match,no output,M-07,consistent 4-space indent,Ask: 'i = i + 1' loop ke andar hai ya bahar? kaise pata?,Reindent: which 2 lines are inside while?
+S012,"x = 10
+if x > 5:
+print('big')",IndentationError: expected an indented block,no output,M-07,indent print inside if,Ask: if ke baad wali line kahan likhi jati hai?,Fix: 'else' ka block kahan aayega?
+S013,"def double(x):
+    print(x * 2)
+y = double(5)
+print(y + 1)",(none),10 then TypeError: unsupported + NoneType,M-08,return x * 2 instead of print,Ask: print value DETATA hai ya sirf DIKHATA hai? y me kya store hua?,What does a function return if no return statement?
+S014,"def square(n):
+    result = n * n
+print(square(4))",(none),None (expected 16),M-08,add return result,"Ask: result calculate toh ho gaya, par function ne diya kahan?",Predict output: def f(): a=5  ->  print(f())
+S015,"x = 5
+if x = 5:
+    print('five')",SyntaxError: invalid syntax,no output,M-09,"x = 5
+if x == 5: ...",Recognize via chat: student explains '=' vs '==' correctly -> treat as slip. Intervention: linter habit tip only.,(no concept quiz; ask self-rating: 'jaan-boojh kar ya slip?' verify by explanation)
+S016,prnt('hello'),NameError: name 'prnt' is not defined,no output,M-09,print('hello'),"Typo -> not a concept gap. Quick fix + move on, do NOT quiz concept.",-
+S017,"for i in range(10):
+    print(i)
+     print('done')",IndentationError: unexpected indent,no output,M-07,align second print (inside or outside deliberately),Ask: 'done' 10 baar chahiye ya 1 baar? us hisaab se indent karo,10 times or 1 time 'done'? choose + justify
+S018,"nums = [1,2,3]
+total = 0
+for n in nums:
+    total = n
+print(total)",(none),3 (expected 6),M-02,total = total + n,Ask: har step pe total me kya ho raha hai — purana total gayab? trace karo,"Trace: total after each iteration, n=1,2,3"
+S019,"flag = False
+if flag == True:
+    print('on')",(none),nothing printed (expected 'on' confusion later),M-04,if flag: (or understand flag itself is the condition),Ask: flag already True/False hai — '== True' bolne ki zaroorat hai?,if not flag: kab chalega?
+S020,"s = 'abc'
+print(s[3])",IndexError: string index out of range,no output,M-02,s[2] or s[-1],Ask: indexing 0 se shuru hoti hai — 'abc' ke valid indices kaunse?,'hello'[5] chalega? kyun?
+SYN0101,"while y = 1:
+    y += 1",SyntaxError: invalid syntax,no output,M-01,while y == 1:,"Ask: In a while condition, do you want to assign or compare?",How do you test if count is equal to 0?
+SYN0102,"while count = 2:
+    count += 1",SyntaxError: invalid syntax,no output,M-01,while count == 2:,"Ask: In a while condition, do you want to assign or compare?",How do you test if count is equal to 0?
+SYN0103,"elif speed = '13':
+    status = True",SyntaxError: invalid syntax,no output,M-01,elif speed == '13':,Ask: Does elif test an equality condition or set a variable?,Is 'role = admin' valid inside an elif? Why not?
+SYN0104,"if y = 19:
+    print('valid')",SyntaxError: invalid syntax,no output,M-01,if y == 19:,Ask: What is the difference between '=' and '==' in Python?,"If x = 10, is 'x = 10' setting a value or checking equality?"
+SYN0105,"if num = 8:
+    print('success')",SyntaxError: invalid syntax,no output,M-01,if num == 8:,Ask: What is the difference between '=' and '==' in Python?,"If x = 10, is 'x = 10' setting a value or checking equality?"
+SYN0106,"if num = 17:
+    print('success')",SyntaxError: invalid syntax,no output,M-01,if num == 17:,Ask: What is the difference between '=' and '==' in Python?,"If x = 10, is 'x = 10' setting a value or checking equality?"
+SYN0107,"elif n = '7':
+    status = True",SyntaxError: invalid syntax,no output,M-01,elif n == '7':,Ask: Does elif test an equality condition or set a variable?,Is 'role = admin' valid inside an elif? Why not?
+SYN0108,"elif total = '6':
+    status = True",SyntaxError: invalid syntax,no output,M-01,elif total == '6':,Ask: Does elif test an equality condition or set a variable?,Is 'role = admin' valid inside an elif? Why not?
+SYN0109,"if speed = 3:
+    print('passed')",SyntaxError: invalid syntax,no output,M-01,if speed == 3:,Ask: What is the difference between '=' and '==' in Python?,"If x = 10, is 'x = 10' setting a value or checking equality?"
+SYN0110,"while n = 7:
+    n += 1",SyntaxError: invalid syntax,no output,M-01,while n == 7:,"Ask: In a while condition, do you want to assign or compare?",How do you test if count is equal to 0?
+SYN0111,"while speed = 7:
+    speed += 1",SyntaxError: invalid syntax,no output,M-01,while speed == 7:,"Ask: In a while condition, do you want to assign or compare?",How do you test if count is equal to 0?
+SYN0112,"while y = 4:
+    y += 1",SyntaxError: invalid syntax,no output,M-01,while y == 4:,"Ask: In a while condition, do you want to assign or compare?",How do you test if count is equal to 0?
+SYN0113,"elif total = '17':
+    status = True",SyntaxError: invalid syntax,no output,M-01,elif total == '17':,Ask: Does elif test an equality condition or set a variable?,Is 'role = admin' valid inside an elif? Why not?
+SYN0114,"if score = 12:
+    print('matched')",SyntaxError: invalid syntax,no output,M-01,if score == 12:,Ask: What is the difference between '=' and '==' in Python?,"If x = 10, is 'x = 10' setting a value or checking equality?"
+SYN0115,"elif num = '2':
+    status = True",SyntaxError: invalid syntax,no output,M-01,elif num == '2':,Ask: Does elif test an equality condition or set a variable?,Is 'role = admin' valid inside an elif? Why not?
+SYN0116,"elif index = '16':
+    status = True",SyntaxError: invalid syntax,no output,M-01,elif index == '16':,Ask: Does elif test an equality condition or set a variable?,Is 'role = admin' valid inside an elif? Why not?
+SYN0117,"if val = 12:
+    print('alert')",SyntaxError: invalid syntax,no output,M-01,if val == 12:,Ask: What is the difference between '=' and '==' in Python?,"If x = 10, is 'x = 10' setting a value or checking equality?"
+SYN0118,"while age = 1:
+    age += 1",SyntaxError: invalid syntax,no output,M-01,while age == 1:,"Ask: In a while condition, do you want to assign or compare?",How do you test if count is equal to 0?
+SYN0119,"elif age = '15':
+    status = True",SyntaxError: invalid syntax,no output,M-01,elif age == '15':,Ask: Does elif test an equality condition or set a variable?,Is 'role = admin' valid inside an elif? Why not?
+SYN0120,"while num = 20:
+    num += 1",SyntaxError: invalid syntax,no output,M-01,while num == 20:,"Ask: In a while condition, do you want to assign or compare?",How do you test if count is equal to 0?
+SYN0121,"items = ['a', 'b', 'c']
+print(items[8])",IndexError: list index out of range,no output,M-02,print(items[8-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0122,"items = ['a', 'b', 'c']
+print(items[4])",IndexError: list index out of range,no output,M-02,print(items[4-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0123,"for i in range(11):
+    print(i)",(none),starts at 0 expected 1,M-02,"for i in range(1, 11+1):",Ask: Does range(N) start at 0 or 1?,Predict all numbers printed by range(4)
+SYN0124,"items = ['a', 'b', 'c']
+print(items[6])",IndexError: list index out of range,no output,M-02,print(items[6-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0125,"items = ['a', 'b', 'c']
+print(items[5])",IndexError: list index out of range,no output,M-02,print(items[5-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0126,"items = ['a', 'b', 'c']
+print(items[7])",IndexError: list index out of range,no output,M-02,print(items[7-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0127,"total = 0
+for i in range(1, 5):
+    total += i
+print(total)",(none),off by one sum,M-02,"for i in range(1, 5+1):","Ask: In range(1, N), does Python include N?","What is the last number in range(0, 5)?"
+SYN0128,"for i in range(8):
+    print(i)",(none),starts at 0 expected 1,M-02,"for i in range(1, 8+1):",Ask: Does range(N) start at 0 or 1?,Predict all numbers printed by range(4)
+SYN0129,"for i in range(8):
+    print(i)",(none),starts at 0 expected 1,M-02,"for i in range(1, 8+1):",Ask: Does range(N) start at 0 or 1?,Predict all numbers printed by range(4)
+SYN0130,"items = ['a', 'b', 'c']
+print(items[3])",IndexError: list index out of range,no output,M-02,print(items[3-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0131,"items = ['a', 'b', 'c']
+print(items[5])",IndexError: list index out of range,no output,M-02,print(items[5-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0132,"total = 0
+for i in range(1, 3):
+    total += i
+print(total)",(none),off by one sum,M-02,"for i in range(1, 3+1):","Ask: In range(1, N), does Python include N?","What is the last number in range(0, 5)?"
+SYN0133,"total = 0
+for i in range(1, 11):
+    total += i
+print(total)",(none),off by one sum,M-02,"for i in range(1, 11+1):","Ask: In range(1, N), does Python include N?","What is the last number in range(0, 5)?"
+SYN0134,"items = ['a', 'b', 'c']
+print(items[3])",IndexError: list index out of range,no output,M-02,print(items[3-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0135,"total = 0
+for i in range(1, 14):
+    total += i
+print(total)",(none),off by one sum,M-02,"for i in range(1, 14+1):","Ask: In range(1, N), does Python include N?","What is the last number in range(0, 5)?"
+SYN0136,"items = ['a', 'b', 'c']
+print(items[8])",IndexError: list index out of range,no output,M-02,print(items[8-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0137,"items = ['a', 'b', 'c']
+print(items[6])",IndexError: list index out of range,no output,M-02,print(items[6-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0138,"for i in range(8):
+    print(i)",(none),starts at 0 expected 1,M-02,"for i in range(1, 8+1):",Ask: Does range(N) start at 0 or 1?,Predict all numbers printed by range(4)
+SYN0139,"items = ['a', 'b', 'c']
+print(items[5])",IndexError: list index out of range,no output,M-02,print(items[5-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0140,"items = ['a', 'b', 'c']
+print(items[6])",IndexError: list index out of range,no output,M-02,print(items[6-1]),Ask: Python list indexing begins at what index number?,What is the index of the first item in any Python list?
+SYN0141,"def register(user, group=[]):
+    group.append(user)
+    return group",(none),group retains past calls,M-03,"def register(user, group=None): group = group or []",Ask: When is a default list created in a Python function?,Why is default [] dangerous in function definitions?
+SYN0142,"def register(user, group=[]):
+    group.append(user)
+    return group",(none),group retains past calls,M-03,"def register(user, group=None): group = group or []",Ask: When is a default list created in a Python function?,Why is default [] dangerous in function definitions?
+SYN0143,"list1 = [12, 4]
+list2 = list1
+list2.append(46)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0144,"list1 = [3, 7]
+list2 = list1
+list2.append(30)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0145,"list1 = [9, 20]
+list2 = list1
+list2.append(27)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0146,"list1 = [16, 16]
+list2 = list1
+list2.append(22)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0147,"list1 = [3, 10]
+list2 = list1
+list2.append(22)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0148,"def register(user, group=[]):
+    group.append(user)
+    return group",(none),group retains past calls,M-03,"def register(user, group=None): group = group or []",Ask: When is a default list created in a Python function?,Why is default [] dangerous in function definitions?
+SYN0149,"list1 = [8, 3]
+list2 = list1
+list2.append(21)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0150,"def register(user, group=[]):
+    group.append(user)
+    return group",(none),group retains past calls,M-03,"def register(user, group=None): group = group or []",Ask: When is a default list created in a Python function?,Why is default [] dangerous in function definitions?
+SYN0151,"def register(user, group=[]):
+    group.append(user)
+    return group",(none),group retains past calls,M-03,"def register(user, group=None): group = group or []",Ask: When is a default list created in a Python function?,Why is default [] dangerous in function definitions?
+SYN0152,"def register(user, group=[]):
+    group.append(user)
+    return group",(none),group retains past calls,M-03,"def register(user, group=None): group = group or []",Ask: When is a default list created in a Python function?,Why is default [] dangerous in function definitions?
+SYN0153,"list1 = [11, 4]
+list2 = list1
+list2.append(48)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0154,"list1 = [12, 2]
+list2 = list1
+list2.append(30)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0155,"def register(user, group=[]):
+    group.append(user)
+    return group",(none),group retains past calls,M-03,"def register(user, group=None): group = group or []",Ask: When is a default list created in a Python function?,Why is default [] dangerous in function definitions?
+SYN0156,"list1 = [2, 7]
+list2 = list1
+list2.append(28)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0157,"list1 = [1, 15]
+list2 = list1
+list2.append(23)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0158,"list1 = [14, 11]
+list2 = list1
+list2.append(39)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0159,"def register(user, group=[]):
+    group.append(user)
+    return group",(none),group retains past calls,M-03,"def register(user, group=None): group = group or []",Ask: When is a default list created in a Python function?,Why is default [] dangerous in function definitions?
+SYN0160,"list1 = [11, 10]
+list2 = list1
+list2.append(43)
+print(list1)",(none),both lists modified,M-03,list2 = list1.copy(),Ask: Did list2 = list1 copy the elements or link both names?,"If a = [1]; b = a; b.append(2), what is a?"
+SYN0161,"if active == True:
+    print('online')",(none),redundant condition,M-04,if active:,"Ask: If active is already a boolean, do you need '== True'?",Why is 'if is_valid:' preferred over 'if is_valid == True:'?
+SYN0162,"val = 18 or 1
+print(val)",(none),expected True/False got number,M-04,val = bool(18 or 1),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0163,"val = 6 or 17
+print(val)",(none),expected True/False got number,M-04,val = bool(6 or 17),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0164,"val = 4 or 5
+print(val)",(none),expected True/False got number,M-04,val = bool(4 or 5),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0165,"if active == True:
+    print('online')",(none),redundant condition,M-04,if active:,"Ask: If active is already a boolean, do you need '== True'?",Why is 'if is_valid:' preferred over 'if is_valid == True:'?
+SYN0166,"val = 6 or 9
+print(val)",(none),expected True/False got number,M-04,val = bool(6 or 9),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0167,"val = 2 or 12
+print(val)",(none),expected True/False got number,M-04,val = bool(2 or 12),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0168,"val = 19 or 18
+print(val)",(none),expected True/False got number,M-04,val = bool(19 or 18),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0169,"if active == True:
+    print('online')",(none),redundant condition,M-04,if active:,"Ask: If active is already a boolean, do you need '== True'?",Why is 'if is_valid:' preferred over 'if is_valid == True:'?
+SYN0170,"if active == True:
+    print('online')",(none),redundant condition,M-04,if active:,"Ask: If active is already a boolean, do you need '== True'?",Why is 'if is_valid:' preferred over 'if is_valid == True:'?
+SYN0171,"val = 12 or 2
+print(val)",(none),expected True/False got number,M-04,val = bool(12 or 2),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0172,"if active == True:
+    print('online')",(none),redundant condition,M-04,if active:,"Ask: If active is already a boolean, do you need '== True'?",Why is 'if is_valid:' preferred over 'if is_valid == True:'?
+SYN0173,"if active == True:
+    print('online')",(none),redundant condition,M-04,if active:,"Ask: If active is already a boolean, do you need '== True'?",Why is 'if is_valid:' preferred over 'if is_valid == True:'?
+SYN0174,"val = 19 or 8
+print(val)",(none),expected True/False got number,M-04,val = bool(19 or 8),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0175,"val = 17 or 11
+print(val)",(none),expected True/False got number,M-04,val = bool(17 or 11),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0176,"val = 15 or 2
+print(val)",(none),expected True/False got number,M-04,val = bool(15 or 2),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0177,"val = 12 or 13
+print(val)",(none),expected True/False got number,M-04,val = bool(12 or 13),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0178,"if active == True:
+    print('online')",(none),redundant condition,M-04,if active:,"Ask: If active is already a boolean, do you need '== True'?",Why is 'if is_valid:' preferred over 'if is_valid == True:'?
+SYN0179,"val = 12 or 7
+print(val)",(none),expected True/False got number,M-04,val = bool(12 or 7),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0180,"val = 13 or 20
+print(val)",(none),expected True/False got number,M-04,val = bool(13 or 20),Ask: Does 'or' in Python always evaluate to a boolean True/False?,What is the output of '0 or 5' in Python?
+SYN0181,"score = '14' + 4
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('14') + 4,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0182,"res = '4' + '16'
+print(res)",(none),concatenated instead of added,M-05,res = int('4') + int('16'),Ask: What does '+' do when both sides are enclosed in quotes?,How do you turn '42' into an integer?
+SYN0183,"score = '15' + 9
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('15') + 9,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0184,"score = '9' + 5
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('9') + 5,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0185,"score = '17' + 16
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('17') + 16,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0186,"score = '15' + 13
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('15') + 13,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0187,"res = '15' + '10'
+print(res)",(none),concatenated instead of added,M-05,res = int('15') + int('10'),Ask: What does '+' do when both sides are enclosed in quotes?,How do you turn '42' into an integer?
+SYN0188,"res = '12' + '1'
+print(res)",(none),concatenated instead of added,M-05,res = int('12') + int('1'),Ask: What does '+' do when both sides are enclosed in quotes?,How do you turn '42' into an integer?
+SYN0189,"score = '13' + 3
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('13') + 3,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0190,"res = '5' + '13'
+print(res)",(none),concatenated instead of added,M-05,res = int('5') + int('13'),Ask: What does '+' do when both sides are enclosed in quotes?,How do you turn '42' into an integer?
+SYN0191,"score = '6' + 20
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('6') + 20,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0192,"score = '5' + 19
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('5') + 19,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0193,"res = '14' + '9'
+print(res)",(none),concatenated instead of added,M-05,res = int('14') + int('9'),Ask: What does '+' do when both sides are enclosed in quotes?,How do you turn '42' into an integer?
+SYN0194,"res = '5' + '4'
+print(res)",(none),concatenated instead of added,M-05,res = int('5') + int('4'),Ask: What does '+' do when both sides are enclosed in quotes?,How do you turn '42' into an integer?
+SYN0195,"score = '18' + 6
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('18') + 6,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0196,"score = '15' + 6
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('15') + 6,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0197,"res = '13' + '8'
+print(res)",(none),concatenated instead of added,M-05,res = int('13') + int('8'),Ask: What does '+' do when both sides are enclosed in quotes?,How do you turn '42' into an integer?
+SYN0198,"res = '7' + '11'
+print(res)",(none),concatenated instead of added,M-05,res = int('7') + int('11'),Ask: What does '+' do when both sides are enclosed in quotes?,How do you turn '42' into an integer?
+SYN0199,"res = '14' + '6'
+print(res)",(none),concatenated instead of added,M-05,res = int('14') + int('6'),Ask: What does '+' do when both sides are enclosed in quotes?,How do you turn '42' into an integer?
+SYN0200,"score = '5' + 10
+print(score)",TypeError: can only concatenate str to str,no output,M-05,score = int('5') + 10,Ask: Can Python add a text string and a number directly without conversion?,What is the difference between '3' + '3' and 3 + 3?
+SYN0201,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0202,"age = 0
+while age < 8:
+    print('tick')",(runs forever),infinite loop,M-06,age += 1 inside loop,Ask: Which line inside the loop changes age so the loop can stop?,What causes an infinite while loop in Python?
+SYN0203,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0204,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0205,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0206,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0207,"score = 0
+while score < 8:
+    print('tick')",(runs forever),infinite loop,M-06,score += 1 inside loop,Ask: Which line inside the loop changes score so the loop can stop?,What causes an infinite while loop in Python?
+SYN0208,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0209,"y = 0
+while y < 9:
+    print('tick')",(runs forever),infinite loop,M-06,y += 1 inside loop,Ask: Which line inside the loop changes y so the loop can stop?,What causes an infinite while loop in Python?
+SYN0210,"n = 0
+while n < 12:
+    print('tick')",(runs forever),infinite loop,M-06,n += 1 inside loop,Ask: Which line inside the loop changes n so the loop can stop?,What causes an infinite while loop in Python?
+SYN0211,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0212,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0213,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0214,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0215,"index = 0
+while index < 10:
+    print('tick')",(runs forever),infinite loop,M-06,index += 1 inside loop,Ask: Which line inside the loop changes index so the loop can stop?,What causes an infinite while loop in Python?
+SYN0216,"count = 0
+while count < 11:
+    print('tick')",(runs forever),infinite loop,M-06,count += 1 inside loop,Ask: Which line inside the loop changes count so the loop can stop?,What causes an infinite while loop in Python?
+SYN0217,"val = 0
+while val < 7:
+    print('tick')",(runs forever),infinite loop,M-06,val += 1 inside loop,Ask: Which line inside the loop changes val so the loop can stop?,What causes an infinite while loop in Python?
+SYN0218,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0219,"age = 0
+while age < 10:
+    print('tick')",(runs forever),infinite loop,M-06,age += 1 inside loop,Ask: Which line inside the loop changes age so the loop can stop?,What causes an infinite while loop in Python?
+SYN0220,"count = 10
+while count > 0:
+    print(count)",(runs forever),infinite loop,M-06,count -= 1 inside loop,Ask: What line will make count eventually reach 0?,How do you ensure a while loop terminates?
+SYN0221,"for x in range(5):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0222,"for x in range(9):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0223,"for x in range(3):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0224,"for x in range(14):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0225,"for x in range(3):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0226,"for x in range(7):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0227,"if age > 15:
+print('greater')",IndentationError: expected an indented block,no output,M-07,indent print inside if,"Ask: In Python, how do you show that a line belongs inside an if statement?",How does Python define the scope of a block without braces {}?
+SYN0228,"for x in range(11):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0229,"for x in range(9):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0230,"if speed > 18:
+print('greater')",IndentationError: expected an indented block,no output,M-07,indent print inside if,"Ask: In Python, how do you show that a line belongs inside an if statement?",How does Python define the scope of a block without braces {}?
+SYN0231,"for x in range(14):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0232,"if n > 8:
+print('greater')",IndentationError: expected an indented block,no output,M-07,indent print inside if,"Ask: In Python, how do you show that a line belongs inside an if statement?",How does Python define the scope of a block without braces {}?
+SYN0233,"for x in range(13):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0234,"for x in range(14):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0235,"for x in range(11):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0236,"if val > 11:
+print('greater')",IndentationError: expected an indented block,no output,M-07,indent print inside if,"Ask: In Python, how do you show that a line belongs inside an if statement?",How does Python define the scope of a block without braces {}?
+SYN0237,"for x in range(14):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0238,"for x in range(4):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0239,"for x in range(11):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0240,"for x in range(5):
+    print(x)
+  print('done')",IndentationError: unindent does not match any outer indentation level,no output,M-07,align print('done'),Ask: Should 'done' print once or every iteration?,What does inconsistent indentation mean in Python?
+SYN0241,"def square(n):
+    ans = n * n
+print(square(12))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0242,"def square(n):
+    ans = n * n
+print(square(14))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0243,"def calc(a, b):
+    print(a + b)
+res = calc(6, 4)
+print(res * 2)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',no output,M-08,return a + b,"Ask: Does print() send a value back to the variable, or just print to screen?",What does a function return by default if there is no return statement?
+SYN0244,"def calc(a, b):
+    print(a + b)
+res = calc(15, 18)
+print(res * 2)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',no output,M-08,return a + b,"Ask: Does print() send a value back to the variable, or just print to screen?",What does a function return by default if there is no return statement?
+SYN0245,"def square(n):
+    ans = n * n
+print(square(5))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0246,"def square(n):
+    ans = n * n
+print(square(8))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0247,"def square(n):
+    ans = n * n
+print(square(6))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0248,"def square(n):
+    ans = n * n
+print(square(15))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0249,"def calc(a, b):
+    print(a + b)
+res = calc(9, 14)
+print(res * 2)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',no output,M-08,return a + b,"Ask: Does print() send a value back to the variable, or just print to screen?",What does a function return by default if there is no return statement?
+SYN0250,"def calc(a, b):
+    print(a + b)
+res = calc(8, 1)
+print(res * 2)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',no output,M-08,return a + b,"Ask: Does print() send a value back to the variable, or just print to screen?",What does a function return by default if there is no return statement?
+SYN0251,"def square(n):
+    ans = n * n
+print(square(6))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0252,"def square(n):
+    ans = n * n
+print(square(8))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0253,"def square(n):
+    ans = n * n
+print(square(13))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0254,"def square(n):
+    ans = n * n
+print(square(5))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0255,"def calc(a, b):
+    print(a + b)
+res = calc(15, 17)
+print(res * 2)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',no output,M-08,return a + b,"Ask: Does print() send a value back to the variable, or just print to screen?",What does a function return by default if there is no return statement?
+SYN0256,"def square(n):
+    ans = n * n
+print(square(9))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0257,"def calc(a, b):
+    print(a + b)
+res = calc(6, 6)
+print(res * 2)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',no output,M-08,return a + b,"Ask: Does print() send a value back to the variable, or just print to screen?",What does a function return by default if there is no return statement?
+SYN0258,"def square(n):
+    ans = n * n
+print(square(8))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0259,"def square(n):
+    ans = n * n
+print(square(7))",(none),prints None,M-08,return ans,"Ask: ans was calculated, but did the function hand it back to the caller?",What keyword sends data out of a function?
+SYN0260,"def calc(a, b):
+    print(a + b)
+res = calc(16, 4)
+print(res * 2)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',no output,M-08,return a + b,"Ask: Does print() send a value back to the variable, or just print to screen?",What does a function return by default if there is no return statement?
+SYN0261,"for i in ragne(5):
+    pass",NameError: name 'ragne' is not defined,no output,M-09,for i in range(5):,Typo slip: transposed characters in 'range'.,Notice the spelling of 'range'.
+SYN0262,"x = 5
+if x = 5:
+    print('five') # Student already knows == in chat",SyntaxError: invalid syntax,no output,M-09,x == 5,Slip under speed. Student previously demonstrated distinction.,Quick self-check: single = vs double ==?
+SYN0263,"x = 5
+if x = 5:
+    print('five') # Student already knows == in chat",SyntaxError: invalid syntax,no output,M-09,x == 5,Slip under speed. Student previously demonstrated distinction.,Quick self-check: single = vs double ==?
+SYN0264,"x = 5
+if x = 5:
+    print('five') # Student already knows == in chat",SyntaxError: invalid syntax,no output,M-09,x == 5,Slip under speed. Student previously demonstrated distinction.,Quick self-check: single = vs double ==?
+SYN0265,"x = 5
+if x = 5:
+    print('five') # Student already knows == in chat",SyntaxError: invalid syntax,no output,M-09,x == 5,Slip under speed. Student previously demonstrated distinction.,Quick self-check: single = vs double ==?
+SYN0266,prnt('welcome to python'),NameError: name 'prnt' is not defined,no output,M-09,print('welcome to python'),Typo slip: minor character omission. Correct concept.,Did you intend the builtin print() function?
+SYN0267,"for i in ragne(5):
+    pass",NameError: name 'ragne' is not defined,no output,M-09,for i in range(5):,Typo slip: transposed characters in 'range'.,Notice the spelling of 'range'.
+SYN0268,prnt('welcome to python'),NameError: name 'prnt' is not defined,no output,M-09,print('welcome to python'),Typo slip: minor character omission. Correct concept.,Did you intend the builtin print() function?
+SYN0269,"x = 5
+if x = 5:
+    print('five') # Student already knows == in chat",SyntaxError: invalid syntax,no output,M-09,x == 5,Slip under speed. Student previously demonstrated distinction.,Quick self-check: single = vs double ==?
+SYN0270,"for i in ragne(5):
+    pass",NameError: name 'ragne' is not defined,no output,M-09,for i in range(5):,Typo slip: transposed characters in 'range'.,Notice the spelling of 'range'.
+SYN0271,"whlie True:
+    break",NameError: name 'whlie' is not defined,no output,M-09,"while True:
+    break",Typo slip: transposed characters in 'while'.,Notice the spelling of 'while'.
+SYN0272,"whlie True:
+    break",NameError: name 'whlie' is not defined,no output,M-09,"while True:
+    break",Typo slip: transposed characters in 'while'.,Notice the spelling of 'while'.
+SYN0273,prnt('welcome to python'),NameError: name 'prnt' is not defined,no output,M-09,print('welcome to python'),Typo slip: minor character omission. Correct concept.,Did you intend the builtin print() function?
+SYN0274,"x = 5
+if x = 5:
+    print('five') # Student already knows == in chat",SyntaxError: invalid syntax,no output,M-09,x == 5,Slip under speed. Student previously demonstrated distinction.,Quick self-check: single = vs double ==?
+SYN0275,prnt('welcome to python'),NameError: name 'prnt' is not defined,no output,M-09,print('welcome to python'),Typo slip: minor character omission. Correct concept.,Did you intend the builtin print() function?
+SYN0276,"whlie True:
+    break",NameError: name 'whlie' is not defined,no output,M-09,"while True:
+    break",Typo slip: transposed characters in 'while'.,Notice the spelling of 'while'.
+SYN0277,"for i in ragne(5):
+    pass",NameError: name 'ragne' is not defined,no output,M-09,for i in range(5):,Typo slip: transposed characters in 'range'.,Notice the spelling of 'range'.
+SYN0278,"for i in ragne(5):
+    pass",NameError: name 'ragne' is not defined,no output,M-09,for i in range(5):,Typo slip: transposed characters in 'range'.,Notice the spelling of 'range'.
+SYN0279,"x = 5
+if x = 5:
+    print('five') # Student already knows == in chat",SyntaxError: invalid syntax,no output,M-09,x == 5,Slip under speed. Student previously demonstrated distinction.,Quick self-check: single = vs double ==?
+SYN0280,"for i in ragne(5):
+    pass",NameError: name 'ragne' is not defined,no output,M-09,for i in range(5):,Typo slip: transposed characters in 'range'.,Notice the spelling of 'range'.
