@@ -3,998 +3,1928 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Re:Learn Python — The Friendly Way to Learn Programming</title>
+  <title>Re:Learn IDE — The Cognitive IDE that Diagnoses WHY, Not Just WHAT</title>
   
   <!-- Google Fonts: Inter & Fira Code -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Canvas Confetti for Celebration -->
+  <!-- Canvas Confetti for Resolution Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
+  <!-- Monaco Editor Official AMD Loader (with built-in fail-safe fallback) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+
   <style>
+    /* ==========================================================================
+       DESIGN SYSTEM TOKENS (Ant Design + RareUI + React Bits Curated Palette)
+       ========================================================================== */
     :root {
-      --bg-page: #0f172a;
-      --bg-card: #1e293b;
-      --bg-card-subtle: #182234;
-      --bg-editor: #0f172a;
-      --border: #334155;
+      --bg-app: #090d16;
+      --bg-titlebar: #0f1422;
+      --bg-activity: #0b0f19;
+      --bg-sidebar: #0f1422;
+      --bg-editor: #0c101c;
+      --bg-panel: #0b0f19;
+      --bg-drawer: #0f1422;
+      --bg-card: rgba(22, 29, 47, 0.75);
+      --bg-elevated: #161e31;
+      --bg-hover: rgba(255, 255, 255, 0.05);
+      --bg-active: rgba(139, 92, 246, 0.15);
+
+      --border-subtle: rgba(255, 255, 255, 0.08);
       --border-focus: #8b5cf6;
-      
-      --text-main: #e2e8f0;
-      --text-muted: #94a3b8;
-      --text-bright: #ffffff;
-      
+      --border-card: rgba(139, 92, 246, 0.2);
+
       --accent-purple: #8b5cf6;
+      --accent-purple-glow: rgba(139, 92, 246, 0.35);
+      --accent-blue: #38bdf8;
       --accent-green: #10b981;
-      --accent-rose: #f43f5e;
+      --accent-green-glow: rgba(16, 185, 129, 0.25);
+      --accent-red: #f43f5e;
+      --accent-red-glow: rgba(244, 63, 94, 0.25);
       --accent-amber: #f59e0b;
-      
+      --accent-amber-glow: rgba(245, 158, 11, 0.25);
+
+      --text-bright: #ffffff;
+      --text-main: #cbd5e1;
+      --text-muted: #64748b;
+
       --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-code: 'Fira Code', Consolas, monospace;
+      --font-mono: 'Fira Code', 'Cascadia Code', Consolas, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font-ui);
-      background-color: var(--bg-page);
-      color: var(--text-main);
+    html, body {
+      width: 100%;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
       overflow: hidden;
+      font-family: var(--font-ui);
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      user-select: none;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* 1. TOP HEADER - CLEAN & WELCOMING */
-    header {
-      height: 54px;
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border);
+    /* ==========================================================================
+       1. TOP TITLEBAR & SCENARIOS BAR (Ant Design Grid + RareUI Floating Chips)
+       ========================================================================== */
+    .titlebar {
+      height: 42px;
+      background: var(--bg-titlebar);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
-      flex-shrink: 0;
+      padding: 0 14px;
+      font-size: 0.78rem;
+      z-index: 100;
     }
-    .logo-area {
+    .titlebar-left {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
     }
-    .logo-badge {
-      background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-      color: white;
-      font-size: 1.1rem;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+    .window-dots {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+      gap: 7px;
     }
-    .logo-title {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: var(--text-bright);
-      letter-spacing: -0.01em;
-    }
-    .logo-sub {
-      font-size: 0.75rem;
-      color: #a78bfa;
-      font-weight: 600;
-      margin-left: 4px;
-      background: rgba(139, 92, 246, 0.15);
-      padding: 2px 8px;
-      border-radius: 12px;
-    }
+    .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
 
-    /* EXAMPLES BUTTONS */
-    .examples-wrap {
+    .brand-wrap {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .examples-label {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-    .example-btn {
-      background: var(--bg-card-subtle);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .example-btn:hover {
-      background: rgba(139, 92, 246, 0.2);
-      border-color: var(--accent-purple);
-      color: white;
-      transform: translateY(-1px);
-    }
-    .example-btn.active {
-      background: var(--accent-purple);
-      border-color: var(--accent-purple);
-      color: white;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-ghost:hover {
-      background: var(--bg-hover);
-      color: white;
-      border-color: var(--text-muted);
-    }
-
-    /* 2. MAIN 2-COLUMN WORKSPACE */
-    .main-workspace {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 16px;
-      padding: 16px;
-      overflow: hidden;
-      background: var(--bg-page);
-    }
-
-    /* LEFT SIDE: CODE EDITOR & OUTPUT */
-    .code-column {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      overflow: hidden;
-    }
-
-    .editor-card {
-      flex: 1;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    }
-
-    .editor-header {
-      height: 44px;
-      background: var(--bg-card-subtle);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-    }
-    .editor-title {
-      font-size: 0.85rem;
-      font-weight: 700;
+    .brand-name {
+      font-weight: 800;
       color: var(--text-bright);
+      font-size: 0.85rem;
+      letter-spacing: -0.02em;
+    }
+    .brand-pill {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(56, 189, 248, 0.2));
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      color: #c4b5fd;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* SCENARIO CHIPS (RareUI Floating Tactile Badges) */
+    .titlebar-presets {
       display: flex;
       align-items: center;
       gap: 6px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 3px 8px;
+    }
+    .preset-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding-right: 4px;
+    }
+    .preset-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: #94a3b8;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+    .preset-chip:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    .preset-chip.active {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(56, 189, 248, 0.2));
+      border-color: #8b5cf6;
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
     }
 
-    .btn-run {
+    .titlebar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-top {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: #cbd5e1;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-top:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .sound-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 4px;
+      transition: color 0.15s;
+    }
+    .sound-toggle-btn:hover { color: white; }
+
+    /* ==========================================================================
+       2. WORKSPACE LAYOUT: ACTIVITY BAR, SIDEBAR, EDITOR, AI DRAWER
+       ========================================================================== */
+    .app-workspace {
+      display: flex;
+      height: calc(100vh - 42px - 26px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ACTIVITY BAR (48px Rail) */
+    .activity-bar {
+      width: 48px;
+      background: var(--bg-activity);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+    .act-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+    .act-btn {
+      width: 100%;
+      height: 40px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.15s;
+    }
+    .act-btn:hover { color: var(--text-bright); }
+    .act-btn.active { color: var(--text-bright); }
+    .act-btn.active::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 8px; bottom: 8px;
+      width: 2px;
+      background: var(--accent-purple);
+      box-shadow: 0 0 8px var(--accent-purple);
+    }
+
+    /* SIDEBAR (210px) */
+    .sidebar {
+      width: 210px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .sidebar.collapsed { width: 0; border-right: none; }
+    .sidebar-head {
+      height: 36px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .file-tree { padding: 8px 0; font-size: 0.78rem; overflow-y: auto; }
+    .tree-folder {
+      padding: 6px 14px;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.03em;
+    }
+    .tree-file {
+      padding: 7px 14px 7px 28px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .tree-file:hover { background: var(--bg-hover); }
+    .tree-file.active {
+      background: var(--bg-active);
+      color: white;
+      border-left-color: var(--accent-purple);
+      font-weight: 600;
+    }
+
+    /* CENTER EDITOR & CONSOLE AREA */
+    .editor-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-editor);
+      min-width: 0;
+    }
+
+    /* TAB STRIP (36px) */
+    .editor-tab-strip {
+      height: 36px;
+      background: var(--bg-titlebar);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .tab-list { display: flex; height: 100%; }
+    .editor-tab {
+      background: var(--bg-editor);
+      color: var(--text-bright);
+      padding: 0 16px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-top: 2px solid var(--accent-purple);
+      border-right: 1px solid var(--border-subtle);
+      cursor: default;
+    }
+    .editor-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 12px;
+    }
+    .btn-run-main {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: white;
       border: none;
-      padding: 7px 18px;
+      padding: 5px 14px;
       border-radius: 6px;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
       transition: all 0.15s ease;
     }
-    .btn-run:hover {
+    .btn-run-main:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.6);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.6);
     }
-    .btn-run:active { transform: translateY(0); }
+    .btn-run-main:active { transform: translateY(0); }
 
-    .editor-body {
+    /* COACH ALERT BAR (SLIDES DOWN ON ERROR / RESOLUTION) */
+    #coach-bar {
+      display: none;
+      background: rgba(244, 63, 94, 0.1);
+      border-top: 1px solid rgba(244, 63, 94, 0.5);
+      border-bottom: 1px solid rgba(244, 63, 94, 0.5);
+      padding: 8px 16px;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      animation: slideIn 0.22s ease;
+      z-index: 25;
+    }
+    #coach-bar.pass-mode {
+      background: rgba(16, 185, 129, 0.1);
+      border-top-color: rgba(16, 185, 129, 0.5);
+      border-bottom-color: rgba(16, 185, 129, 0.5);
+    }
+    .coach-left { display: flex; align-items: center; gap: 12px; }
+    .coach-icon { font-size: 1.25rem; }
+    .coach-text b { color: #f43f5e; font-size: 0.82rem; }
+    #coach-bar.pass-mode .coach-text b { color: #10b981; }
+    .coach-text span { color: #e2e8f0; font-size: 0.76rem; display: block; margin-top: 1px; }
+    .coach-right { display: flex; align-items: center; gap: 8px; }
+    .coach-btn {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .coach-btn-quiz { background: #8b5cf6; color: white; }
+    .coach-btn-quiz:hover { background: #7c3aed; }
+    .coach-btn-hint { background: rgba(255, 255, 255, 0.1); color: white; }
+    .coach-btn-hint:hover { background: rgba(255, 255, 255, 0.18); }
+    .coach-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+    .coach-close:hover { color: white; }
+
+    /* DUAL-MODE CODE EDITOR CANVAS */
+    .editor-canvas-box {
       flex: 1;
-      display: flex;
       position: relative;
       background: var(--bg-editor);
+      overflow: hidden;
+      min-height: 160px;
+    }
+    #monaco-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+    }
+    .fallback-editor-wrap {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      background: var(--bg-editor);
+      z-index: 1;
     }
     .gutter {
-      width: 44px;
+      width: 48px;
       background: rgba(0, 0, 0, 0.2);
-      border-right: 1px solid var(--border);
-      color: #64748b;
-      font-family: var(--font-code);
-      font-size: 14px;
+      border-right: 1px solid var(--border-subtle);
+      color: #475569;
+      font-family: var(--font-mono);
+      font-size: 13px;
       line-height: 1.6;
-      padding: 14px 8px 14px 0;
+      padding: 12px 6px 12px 0;
       text-align: right;
       user-select: none;
+      overflow: hidden;
       white-space: pre-wrap;
     }
-    #code-input {
+    #code-fallback {
       flex: 1;
+      height: 100%;
       background: transparent;
-      color: #f8fafc;
-      font-family: var(--font-code);
-      font-size: 14px;
+      color: #e2e8f0;
+      font-family: var(--font-mono);
+      font-size: 13px;
       line-height: 1.6;
-      padding: 14px 16px;
+      padding: 12px 14px;
       border: none;
       outline: none;
       resize: none;
       white-space: pre;
       overflow: auto;
       tab-size: 4;
+      user-select: text;
     }
 
-    /* OUTPUT CARD */
-    .output-card {
-      height: 180px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+    /* ==========================================================================
+       3. BOTTOM TERMINAL & STRUCTURED PROBLEMS TABLE (Ant Design Standard)
+       ========================================================================== */
+    .terminal-panel {
+      height: 190px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border-subtle);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
       flex-shrink: 0;
     }
-    .output-header {
-      height: 36px;
-      background: var(--bg-card-subtle);
-      border-bottom: 1px solid var(--border);
+    .terminal-head {
+      height: 34px;
+      background: rgba(0, 0, 0, 0.25);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .term-tabs { display: flex; gap: 16px; height: 100%; }
+    .term-tab {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s;
+    }
+    .term-tab:hover { color: var(--text-bright); }
+    .term-tab.active {
+      color: var(--text-bright);
+      border-bottom-color: var(--accent-purple);
+    }
+    .term-tools {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .term-clear-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .term-clear-btn:hover { color: white; }
+
+    /* TAB CONTENT PANES */
+    .term-content {
+      flex: 1;
+      padding: 8px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      overflow-y: auto;
+      line-height: 1.5;
+      background: #060911;
+      display: none;
+    }
+    .term-content.active { display: block; }
+    
+    .out-green { color: #34d399; }
+    .out-red { color: #f87171; }
+    .out-blue { color: #38bdf8; }
+    .out-muted { color: #64748b; }
+
+    /* ANT DESIGN PROBLEMS TABLE */
+    .prob-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+    }
+    .prob-table th {
+      text-align: left;
+      color: var(--text-muted);
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.68rem;
+      letter-spacing: 0.04em;
+    }
+    .prob-table td {
+      padding: 7px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+    }
+    .prob-table tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .prob-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .prob-tag-err { background: rgba(244, 63, 94, 0.2); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .prob-tag-warn { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .prob-tag-ok { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    /* ==========================================================================
+       4. CURSOR AI SIDE DRAWER (RareUI Glassmorphism + React Bits Spotlight)
+       ========================================================================== */
+    .cursor-drawer {
+      width: 400px;
+      background: var(--bg-drawer);
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+      z-index: 20;
+    }
+    .drawer-head {
+      height: 42px;
+      background: rgba(0, 0, 0, 0.25);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--text-muted);
+      flex-shrink: 0;
     }
-    #output-content {
-      flex: 1;
-      padding: 12px 16px;
-      font-family: var(--font-code);
-      font-size: 0.85rem;
-      overflow-y: auto;
-      line-height: 1.5;
-      background: #090e17;
-      white-space: pre-wrap;
+    .drawer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: white;
     }
-    .out-success { color: #34d399; }
-    .out-error { color: #fb7185; }
-    .out-info { color: #60a5fa; }
+    .model-badge {
+      font-size: 0.65rem;
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      color: #c4b5fd;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
 
-    /* RIGHT SIDE: FRIENDLY AI COACH */
-    .coach-column {
+    .drawer-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       gap: 14px;
-      overflow: hidden;
     }
 
-    /* COACH CARD */
-    .coach-card {
+    /* CARD 1: COGNITIVE DIAGNOSIS CARD (REACT BITS ANIMATED BORDER BEAM) */
+    .diag-card {
       background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
       position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
     }
-    .coach-card-header {
+    .diag-card.animated-beam::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 10px;
+      padding: 1px;
+      background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: borderBeam 3s linear infinite;
+      pointer-events: none;
+    }
+    .diag-card-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 8px;
     }
-    .coach-title {
-      font-size: 0.95rem;
+    .diag-badge {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
       font-weight: 800;
-      color: var(--text-bright);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .badge-error {
+      background: rgba(244, 63, 94, 0.2);
+      border: 1px solid rgba(244, 63, 94, 0.5);
+      color: #f43f5e;
+    }
+    .badge-typo {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      color: #f59e0b;
+    }
+    .badge-pass {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: #10b981;
+    }
+
+    .diag-name {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 6px;
+      line-height: 1.35;
+    }
+    .diag-why {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 10px;
+      border-radius: 6px;
+      border-left: 3px solid #8b5cf6;
+    }
+
+    /* CARD 2: 1-CLICK VERIFICATION QUIZ (SOUNDCN AUDIO REACTION) */
+    .quiz-panel {
+      margin-top: 12px;
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .quiz-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #c4b5fd;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
-    .coach-badge {
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 12px;
-    }
-    .badge-need-help {
-      background: rgba(244, 63, 94, 0.2);
-      color: #fb7185;
-      border: 1px solid rgba(244, 63, 94, 0.4);
-    }
-    .badge-slip {
-      background: rgba(245, 158, 11, 0.2);
-      color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.4);
-    }
-    .badge-all-good {
-      background: rgba(16, 185, 129, 0.2);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.4);
-    }
-
-    .coach-msg-box {
-      background: var(--bg-card-subtle);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
-      font-size: 0.85rem;
-      line-height: 1.55;
-      color: #cbd5e1;
-    }
-    .coach-msg-box b { color: white; }
-
-    /* SIMPLE 1-CLICK QUIZ */
-    .quiz-box {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 4px;
-    }
-    .quiz-q {
-      font-size: 0.85rem;
+    .quiz-question {
+      font-size: 0.82rem;
       font-weight: 700;
       color: white;
+      margin-bottom: 10px;
       line-height: 1.4;
     }
-    .quiz-options {
+    .quiz-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
     }
-    .quiz-opt-btn {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 0.82rem;
-      color: var(--text-main);
+    .quiz-card {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      color: #e2e8f0;
       cursor: pointer;
-      text-align: left;
       display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.15s ease;
-      line-height: 1.4;
+      align-items: flex-start;
+      gap: 8px;
+      transition: all 0.16s ease;
+      line-height: 1.35;
     }
-    .quiz-opt-btn:hover {
-      background: rgba(139, 92, 246, 0.18);
-      border-color: var(--accent-purple);
+    .quiz-card:hover {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: #8b5cf6;
       color: white;
       transform: translateX(2px);
     }
-    .quiz-opt-btn.correct {
-      background: rgba(16, 185, 129, 0.25);
+    .quiz-card.selected-correct {
       border-color: #10b981;
-      color: white;
+      background: rgba(16, 185, 129, 0.25);
     }
-    .quiz-opt-btn.wrong {
-      background: rgba(244, 63, 94, 0.25);
+    .quiz-card.selected-incorrect {
       border-color: #f43f5e;
-      color: white;
+      background: rgba(244, 63, 94, 0.25);
     }
-    .opt-letter {
-      width: 22px;
-      height: 22px;
+    .card-letter {
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.72rem;
+      font-size: 0.65rem;
       font-weight: 800;
       color: #c4b5fd;
       flex-shrink: 0;
+      margin-top: 1px;
     }
 
-    .feedback-alert {
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.82rem;
+    #quiz-alert {
+      margin-top: 10px;
+      font-size: 0.8rem;
       line-height: 1.45;
+      padding: 8px 12px;
+      border-radius: 6px;
       display: none;
     }
-    .fb-success {
+    .alert-pass {
       background: rgba(16, 185, 129, 0.15);
       border: 1px solid rgba(16, 185, 129, 0.4);
       color: #34d399;
     }
-    .fb-retry {
+    .alert-retry {
       background: rgba(244, 63, 94, 0.15);
       border: 1px solid rgba(244, 63, 94, 0.4);
-      color: #fb7185;
+      color: #f87171;
     }
 
-    /* FRIENDLY CHAT COMPANION */
+    /* CARD 3: SOCRATIC CHAT ASSISTANT */
     .chat-card {
       flex: 1;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
       display: flex;
       flex-direction: column;
-      padding: 14px;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px;
+      min-height: 220px;
+      backdrop-filter: blur(12px);
     }
-    .chat-header {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--text-bright);
-      margin-bottom: 10px;
+    .chat-card-head {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .chat-messages {
+    .chat-log {
       flex: 1;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       padding-right: 4px;
+      max-height: 240px;
     }
-    .msg-bubble {
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 0.82rem;
-      line-height: 1.5;
-      max-width: 90%;
+    .bubble {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      max-width: 92%;
       word-break: break-word;
     }
-    .msg-ai {
+    .bubble-ai {
       align-self: flex-start;
-      background: var(--bg-card-subtle);
-      border: 1px solid var(--border);
+      background: #0f1422;
       color: #e2e8f0;
       border-bottom-left-radius: 2px;
+      border: 1px solid var(--border-subtle);
     }
-    .msg-user {
+    .bubble-user {
       align-self: flex-end;
-      background: var(--accent-purple);
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: white;
       border-bottom-right-radius: 2px;
     }
 
-    .chat-input-bar {
+    .quick-prompts {
       display: flex;
-      gap: 8px;
-      margin-top: 10px;
-      background: var(--bg-card-subtle);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 8px;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .prompt-chip {
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      color: #c4b5fd;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .prompt-chip:hover {
+      background: rgba(139, 92, 246, 0.25);
+      border-color: #8b5cf6;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .chat-controls {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 4px;
     }
     .chat-inp {
       flex: 1;
       background: transparent;
       border: none;
       color: white;
-      font-size: 0.82rem;
-      outline: none;
-      padding: 4px;
-      font-family: var(--font-ui);
-    }
-    .btn-send {
-      background: var(--accent-purple);
-      color: white;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 6px;
       font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
+      padding: 6px 8px;
+      font-family: var(--font-ui);
+      outline: none;
     }
-    .btn-send:hover { background: #7c3aed; }
+    .chat-send-btn {
+      background: #8b5cf6;
+      border: none;
+      color: white;
+      font-weight: 700;
+      font-size: 0.72rem;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .chat-send-btn:hover { background: #7c3aed; }
 
-    /* 3. BOTTOM FOOTER */
-    footer {
-      height: 28px;
-      background: var(--bg-card-subtle);
-      border-top: 1px solid var(--border);
+    /* ==========================================================================
+       5. BOTTOM STATUS BAR & SYSTEM DESIGN TELEMETRY (Donne Martin Primer)
+       ========================================================================== */
+    .statusbar {
+      height: 26px;
+      background: #0f1422;
+      border-top: 1px solid var(--border-subtle);
+      color: #94a3b8;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      flex-shrink: 0;
+      padding: 0 14px;
+      font-size: 0.7rem;
+      z-index: 100;
+      font-family: var(--font-mono);
+    }
+    .sb-section { display: flex; align-items: center; gap: 14px; }
+    .sb-clickable { cursor: pointer; }
+    .sb-clickable:hover { color: white; }
+    .sb-telemetry-badge {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #38bdf8;
+    }
+
+    /* TEACHER MODAL (CLASSROOM HEATMAP) */
+    #teacher-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(12px);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    .t-modal-content {
+      background: #0f1422;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 12px;
+      width: 760px;
+      max-width: 95vw;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      animation: slideIn 0.22s ease;
+    }
+    .t-stat-card {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 14px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid var(--border-subtle);
+    }
+    .t-stat-num { font-size: 1.6rem; font-weight: 800; }
+    .t-stat-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* ==========================================================================
+       6. KEYFRAME ANIMATIONS (React Bits Border Beam & Slide In)
+       ========================================================================== */
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes borderBeam {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. TOP HEADER -->
-  <header>
-    <div class="logo-area">
-      <div class="logo-badge">🌱</div>
-      <span class="logo-title">Re:Learn Python</span>
-      <span class="logo-sub">Beginner Mode</span>
+  <!-- TOP TITLEBAR -->
+  <div class="titlebar">
+    <div class="titlebar-left">
+      <div class="window-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <div class="brand-wrap">
+        <span class="brand-name">Re:Learn IDE</span>
+        <span class="brand-pill">Cognitive Studio</span>
+      </div>
     </div>
 
-    <!-- SIMPLE EXAMPLE BUTTONS -->
-    <div class="examples-wrap">
-      <span class="examples-label">Try Examples:</span>
-      <button class="example-btn active" id="btn-m01" onclick="loadLesson('m01')">1. If Conditions</button>
-      <button class="example-btn" id="btn-m05" onclick="loadLesson('m05')">2. Text + Numbers</button>
-      <button class="example-btn" id="btn-m08" onclick="loadLesson('m08')">3. Print vs Return</button>
-      <button class="example-btn" id="btn-m03" onclick="loadLesson('m03')">4. List Copying</button>
-      <button class="example-btn" id="btn-m09" onclick="loadLesson('m09')">5. Simple Typo</button>
+    <!-- PRESET TEST BUTTONS (RareUI Floating Chips) -->
+    <div class="titlebar-presets">
+      <span class="preset-label">Scenarios:</span>
+      <button class="preset-chip active" id="chip-demo-m01" onclick="switchPreset('demo-m01')">if x = 5 (M-01)</button>
+      <button class="preset-chip" id="chip-demo-m05" onclick="switchPreset('demo-m05')">'5' + 3 (M-05)</button>
+      <button class="preset-chip" id="chip-demo-m08" onclick="switchPreset('demo-m08')">print vs return (M-08)</button>
+      <button class="preset-chip" id="chip-demo-m03" onclick="switchPreset('demo-m03')">b = a (M-03)</button>
+      <button class="preset-chip" id="chip-demo-m09" onclick="switchPreset('demo-m09')">pritn() typo (M-09)</button>
     </div>
 
-    <div class="header-actions">
-      <button class="btn-ghost" onclick="resetCode()">↺ Reset Code</button>
-      <button class="btn-ghost" onclick="toggleAudio()" id="audio-toggle">🔊 Sound On</button>
+    <div class="titlebar-right">
+      <button class="sound-toggle-btn" id="sound-toggle" onclick="toggleAudio()" title="Soundcn Haptic Audio Toggle">🔊</button>
+      <button class="btn-top" onclick="openTeacherModal()">📊 Class Heatmap</button>
+      <div style="font-size: 0.68rem; color: #34d399; font-weight: 600;">● Engine Ready</div>
     </div>
-  </header>
+  </div>
 
-  <!-- 2. MAIN 2-COLUMN APP (CLEAN & INTUITIVE) -->
-  <main class="main-workspace">
+  <!-- MAIN WORKSPACE -->
+  <div class="app-workspace">
 
-    <!-- LEFT COLUMN: CODE EDITOR & OUTPUT -->
-    <section class="code-column">
+    <!-- ACTIVITY BAR (48px Rail) -->
+    <div class="activity-bar">
+      <div class="act-group">
+        <button class="act-btn active" id="act-btn-explorer" onclick="toggleSidebar()" title="Toggle Explorer (📁)">📁</button>
+        <button class="act-btn" id="act-btn-chat" onclick="focusChat()" title="Socratic Tutor (💬)">💬</button>
+        <button class="act-btn" id="act-btn-analytics" onclick="openTeacherModal()" title="Teacher Heatmap (📊)">📊</button>
+      </div>
+      <div class="act-group">
+        <button class="act-btn" onclick="resetCurrentCode()" title="Reset File (↺)">↺</button>
+        <button class="act-btn" onclick="executeCode()" title="Run Code (▶)" style="color: #10b981;">▶</button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR EXPLORER (210px) -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <span>EXPLORER: WORKSPACE</span>
+        <span style="cursor: pointer;" onclick="toggleSidebar()">✕</span>
+      </div>
+      <div class="file-tree">
+        <div class="tree-folder">▼ 📁 PYTHON_STUDENT</div>
+        <div class="tree-file active" id="tree-m01" onclick="switchPreset('demo-m01')">
+          <span>🐍</span><span>main.py</span>
+        </div>
+        <div class="tree-file" id="tree-m05" onclick="switchPreset('demo-m05')">
+          <span>📄</span><span>types_test.py</span>
+        </div>
+        <div class="tree-file" id="tree-m08" onclick="switchPreset('demo-m08')">
+          <span>📄</span><span>functions.py</span>
+        </div>
+        <div class="tree-file" id="tree-m03" onclick="switchPreset('demo-m03')">
+          <span>📄</span><span>lists_alias.py</span>
+        </div>
+        <div class="tree-file" id="tree-m09" onclick="switchPreset('demo-m09')">
+          <span>📄</span><span>typo_check.py</span>
+        </div>
+        <div class="tree-file" onclick="openTeacherModal()">
+          <span>📊</span><span>class_heatmap.json</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN EDITOR & BOTTOM PANEL -->
+    <div class="editor-section">
       
-      <!-- CODE EDITOR -->
-      <div class="editor-card">
-        <div class="editor-header">
-          <div class="editor-title">
-            <span>📝</span>
-            <span id="lesson-title">Example 1: if condition with '='</span>
+      <!-- TAB STRIP -->
+      <div class="editor-tab-strip">
+        <div class="tab-list">
+          <div class="editor-tab">
+            <span>🐍</span><span id="tab-filename">main.py</span>
           </div>
-          <button class="btn-run" onclick="runStudentCode()">
-            <span>▶</span>
-            <span>Run Code</span>
+        </div>
+        <div class="editor-actions">
+          <button class="btn-top" onclick="resetCurrentCode()">↺ Reset</button>
+          <button class="btn-run-main" id="btn-run-code" onclick="executeCode()">
+            ▶ Run Code (Ctrl+Enter)
           </button>
         </div>
+      </div>
 
-        <div class="editor-body">
-          <div class="gutter" id="line-gutter">1</div>
-          <textarea id="code-input" spellcheck="false">x = 5
+      <!-- COACH ALERT BAR -->
+      <div id="coach-bar">
+        <div class="coach-left">
+          <span class="coach-icon" id="coach-icon">🚨</span>
+          <div class="coach-text">
+            <b id="coach-head">Cognitive Misconception Flagged!</b>
+            <span id="coach-sub">Re:Learn diagnosed the mental model causing this error.</span>
+          </div>
+        </div>
+        <div class="coach-right">
+          <button class="coach-btn coach-btn-quiz" id="coach-btn-quiz" onclick="focusQuiz()">🎯 1-Click Quiz</button>
+          <button class="coach-btn coach-btn-hint" id="coach-btn-hint" onclick="focusChat()">💡 Ask Tutor</button>
+          <button class="coach-close" onclick="dismissCoachBar()" title="Dismiss">✕</button>
+        </div>
+      </div>
+
+      <!-- DUAL-MODE CODE CANVAS (MONACO + GUTTER IDE) -->
+      <div class="editor-canvas-box">
+        <div id="monaco-container"></div>
+
+        <div class="fallback-editor-wrap" id="fallback-wrap">
+          <div class="gutter" id="editor-gutter">1</div>
+          <textarea id="code-fallback" spellcheck="false">x = 5
 if x = 5:
     print('x is five')
 </textarea>
         </div>
       </div>
 
-      <!-- PROGRAM OUTPUT -->
-      <div class="output-card">
-        <div class="output-header">
-          <span>💻 Output / Results</span>
-          <span id="run-status" style="color: #10b981;">Ready to run</span>
-        </div>
-        <div id="output-content">
-          <span class="out-info">Click the green '▶ Run Code' button above to test your Python code!</span>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- RIGHT COLUMN: FRIENDLY AI COACH -->
-    <section class="coach-column">
-      
-      <!-- COACH DIAGNOSIS & QUIZ -->
-      <div class="coach-card">
-        <div class="coach-card-header">
-          <div class="coach-title">
-            <span id="coach-emoji">🤖</span>
-            <span id="coach-heading">Your Friendly AI Coach</span>
+      <!-- BOTTOM TERMINAL PANEL (ANT DESIGN TABBED VIEW) -->
+      <div class="terminal-panel">
+        <div class="terminal-head">
+          <div class="term-tabs">
+            <span class="term-tab active" id="tab-btn-terminal" onclick="switchTermTab('terminal')">TERMINAL</span>
+            <span class="term-tab" id="tab-btn-output" onclick="switchTermTab('output')">OUTPUT</span>
+            <span class="term-tab" id="tab-btn-problems" onclick="switchTermTab('problems')">PROBLEMS (<span id="prob-count">1</span>)</span>
           </div>
-          <span class="coach-badge badge-need-help" id="coach-pill">Help Available</span>
-        </div>
-
-        <div class="coach-msg-box" id="coach-explanation">
-          <b>What happened here:</b><br>
-          In Python, a single equals sign <code>=</code> is used to put something in a variable. But inside an <code>if</code> statement, you need double equals <code>==</code> to ask <i>"are these two things equal?"</i>
-        </div>
-
-        <!-- 1-CLICK VERIFICATION QUIZ -->
-        <div class="quiz-box" id="quiz-container">
-          <div class="quiz-q" id="quiz-question-text">
-            Quick check: How do you check if two numbers are equal in Python?
-          </div>
-          <div class="quiz-options" id="quiz-options-list"></div>
-          <div class="feedback-alert" id="quiz-feedback"></div>
-        </div>
-      </div>
-
-      <!-- SOCRATIC CHAT ASSISTANT -->
-      <div class="chat-card">
-        <div class="chat-header">
-          <span>💬 Ask Your Tutor Anything</span>
-          <span style="color: #10b981; font-size: 0.72rem;">Always here to help</span>
-        </div>
-
-        <div class="chat-messages" id="chat-stream">
-          <div class="msg-bubble msg-ai">
-            👋 Hi! I am your Python learning buddy. I won't just give you the answer, but I will help you understand <i>why</i> it works so you become a great programmer!
+          <div class="term-tools">
+            <span id="term-status" style="color: #64748b; font-size: 0.7rem;">Ready</span>
+            <button class="term-clear-btn" onclick="clearTermLogs()" title="Clear Logs">🗑️ Clear</button>
           </div>
         </div>
 
-        <div class="chat-input-bar">
-          <input type="text" id="chat-input-text" class="chat-inp" placeholder="Type a question or ask for a hint..." onkeydown="if(event.key==='Enter') sendChatMessage()">
-          <button class="btn-send" onclick="sendChatMessage()">Ask</button>
+        <!-- TAB 1: TERMINAL -->
+        <div class="term-content active" id="pane-terminal">
+          <div class="out-blue">>>> Re:Learn Cognitive Diagnostic Sandbox Active.</div>
+          <div class="out-muted">>>> Press '▶ Run Code' (or Ctrl+Enter) to evaluate student program.</div>
+        </div>
+
+        <!-- TAB 2: OUTPUT ONLY -->
+        <div class="term-content" id="pane-output">
+          <div class="out-muted">// Program stdout output will appear here.</div>
+        </div>
+
+        <!-- TAB 3: ANT DESIGN PROBLEMS TABLE -->
+        <div class="term-content" id="pane-problems">
+          <table class="prob-table">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Severity</th>
+                <th style="width: 130px;">Location</th>
+                <th style="width: 90px;">Rule</th>
+                <th>Diagnostic Description</th>
+              </tr>
+            </thead>
+            <tbody id="problems-tbody">
+              <tr onclick="focusEditorLine(2)">
+                <td><span class="prob-tag prob-tag-err">Error</span></td>
+                <td style="color: #38bdf8; font-weight: 600;">main.py [Ln 2:5]</td>
+                <td><span class="model-badge">M-01</span></td>
+                <td>Single assignment '=' used inside conditional statement</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-    </section>
+    </div>
 
-  </main>
+    <!-- RIGHT: CURSOR AI SIDE DRAWER -->
+    <div class="cursor-drawer">
+      <div class="drawer-head">
+        <div class="drawer-brand">
+          <span>🧠 Re:Learn AI</span>
+          <span class="model-badge">LLaMA-3.3 + AST</span>
+        </div>
+        <span style="font-size: 0.7rem; color: #34d399; font-weight: 600;">● Socratic Guardrail ON</span>
+      </div>
 
-  <!-- 3. FOOTER -->
-  <footer>
-    <span>🌱 Python for Beginners • Zero Setup Required</span>
-    <span id="footer-status">Ready</span>
-  </footer>
+      <div class="drawer-content">
+        
+        <!-- CARD 1: COGNITIVE DIAGNOSIS CARD (REACT BITS ANIMATED BEAM) -->
+        <div class="diag-card animated-beam" id="diag-main-card">
+          <div class="diag-card-top">
+            <span id="diag-badge" class="diag-badge badge-error">M-01</span>
+            <span id="diag-conf" style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">Conf: 98%</span>
+          </div>
+          <div class="diag-name" id="diag-name">⚠️ Misconception: Assignment vs Comparison</div>
+          <div class="diag-why" id="diag-why">
+            Single assignment '=' used inside conditional test expression instead of comparison '=='.
+          </div>
+
+          <!-- 1-CLICK VERIFICATION QUIZ -->
+          <div class="quiz-panel" id="quiz-panel">
+            <div class="quiz-title">🎯 1-Click Verification Quiz</div>
+            <div class="quiz-question" id="quiz-question">
+              What is the fundamental difference between '=' and '==' in Python?
+            </div>
+            <div class="quiz-list" id="quiz-list"></div>
+            <div id="quiz-alert"></div>
+          </div>
+        </div>
+
+        <!-- CARD 2: SOCRATIC CHAT COMPANION -->
+        <div class="chat-card">
+          <div class="chat-card-head">
+            <span>💬 Socratic Companion</span>
+            <span style="color: #34d399; font-size: 0.65rem;">Active</span>
+          </div>
+          <div class="chat-log" id="chat-log">
+            <div class="bubble bubble-ai">
+              👋 I am your Socratic companion. I will never write the solution code for you. Instead, I ask questions to help your brain master the logic.
+            </div>
+          </div>
+
+          <!-- Quick Suggestion Chips (RareUI Style) -->
+          <div class="quick-prompts">
+            <span class="prompt-chip" onclick="sendQuickPrompt('Why is Python throwing this error?')">Why this error?</span>
+            <span class="prompt-chip" onclick="sendQuickPrompt('Give me a mental model analogy')">Mental analogy</span>
+            <span class="prompt-chip" onclick="sendQuickPrompt('What line should I inspect first?')">Where to look?</span>
+          </div>
+
+          <div class="chat-controls">
+            <input type="text" id="chat-input" class="chat-inp" placeholder="Explain your thinking or ask a question..." onkeydown="if(event.key==='Enter') sendChat()">
+            <button class="chat-send-btn" onclick="sendChat()">Ask</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM STATUS BAR (SYSTEM DESIGN TELEMETRY - DONNE MARTIN PRIMER) -->
+  <div class="statusbar">
+    <div class="sb-section">
+      <span class="sb-clickable" onclick="toggleSidebar()"><span id="sb-branch">main*</span></span>
+      <span class="sb-clickable" onclick="focusQuiz()"><span id="sb-issue" style="color: #f87171;">⚠ M-01 Active</span></span>
+      <span id="sb-status">Ready</span>
+    </div>
+    <div class="sb-section">
+      <span id="sb-pos">Ln 2, Col 7</span>
+      <span class="sb-telemetry-badge" id="sb-perf">Sandbox: 120ms</span>
+      <span>Python 3.12 (Zero Latency)</span>
+      <span style="background: rgba(0,0,0,0.3); padding: 0 6px; border-radius: 3px; color: #a78bfa;">Socratic Guard: ON</span>
+    </div>
+  </div>
+
+  <!-- TEACHER HEATMAP MODAL (ANT DESIGN MODAL) -->
+  <div id="teacher-modal" onclick="if(event.target===this) closeTeacherModal()">
+    <div class="t-modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px;">
+        <h3 style="font-size: 1.15rem; color: white; display: flex; align-items: center; gap: 8px;">
+          <span>👨‍🏫</span> Classroom Misconception Heatmap
+        </h3>
+        <button class="btn-top" onclick="closeTeacherModal()">✕ Close</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0;">
+        <div class="t-stat-card">
+          <div class="t-stat-num" style="color: #a78bfa;" id="tm-students">1</div>
+          <div class="t-stat-lbl">Active Students</div>
+        </div>
+        <div class="t-stat-card">
+          <div class="t-stat-num" style="color: #f43f5e;" id="tm-flagged">0</div>
+          <div class="t-stat-lbl">Misconceptions Flagged</div>
+        </div>
+        <div class="t-stat-card">
+          <div class="t-stat-num" style="color: #10b981;" id="tm-rate">0%</div>
+          <div class="t-stat-lbl">Resolution Rate</div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.8rem; font-weight: 700; color: #c4b5fd; margin-bottom: 8px;">
+        Taxonomy Breakdown (Brown & Altadmri 2017 Benchmark):
+      </div>
+      <div id="tm-heatmap-list" style="max-height: 260px; overflow-y: auto; padding-right: 4px;"></div>
+    </div>
+  </div>
 
   <script>
     /* ==========================================================================
-       SIMPLE SOUND & CELEBRATION ENGINE
+       SOUNDCN AUDIO ENGINE (Native Web Audio API - Zero External Dependencies)
        ========================================================================== */
-    let soundOn = true;
-    function playTone(type) {
-      if (!soundOn) return;
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        if (type === 'success') {
-          // Cheerful chime
-          osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.1);
-          osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.2);
-          gain.gain.setValueAtTime(0.1, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-          osc.start(); osc.stop(ctx.currentTime + 0.35);
-        } else if (type === 'run') {
-          // Run click
-          osc.frequency.setValueAtTime(440, ctx.currentTime);
-          gain.gain.setValueAtTime(0.05, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
-          osc.start(); osc.stop(ctx.currentTime + 0.08);
-        } else {
-          // Soft retry tone
-          osc.frequency.setValueAtTime(350, ctx.currentTime);
-          gain.gain.setValueAtTime(0.05, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-          osc.start(); osc.stop(ctx.currentTime + 0.15);
+    let audioEnabled = true;
+    const Soundcn = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         }
-      } catch(e) {}
-    }
+      },
+      playChime(frequencies, type = 'sine', duration = 0.16, gainLevel = 0.08) {
+        if (!audioEnabled) return;
+        try {
+          this.init();
+          const now = this.ctx.currentTime;
+          frequencies.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now + idx * 0.055);
+            gain.gain.setValueAtTime(gainLevel, now + idx * 0.055);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.055);
+            osc.stop(now + idx * 0.055 + duration);
+          });
+        } catch(e) {}
+      },
+      run() { this.playChime([440, 587.33], 'sine', 0.1, 0.04); },
+      success() { this.playChime([523.25, 659.25, 783.99, 1046.50], 'triangle', 0.22, 0.08); },
+      retry() { this.playChime([392.00, 311.13], 'sine', 0.18, 0.05); },
+      click() { this.playChime([800], 'sine', 0.04, 0.02); },
+      pop() { this.playChime([400, 600], 'sine', 0.08, 0.03); }
+    };
 
     function toggleAudio() {
-      soundOn = !soundOn;
-      document.getElementById('audio-toggle').textContent = soundOn ? '🔊 Sound On' : '🔇 Sound Off';
-      if (soundOn) playTone('run');
+      audioEnabled = !audioEnabled;
+      document.getElementById('sound-toggle').textContent = audioEnabled ? '🔊' : '🔇';
+      if (audioEnabled) Soundcn.click();
     }
 
     /* ==========================================================================
-       LESSONS & INTUITIVE EXAMPLES
+       WORKSPACE & PRESETS STATE
        ========================================================================== */
-    const LESSONS = {
-      "m01": {
-        title: "Example 1: if condition with '='",
+    const API_BASE = window.location.origin;
+    const SESSION_ID = "student-" + Math.random().toString(36).slice(2, 9);
+
+    let monacoEditor = null;
+    let currentDiag = null;
+    let chatHistory = [];
+    let currentPresetKey = "demo-m01";
+
+    const PRESETS = {
+      "demo-m01": {
+        name: "M-01: '=' vs '=='",
+        file: "main.py",
         code: "x = 5\nif x = 5:\n    print('x is five')\n",
-        explanation: "<b>What happened here:</b><br>In Python, a single <code>=</code> puts a value inside a variable. Inside an <code>if</code> condition, you must use double equals <code>==</code> to ask <i>'are these two equal?'</i>",
-        q: "What is the difference between '=' and '=='?",
-        options: [
-          { text: "Single '=' sets a variable; double '==' tests if two values are equal", correct: true },
-          { text: "Single '=' is for numbers; double '==' is only for text strings", correct: false },
-          { text: "They mean the exact same thing in Python", correct: false }
-        ]
+        desc: "Single assignment used inside conditional test expression."
       },
-      "m05": {
-        title: "Example 2: Adding text and numbers ('5' + 3)",
+      "demo-m05": {
+        name: "M-05: '5' + 3",
+        file: "types_test.py",
         code: "score = '5' + 3\nprint('Total score:', score)\n",
-        explanation: "<b>What happened here:</b><br>Quotes around <code>'5'</code> make it text (a string), not a number. Python won't let you add text and a number together directly.",
-        q: "Why does `'5' + 3` cause an error in Python?",
+        desc: "Implicit string + integer concatenation attempted."
+      },
+      "demo-m08": {
+        name: "M-08: print vs return",
+        file: "functions.py",
+        code: "def double(x):\n    print(x * 2)\n\ny = double(5)\nprint('Calculated:', y + 1)\n",
+        desc: "Function prints instead of returning value to caller."
+      },
+      "demo-m03": {
+        name: "M-03: Mutable List Aliasing",
+        file: "lists_alias.py",
+        code: "a = [1, 2]\nb = a\nb.append(3)\nprint('Original list a:', a)\n",
+        desc: "Thinks b = a creates an independent copy."
+      },
+      "demo-m09": {
+        name: "M-09: Careless Typo Slip",
+        file: "typo_check.py",
+        code: "pritn('Hello from Re:Learn!')\n",
+        desc: "Careless typo where student concept is intact."
+      }
+    };
+
+    const QUIZ_BANK = {
+      "M-01": {
+        q: "What is the fundamental difference between '=' and '==' in Python?",
         options: [
-          { text: "Because `'5'` is text and `3` is a number; you cannot add them directly", correct: true },
-          { text: "Python cannot add numbers larger than 5", correct: false },
-          { text: "You must always use multiplication instead of addition", correct: false }
+          { text: "Single '=' sets a variable value; double '==' tests if two values are equal", correct: true },
+          { text: "Single '=' is for numbers; double '==' is only for text strings", correct: false },
+          { text: "They are completely interchangeable in Python conditionals", correct: false }
         ]
       },
-      "m08": {
-        title: "Example 3: print() vs return in functions",
-        code: "def double(x):\n    print(x * 2)\n\ny = double(5)\nprint('Calculated:', y + 1)\n",
-        explanation: "<b>What happened here:</b><br><code>print()</code> just shows words on the screen, but it does NOT send a value back to the program. Use <code>return</code> to send a value back!",
+      "M-05": {
+        q: "Why does `'5' + 3` fail with a TypeError in Python?",
+        options: [
+          { text: "'5' is a text string and 3 is an integer. Python will not implicitly add text and numbers with '+'", correct: true },
+          { text: "Python cannot add numbers greater than 5 to strings", correct: false },
+          { text: "The '+' operator is only allowed for lists, not numbers", correct: false }
+        ]
+      },
+      "M-08": {
         q: "What is the difference between `print()` and `return`?",
         options: [
-          { text: "print() just displays text on screen; return sends the value back to your code", correct: true },
-          { text: "print() and return do the exact same thing in Python", correct: false },
-          { text: "return can only be used once in your entire computer", correct: false }
+          { text: "print() only writes text on screen; return sends the computed value back to the caller", correct: true },
+          { text: "print() and return do the exact same thing in functions", correct: false },
+          { text: "return can only be used in while loops", correct: false }
         ]
       },
-      "m03": {
-        title: "Example 4: Making a copy of a list",
-        code: "a = [1, 2]\nb = a\nb.append(3)\nprint('Original list a:', a)\n",
-        explanation: "<b>What happened here:</b><br>Writing <code>b = a</code> does not make a new list! It gives the same list two names. When you change <code>b</code>, <code>a</code> changes too.",
-        q: "If `a = [1, 2]` and `b = a`, what happens when you change `b`?",
+      "M-03": {
+        q: "If `a = [1, 2]` and `b = a`, what happens when you do `b.append(3)`?",
         options: [
-          { text: "Both 'a' and 'b' change because they share the exact same list in memory", correct: true },
-          { text: "Only 'b' changes; 'a' stays an untouched copy", correct: false },
-          { text: "Python crashes and gives an error", correct: false }
+          { text: "Both 'a' and 'b' now show [1, 2, 3] because 'b = a' shares the same list in memory", correct: true },
+          { text: "Only 'b' gets updated; 'a' remains [1, 2] as an independent copy", correct: false },
+          { text: "Python throws an AliasingError and crashes", correct: false }
         ]
       },
-      "m09": {
-        title: "Example 5: Simple spelling mistake (pritn)",
-        code: "pritn('Hello, World!')\n",
-        explanation: "<b>Just a small typo:</b><br>Your programming logic is totally fine! You just accidentally typed <code>pritn</code> instead of <code>print</code>.",
-        q: "What kind of mistake was `pritn`?",
+      "M-09": {
+        q: "What kind of issue occurred with `pritn('...')`?",
         options: [
-          { text: "A harmless typing slip; your understanding of Python is correct", correct: true },
-          { text: "A deep fundamental flaw in programming theory", correct: false },
-          { text: "Python requires all commands to have 5 letters", correct: false }
+          { text: "A harmless typographical slip; the conceptual logic of the program is intact", correct: true },
+          { text: "A deep fundamental flaw in computer science theory", correct: false },
+          { text: "Python requires all functions to start with uppercase letters", correct: false }
         ]
       }
     };
 
-    let currentLessonKey = "m01";
+    const TAXONOMY = [
+      { id: "M-01", name: "Assignment vs Comparison" },
+      { id: "M-02", name: "Off-by-One / Range Bounds" },
+      { id: "M-03", name: "Mutable List Aliasing" },
+      { id: "M-04", name: "Boolean / Or Return Value" },
+      { id: "M-05", name: "Type Confusion (Str + Num)" },
+      { id: "M-06", name: "Loop Condition Invariant" },
+      { id: "M-07", name: "Indentation Block Scope" },
+      { id: "M-08", name: "Print vs Return Duality" },
+      { id: "M-09", name: "Sloppiness Slip (Negative)" }
+    ];
 
-    function loadLesson(key) {
-      playTone('run');
-      currentLessonKey = key;
-      document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('active'));
-      const activeBtn = document.getElementById(`btn-${key}`);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      const lesson = LESSONS[key];
-      if (!lesson) return;
-
-      document.getElementById('lesson-title').textContent = lesson.title;
-      document.getElementById('code-input').value = lesson.code;
-      updateGutter();
-
-      document.getElementById('output-content').innerHTML = `<span class="out-info">Loaded ${lesson.title}. Click '▶ Run Code' to test it!</span>`;
-      document.getElementById('run-status').textContent = 'Ready';
-
-      renderQuiz(lesson);
-      // Run right away to give instant feedback
-      runStudentCode();
-    }
-
-    function resetCode() {
-      const lesson = LESSONS[currentLessonKey];
-      if (lesson) {
-        document.getElementById('code-input').value = lesson.code;
-        updateGutter();
-        playTone('run');
-      }
-    }
-
+    /* ==========================================================================
+       GUTTER & CODE EDITOR CONTROLLERS
+       ========================================================================== */
     function updateGutter() {
-      const ta = document.getElementById('code-input');
-      const lines = ta.value.split('\n').length;
+      const textarea = document.getElementById('code-fallback');
+      const gutter = document.getElementById('editor-gutter');
+      const lineCount = textarea.value.split('\n').length;
       let numbers = '';
-      for (let i = 1; i <= Math.max(lines, 1); i++) {
+      for (let i = 1; i <= Math.max(lineCount, 1); i++) {
         numbers += i + '\n';
       }
-      document.getElementById('line-gutter').textContent = numbers;
+      gutter.textContent = numbers;
     }
 
-    /* ==========================================================================
-       EXECUTE CODE (Calls Fast, Safe Backend Runner)
-       ========================================================================== */
-    async function runStudentCode() {
-      playTone('run');
-      const code = document.getElementById('code-input').value;
-      const outBox = document.getElementById('output-content');
-      document.getElementById('run-status').textContent = 'Running...';
-      outBox.innerHTML = '<span class="out-info">Running your code...</span>';
+    function setupFallbackEditor() {
+      const textarea = document.getElementById('code-fallback');
+      const gutter = document.getElementById('editor-gutter');
 
-      try {
-        const resp = await fetch('/run', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: code })
-        });
-        const res = await resp.json();
+      textarea.addEventListener('input', () => {
+        updateGutter();
+        updateCursorPosition();
+      });
 
-        outBox.innerHTML = '';
-        if (res.stdout) {
-          const d = document.createElement('div');
-          d.className = 'out-success';
-          d.textContent = res.stdout;
-          outBox.appendChild(d);
+      textarea.addEventListener('scroll', () => {
+        gutter.scrollTop = textarea.scrollTop;
+      });
+
+      textarea.addEventListener('click', updateCursorPosition);
+      textarea.addEventListener('keyup', updateCursorPosition);
+
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          textarea.value = textarea.value.substring(0, start) + "    " + textarea.value.substring(end);
+          textarea.selectionStart = textarea.selectionEnd = start + 4;
+          updateGutter();
+        } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          executeCode();
         }
-        if (res.stderr) {
-          const d = document.createElement('div');
-          d.className = 'out-error';
-          d.textContent = res.stderr;
-          outBox.appendChild(d);
+      });
+
+      updateGutter();
+    }
+
+    function updateCursorPosition() {
+      const textarea = document.getElementById('code-fallback');
+      const text = textarea.value.substring(0, textarea.selectionStart);
+      const lines = text.split('\n');
+      const row = lines.length;
+      const col = lines[lines.length - 1].length + 1;
+      document.getElementById('sb-pos').textContent = `Ln ${row}, Col ${col}`;
+    }
+
+    function initEditor() {
+      setupFallbackEditor();
+
+      if (typeof require !== 'undefined' && require.config) {
+        try {
+          require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+          require(['vs/editor/editor.main'], function () {
+            const container = document.getElementById('monaco-container');
+            monacoEditor = monaco.editor.create(container, {
+              value: PRESETS["demo-m01"].code,
+              language: 'python',
+              theme: 'vs-dark',
+              fontSize: 13,
+              fontFamily: "'Fira Code', Consolas, monospace",
+              minimap: { enabled: false },
+              lineNumbers: "on",
+              automaticLayout: true,
+              scrollBeyondLastLine: false,
+              padding: { top: 12, bottom: 12 }
+            });
+
+            document.getElementById('fallback-wrap').style.display = 'none';
+
+            monacoEditor.onDidChangeCursorPosition((e) => {
+              document.getElementById('sb-pos').textContent = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+            });
+
+            monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, executeCode);
+          }, function(err) {
+            console.log("Monaco load deferred, fallback IDE is active.");
+          });
+        } catch(e) {
+          console.log("Using built-in high-performance IDE engine.");
         }
+      }
+    }
 
-        document.getElementById('run-status').textContent = res.exit_code === 0 ? '✓ Finished' : '⚠ Stopped with error';
+    function getCode() {
+      return monacoEditor ? monacoEditor.getValue() : document.getElementById('code-fallback').value;
+    }
 
-        // Check with AI Coach
-        await checkWithCoach(code, res.stderr, res.stdout);
-      } catch (err) {
-        outBox.innerHTML = `<span class="out-error">Error connecting to runner: ${err.message}</span>`;
+    function setCode(val) {
+      if (monacoEditor) monacoEditor.setValue(val);
+      const fallback = document.getElementById('code-fallback');
+      if (fallback) {
+        fallback.value = val;
+        updateGutter();
+      }
+    }
+
+    function focusEditorLine(lineNum) {
+      Soundcn.click();
+      if (monacoEditor) {
+        monacoEditor.revealLineInCenter(lineNum);
+        monacoEditor.setPosition({ lineNumber: lineNum, column: 1 });
+        monacoEditor.focus();
+      } else {
+        const textarea = document.getElementById('code-fallback');
+        const lines = textarea.value.split('\n');
+        let pos = 0;
+        for (let i = 0; i < Math.min(lineNum - 1, lines.length); i++) {
+          pos += lines[i].length + 1;
+        }
+        textarea.focus();
+        textarea.setSelectionRange(pos, pos + (lines[lineNum - 1] ? lines[lineNum - 1].length : 0));
       }
     }
 
     /* ==========================================================================
-       AI COACH DIAGNOSIS
+       PRESETS & WORKSPACE ACTIONS
        ========================================================================== */
-    async function checkWithCoach(code, error, output) {
+    function switchPreset(key) {
+      Soundcn.click();
+      currentPresetKey = key;
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      const activeChip = document.getElementById(`chip-${key}`);
+      if (activeChip) activeChip.classList.add('active');
+
+      document.querySelectorAll('.tree-file').forEach(f => f.classList.remove('active'));
+      const fileIdMap = {
+        'demo-m01': 'tree-m01',
+        'demo-m05': 'tree-m05',
+        'demo-m08': 'tree-m08',
+        'demo-m03': 'tree-m03',
+        'demo-m09': 'tree-m09'
+      };
+      if (fileIdMap[key] && document.getElementById(fileIdMap[key])) {
+        document.getElementById(fileIdMap[key]).classList.add('active');
+      }
+
+      const p = PRESETS[key];
+      if (!p) return;
+
+      document.getElementById('tab-filename').textContent = p.file;
+      setCode(p.code);
+      dismissCoachBar();
+
+      clearTermLogs();
+      addTermLog(`>>> Loaded Scenario: ${p.name}\n>>> File: ${p.file}\n>>> Description: ${p.desc}\n>>> Executing now in sandbox...`, 'out-blue');
+
+      executeCode();
+    }
+
+    function resetCurrentCode() {
+      Soundcn.click();
+      const p = PRESETS[currentPresetKey];
+      if (p) setCode(p.code);
+    }
+
+    function clearTermLogs() {
+      document.getElementById('pane-terminal').innerHTML = '';
+      document.getElementById('pane-output').innerHTML = '<div class="out-muted">// Program stdout output will appear here.</div>';
+    }
+
+    function addTermLog(msg, cls = 'out-green') {
+      const box = document.getElementById('pane-terminal');
+      const d = document.createElement('div');
+      d.className = cls; d.textContent = msg;
+      box.appendChild(d);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function setOutputPane(stdout) {
+      const outBox = document.getElementById('pane-output');
+      if (!stdout || stdout.trim() === '') {
+        outBox.innerHTML = '<div class="out-muted">// Program stdout output will appear here (no output produced).</div>';
+      } else {
+        outBox.innerHTML = `<div class="out-green">${escapeHtml(stdout)}</div>`;
+      }
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function switchTermTab(tabName) {
+      Soundcn.click();
+      document.querySelectorAll('.term-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.term-content').forEach(c => c.classList.remove('active'));
+
+      document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+      document.getElementById(`pane-${tabName}`).classList.add('active');
+    }
+
+    /* ==========================================================================
+       ZERO-LATENCY CODE EXECUTION & DIAGNOSTIC PIPELINE
+       ========================================================================== */
+    async function executeCode() {
+      Soundcn.run();
+      clearTermLogs();
+      document.getElementById('term-status').textContent = 'Executing...';
+      const code = getCode();
+
       try {
-        const resp = await fetch('/diagnose', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session: 'learner-1', code: code, error: error, output: output })
+        const resp = await fetch(`${API_BASE}/run`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: code })
+        });
+        const result = await resp.json();
+
+        if (result.stdout) {
+          addTermLog(result.stdout, 'out-green');
+          setOutputPane(result.stdout);
+        } else {
+          setOutputPane("");
+        }
+
+        if (result.stderr) {
+          addTermLog(result.stderr, 'out-red');
+        }
+
+        const execTime = result.execution_time_ms ? `${result.execution_time_ms}ms` : '120ms';
+        document.getElementById('term-status').textContent = (result.exit_code === 0 ? 'Exit 0' : 'Exception') + ` (${execTime})`;
+        document.getElementById('sb-status').textContent = `Ready (${execTime})`;
+        document.getElementById('sb-perf').textContent = `Sandbox: ${execTime}`;
+
+        await runDiagnosis(code, result.stderr, result.stdout, result.parsed_error);
+      } catch (err) {
+        addTermLog(`Local Runner Notice: ${err.message}`, 'out-red');
+        await runDiagnosis(code, String(err), "");
+      }
+    }
+
+    async function runDiagnosis(code, error, output, parsedError = null) {
+      try {
+        const resp = await fetch(`${API_BASE}/diagnose`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session: SESSION_ID,
+            code: code,
+            error: error,
+            output: output,
+            history: chatHistory
+          })
         });
         const diag = await resp.json();
+        currentDiag = diag;
 
-        const pill = document.getElementById('coach-pill');
-        const heading = document.getElementById('coach-heading');
-        const explanation = document.getElementById('coach-explanation');
-        const emoji = document.getElementById('coach-emoji');
+        const badge = document.getElementById('diag-badge');
+        const coachBar = document.getElementById('coach-bar');
+        const probBody = document.getElementById('problems-tbody');
+        const probCount = document.getElementById('prob-count');
+        const diagCard = document.getElementById('diag-main-card');
 
         if (diag.is_clean) {
-          emoji.textContent = '🎉';
-          heading.textContent = 'Awesome! Your Code Works!';
-          pill.className = 'coach-badge badge-all-good';
-          pill.textContent = 'All Good!';
-          explanation.innerHTML = '<b>Great job!</b><br>Your Python program compiled and ran cleanly without any mistakes. You are thinking like a programmer!';
-          document.getElementById('quiz-container').style.display = 'none';
+          badge.textContent = "VERIFIED";
+          badge.className = "diag-badge badge-pass";
+          document.getElementById('diag-conf').textContent = `100% Mastery`;
+          document.getElementById('diag-name').textContent = "🎉 Clean Code — Mental Model Sound!";
+          document.getElementById('diag-why').textContent = diag.reasoning || "Code executed cleanly with zero syntax errors or cognitive misconceptions detected.";
+          
+          diagCard.classList.remove('animated-beam');
+          coachBar.className = "pass-mode";
+          document.getElementById('coach-icon').textContent = "✅";
+          document.getElementById('coach-head').textContent = "All Checks Passed! Mental Model Verified";
+          document.getElementById('coach-sub').textContent = "No syntax errors or cognitive misconceptions detected in this program.";
+          coachBar.style.display = 'flex';
+
+          document.getElementById('sb-issue').textContent = "✅ All Clear (Exit 0)";
+          document.getElementById('sb-issue').style.color = "#34d399";
+          document.getElementById('quiz-panel').style.display = 'none';
+
+          probCount.textContent = '0';
+          probBody.innerHTML = `
+            <tr>
+              <td><span class="prob-tag prob-tag-ok">Passed</span></td>
+              <td style="color: #34d399;">All Lines Clean</td>
+              <td><span class="model-badge">PASS</span></td>
+              <td style="color: #34d399;">✓ No problems detected. Student logic verified.</td>
+            </tr>
+          `;
           return;
         }
 
-        document.getElementById('quiz-container').style.display = 'flex';
+        // Misconception / Typo Flagged Case
+        badge.textContent = diag.label;
+        document.getElementById('diag-conf').textContent = `Conf: ${(diag.confidence * 100).toFixed(0)}%`;
+        coachBar.className = "";
+        diagCard.classList.add('animated-beam');
 
         if (diag.is_sloppiness) {
-          emoji.textContent = '⚡';
-          heading.textContent = 'Quick Typing Slip!';
-          pill.className = 'coach-badge badge-slip';
-          pill.textContent = 'Small Typo';
-          explanation.innerHTML = `<b>Just a small typing mistake:</b><br>${diag.reasoning}`;
+          badge.className = "diag-badge badge-typo";
+          document.getElementById('diag-name').textContent = "⚡ Sloppiness Slip (Mental Model Intact)";
+          document.getElementById('coach-icon').textContent = "⚡";
+          document.getElementById('coach-head').textContent = `Typo Slip ${diag.label} Flagged!`;
+          document.getElementById('sb-issue').textContent = `⚡ ${diag.label} Typo Slip`;
+          document.getElementById('sb-issue').style.color = "#f59e0b";
         } else {
-          emoji.textContent = '💡';
-          heading.textContent = 'Helpful Hint on Your Code';
-          pill.className = 'coach-badge badge-need-help';
-          pill.textContent = 'Concept Clue';
-          explanation.innerHTML = `<b>What happened:</b><br>${diag.reasoning}`;
+          badge.className = "diag-badge badge-error";
+          const match = TAXONOMY.find(t => t.id === diag.label);
+          document.getElementById('diag-name').textContent = `⚠️ Misconception: ${match ? match.name : diag.label}`;
+          document.getElementById('coach-icon').textContent = "🚨";
+          document.getElementById('coach-head').textContent = `Cognitive Misconception ${diag.label} Detected!`;
+          document.getElementById('sb-issue').textContent = `⚠ ${diag.label} Active`;
+          document.getElementById('sb-issue').style.color = "#f87171";
         }
 
-        if (diag.socratic_hint) {
-          addChatMessage('ai', `💡 Hint: ${diag.socratic_hint}`);
-        }
-      } catch(e) {}
-    }
+        document.getElementById('diag-why').textContent = diag.reasoning || "Misconception diagnosed.";
+        document.getElementById('coach-sub').textContent = diag.reasoning || "Cognitive error diagnosed.";
+        coachBar.style.display = 'flex';
 
-    /* ==========================================================================
-       1-CLICK VERIFICATION QUIZ
-       ========================================================================== */
-    function renderQuiz(lesson) {
-      document.getElementById('quiz-question-text').textContent = lesson.q;
-      const list = document.getElementById('quiz-options-list');
-      list.innerHTML = '';
-      document.getElementById('quiz-feedback').style.display = 'none';
+        // Update Ant Design Problems Table with exact line, col, and jump click
+        const errLine = (parsedError && parsedError.line) ? parsedError.line : 2;
+        const errCol = (parsedError && parsedError.column) ? `:${parsedError.column}` : '';
+        const curFile = PRESETS[currentPresetKey]?.file || 'main.py';
+        probCount.textContent = '1';
+        probBody.innerHTML = `
+          <tr onclick="focusEditorLine(${errLine})">
+            <td><span class="prob-tag ${diag.is_sloppiness ? 'prob-tag-warn' : 'prob-tag-err'}">${diag.is_sloppiness ? 'Warning' : 'Error'}</span></td>
+            <td style="color: #38bdf8; font-weight: 600;">${curFile} [Ln ${errLine}${errCol}]</td>
+            <td><span class="model-badge">${diag.label}</span></td>
+            <td>${diag.reasoning}</td>
+          </tr>
+        `;
 
-      const letters = ['A', 'B', 'C'];
-      lesson.options.forEach((opt, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'quiz-opt-btn';
-        btn.innerHTML = `<span class="opt-letter">${letters[idx]}</span><span>${opt.text}</span>`;
-        btn.onclick = () => handleQuizClick(opt.correct, btn);
-        list.appendChild(btn);
-      });
-    }
-
-    function handleQuizClick(isCorrect, btn) {
-      document.querySelectorAll('.quiz-opt-btn').forEach(b => {
-        b.classList.remove('correct', 'wrong');
-      });
-
-      const fb = document.getElementById('quiz-feedback');
-      fb.style.display = 'block';
-
-      if (isCorrect) {
-        btn.classList.add('correct');
-        playTone('success');
-        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-        fb.className = 'feedback-alert fb-success';
-        fb.innerHTML = '<b>🎉 Correct! You mastered it!</b> Now try updating your code on the left!';
-        addChatMessage('ai', '🌟 Spot on! You completely understand this concept now.');
-      } else {
-        btn.classList.add('wrong');
-        playTone('wrong');
-        fb.className = 'feedback-alert fb-retry';
-        fb.innerHTML = '<b>Almost!</b> Re-read the hint above or ask a question in the chat below.';
+        if (diag.socratic_hint) addChatMsg('ai', `💡 ${diag.socratic_hint}`);
+        renderQuizCards(diag.label);
+      } catch (e) {
+        console.error("Diagnosis error:", e);
       }
     }
 
     /* ==========================================================================
-       CHAT MESSAGES
+       1-CLICK VERIFICATION QUIZ & CELEBRATION
        ========================================================================== */
-    function addChatMessage(role, text) {
-      const stream = document.getElementById('chat-stream');
-      const d = document.createElement('div');
-      d.className = `msg-bubble ${role === 'ai' ? 'msg-ai' : 'msg-user'}`;
-      d.textContent = text;
-      stream.appendChild(d);
-      stream.scrollTop = stream.scrollHeight;
+    function renderQuizCards(label) {
+      const qData = QUIZ_BANK[label] || QUIZ_BANK["M-01"];
+      document.getElementById('quiz-question').textContent = qData.q;
+      const list = document.getElementById('quiz-list');
+      list.innerHTML = '';
+      document.getElementById('quiz-alert').style.display = 'none';
+
+      const letters = ['A', 'B', 'C'];
+      qData.options.forEach((opt, idx) => {
+        const card = document.createElement('div');
+        card.className = 'quiz-card';
+        card.innerHTML = `<span class="card-letter">${letters[idx]}</span><span>${opt.text}</span>`;
+        card.onclick = () => selectQuizCard(opt.text, opt.correct, card);
+        list.appendChild(card);
+      });
+      document.getElementById('quiz-panel').style.display = 'block';
     }
 
-    async function sendChatMessage() {
-      const inp = document.getElementById('chat-input-text');
+    async function selectQuizCard(text, isCorrect, cardEl) {
+      document.querySelectorAll('.quiz-card').forEach(c => {
+        c.classList.remove('selected-correct', 'selected-incorrect');
+      });
+
+      const alertBox = document.getElementById('quiz-alert');
+      alertBox.style.display = 'block';
+
+      if (isCorrect) {
+        cardEl.classList.add('selected-correct');
+        Soundcn.success();
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+        }
+        alertBox.className = 'alert-pass';
+        alertBox.innerHTML = `<b>🎉 Misconception RESOLVED!</b> Brilliant work. Cognitive mastery verified.`;
+        document.getElementById('diag-badge').className = "diag-badge badge-pass";
+        document.getElementById('sb-issue').textContent = `✅ ${currentDiag?.label || 'Concept'} Resolved`;
+        document.getElementById('sb-issue').style.color = "#34d399";
+        addChatMsg('ai', `✅ Outstanding! You demonstrated clear resolution of ${currentDiag?.label || 'the concept'}.`);
+
+        try {
+          await fetch(`${API_BASE}/assess`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              session: SESSION_ID,
+              misconception_id: currentDiag?.label || "M-01",
+              question: document.getElementById('quiz-question').textContent,
+              student_answer: text
+            })
+          });
+        } catch(e){}
+      } else {
+        cardEl.classList.add('selected-incorrect');
+        Soundcn.retry();
+        alertBox.className = 'alert-retry';
+        alertBox.innerHTML = `<b>⚠️ Almost there:</b> Look closely at the clue or ask the Socratic tutor in the chat below.`;
+      }
+    }
+
+    /* ==========================================================================
+       SOCRATIC CHAT ASSISTANT
+       ========================================================================== */
+    function addChatMsg(role, text) {
+      const box = document.getElementById('chat-log');
+      const b = document.createElement('div');
+      b.className = `bubble ${role === 'ai' ? 'bubble-ai' : 'bubble-user'}`;
+      b.textContent = text;
+      box.appendChild(b);
+      box.scrollTop = box.scrollHeight;
+      chatHistory.push({ role: role === 'ai' ? 'assistant' : 'student', text: text });
+    }
+
+    async function sendChat() {
+      Soundcn.click();
+      const inp = document.getElementById('chat-input');
       const msg = inp.value.trim();
       if (!msg) return;
-
-      addChatMessage('user', msg);
+      addChatMsg('user', msg);
       inp.value = '';
 
       try {
-        const resp = await fetch('/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const resp = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            session: 'learner-1',
-            misconception: currentLessonKey,
+            session: SESSION_ID,
+            misconception: currentDiag?.label || "General",
             message: msg,
-            code: document.getElementById('code-input').value
+            code: getCode()
           })
         });
-        const res = await resp.json();
-        addChatMessage('ai', res.reply || 'Think about what each line of code tells the computer to do.');
-      } catch(e) {
-        addChatMessage('ai', 'Think about what Python does when it reads that line from left to right.');
+        const data = await resp.json();
+        addChatMsg('ai', data.reply || "Consider how Python evaluates that statement.");
+      } catch (e) {
+        addChatMsg('ai', "Ponder this: what is the fundamental difference between assigning state and testing a condition?");
       }
     }
+
+    function sendQuickPrompt(promptText) {
+      document.getElementById('chat-input').value = promptText;
+      sendChat();
+    }
+
+    function focusChat() {
+      Soundcn.click();
+      const inp = document.getElementById('chat-input');
+      inp.focus();
+      inp.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function focusQuiz() {
+      Soundcn.click();
+      const q = document.getElementById('quiz-panel');
+      q.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function dismissCoachBar() {
+      Soundcn.click();
+      document.getElementById('coach-bar').style.display = 'none';
+    }
+
+    function toggleSidebar() {
+      Soundcn.click();
+      const sb = document.getElementById('sidebar');
+      sb.classList.toggle('collapsed');
+      const actBtn = document.getElementById('act-btn-explorer');
+      if (sb.classList.contains('collapsed')) {
+        actBtn.classList.remove('active');
+      } else {
+        actBtn.classList.add('active');
+      }
+    }
+
+    /* ==========================================================================
+       TEACHER CLASSROOM HEATMAP MODAL
+       ========================================================================== */
+    async function openTeacherModal() {
+      Soundcn.pop();
+      const m = document.getElementById('teacher-modal');
+      m.style.display = 'flex';
+      try {
+        const res = await fetch(`${API_BASE}/teacher/dashboard`);
+        const data = await res.json();
+        document.getElementById('tm-students').textContent = data.total_active_students || 1;
+        document.getElementById('tm-flagged').textContent = data.total_diagnoses || 0;
+        const total = data.total_diagnoses || 1;
+        const resCount = Object.values(data.resolved_counts || {}).reduce((a, b) => a + b, 0);
+        document.getElementById('tm-rate').textContent = `${Math.round((resCount / total) * 100)}%`;
+
+        const list = document.getElementById('tm-heatmap-list');
+        list.innerHTML = '';
+        TAXONOMY.forEach(t => {
+          const count = (data.class_misconception_counts || {})[t.id] || 0;
+          const row = document.createElement('div');
+          row.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.78rem;";
+          row.innerHTML = `
+            <span><b>${t.id}</b>: ${t.name}</span>
+            <span style="background: rgba(139, 92, 246, 0.15); color: #c4b5fd; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-family: var(--font-mono);">
+              ${count} occurrences
+            </span>
+          `;
+          list.appendChild(row);
+        });
+      } catch(e){}
+    }
+
+    function closeTeacherModal() {
+      Soundcn.click();
+      document.getElementById('teacher-modal').style.display = 'none';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeTeacherModal();
+    });
 
     /* ==========================================================================
        BOOTSTRAP INITIALIZATION
        ========================================================================== */
     window.addEventListener('DOMContentLoaded', () => {
-      const ta = document.getElementById('code-input');
-      ta.addEventListener('input', updateGutter);
-      ta.addEventListener('keydown', (e) => {
-        if (e.key === 'Tab') {
-          e.preventDefault();
-          const start = ta.selectionStart;
-          const end = ta.selectionEnd;
-          ta.value = ta.value.substring(0, start) + '    ' + ta.value.substring(end);
-          ta.selectionStart = ta.selectionEnd = start + 4;
-          updateGutter();
-        } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-          e.preventDefault();
-          runStudentCode();
-        }
-      });
-
-      loadLesson('m01');
+      initEditor();
+      renderQuizCards("M-01");
+      setTimeout(() => { executeCode(); }, 350);
     });
   </script>
 </body>
