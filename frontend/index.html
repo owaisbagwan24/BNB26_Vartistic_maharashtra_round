@@ -1044,6 +1044,7 @@
     <div class="titlebar-presets">
       <span class="preset-label">Scenarios:</span>
       <button class="preset-chip active" id="chip-demo-m01" onclick="switchPreset('demo-m01')">if x = 5 (M-01)</button>
+      <button class="preset-chip" id="chip-demo-m09-pair" onclick="switchPreset('demo-m09-pair')" style="border-color: #38bdf8; color: #38bdf8;">⚖️ Hard Negative (M-09)</button>
       <button class="preset-chip" id="chip-demo-m05" onclick="switchPreset('demo-m05')">'5' + 3 (M-05)</button>
       <button class="preset-chip" id="chip-demo-m08" onclick="switchPreset('demo-m08')">print vs return (M-08)</button>
       <button class="preset-chip" id="chip-demo-m03" onclick="switchPreset('demo-m03')">b = a (M-03)</button>
@@ -1083,6 +1084,9 @@
         <div class="tree-folder">▼ 📁 PYTHON_STUDENT</div>
         <div class="tree-file active" id="tree-m01" onclick="switchPreset('demo-m01')">
           <span>🐍</span><span>main.py</span>
+        </div>
+        <div class="tree-file" id="tree-m09-pair" onclick="switchPreset('demo-m09-pair')">
+          <span>⚖️</span><span>paired_test.py</span>
         </div>
         <div class="tree-file" id="tree-m05" onclick="switchPreset('demo-m05')">
           <span>📄</span><span>types_test.py</span>
@@ -1372,6 +1376,12 @@ if x = 5:
         code: "x = 5\nif x = 5:\n    print('x is five')\n",
         desc: "Single assignment used inside conditional test expression."
       },
+      "demo-m09-pair": {
+        name: "M-09: Paired Hard Negative (Motor Slip)",
+        file: "paired_test.py",
+        code: "# Student demonstrated mastery of == on line 3\nscore = 10\nif score == 10:\n    print('Top mark!')\ntarget = 5\nif target = 5:\n    print('Target reached')\n",
+        desc: "Identical SyntaxError on target = 5, but student knows ==. Separates slips from bugs."
+      },
       "demo-m05": {
         name: "M-05: '5' + 3",
         file: "types_test.py",
@@ -1590,6 +1600,7 @@ if x = 5:
       document.querySelectorAll('.tree-file').forEach(f => f.classList.remove('active'));
       const fileIdMap = {
         'demo-m01': 'tree-m01',
+        'demo-m09-pair': 'tree-m09-pair',
         'demo-m05': 'tree-m05',
         'demo-m08': 'tree-m08',
         'demo-m03': 'tree-m03',
@@ -1794,15 +1805,50 @@ if x = 5:
     }
 
     /* ==========================================================================
-       1-CLICK VERIFICATION QUIZ & CELEBRATION
+       1-CLICK DYNAMIC ISOMORPHIC VERIFICATION QUIZ & RESOLUTION
        ========================================================================== */
-    function renderQuizCards(label) {
+    let currentIsomorphicQuiz = null;
+    let quizAttemptCount = 1;
+
+    async function renderQuizCards(label) {
+      currentIsomorphicQuiz = null;
+      quizAttemptCount = 1;
+      document.getElementById('quiz-alert').style.display = 'none';
+      const list = document.getElementById('quiz-list');
+      list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.75rem; padding: 10px;">Generating isomorphic prediction check...</div>';
+      document.getElementById('quiz-panel').style.display = 'block';
+
+      try {
+        const res = await fetch(`${API_BASE}/isomorphic/quiz?misconception=${encodeURIComponent(label)}`);
+        if (res.ok) {
+          const data = await res.json();
+          currentIsomorphicQuiz = data;
+          
+          // Render question with fresh isomorphic code preview
+          document.getElementById('quiz-question').innerHTML = `
+            <div style="font-weight: 700; margin-bottom: 6px; color: #f1f5f9;">${escapeHtml(data.question)}</div>
+            ${data.code_snippet ? `<pre style="background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.76rem; color: #38bdf8; margin: 6px 0 10px 0; overflow-x: auto;"><code>${escapeHtml(data.code_snippet)}</code></pre>` : ''}
+          `;
+
+          list.innerHTML = '';
+          const letters = ['A', 'B', 'C', 'D'];
+          data.options.forEach((optText, idx) => {
+            const card = document.createElement('div');
+            card.className = 'quiz-card';
+            card.innerHTML = `<span class="card-letter">${letters[idx] || (idx+1)}</span><span>${escapeHtml(optText)}</span>`;
+            card.onclick = () => selectQuizCard(optText, optText === data.correct_answer, card);
+            list.appendChild(card);
+          });
+          return;
+        }
+      } catch (err) {
+        console.warn("Isomorphic fetch fallback:", err);
+      }
+
+      // Static fallback if API unavailable
       const qData = QUIZ_BANK[label] || QUIZ_BANK["M-01"];
       document.getElementById('quiz-question').textContent = qData.q;
-      const list = document.getElementById('quiz-list');
       list.innerHTML = '';
-      document.getElementById('quiz-alert').style.display = 'none';
-
       const letters = ['A', 'B', 'C'];
       qData.options.forEach((opt, idx) => {
         const card = document.createElement('div');
@@ -1811,7 +1857,6 @@ if x = 5:
         card.onclick = () => selectQuizCard(opt.text, opt.correct, card);
         list.appendChild(card);
       });
-      document.getElementById('quiz-panel').style.display = 'block';
     }
 
     async function selectQuizCard(text, isCorrect, cardEl) {
@@ -1829,11 +1874,11 @@ if x = 5:
           confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
         }
         alertBox.className = 'alert-pass';
-        alertBox.innerHTML = `<b>🎉 Misconception RESOLVED!</b> Brilliant work. Cognitive mastery verified.`;
+        alertBox.innerHTML = `<b>🎉 Misconception RESOLVED!</b> Isomorphic verification passed. Genuine conceptual understanding confirmed.`;
         document.getElementById('diag-badge').className = "diag-badge badge-pass";
         document.getElementById('sb-issue').textContent = `✅ ${currentDiag?.label || 'Concept'} Resolved`;
         document.getElementById('sb-issue').style.color = "#34d399";
-        addChatMsg('ai', `✅ Outstanding! You demonstrated clear resolution of ${currentDiag?.label || 'the concept'}.`);
+        addChatMsg('ai', `✅ Outstanding! You solved the isomorphic prediction challenge and verified resolution of ${currentDiag?.label || 'the concept'}.`);
 
         try {
           await fetch(`${API_BASE}/assess`, {
@@ -1842,16 +1887,22 @@ if x = 5:
             body: JSON.stringify({
               session: SESSION_ID,
               misconception_id: currentDiag?.label || "M-01",
-              question: document.getElementById('quiz-question').textContent,
-              student_answer: text
+              question: currentIsomorphicQuiz ? currentIsomorphicQuiz.question : document.getElementById('quiz-question').textContent,
+              student_answer: text,
+              quiz_data: currentIsomorphicQuiz,
+              attempt_number: quizAttemptCount
             })
           });
         } catch(e){}
       } else {
+        quizAttemptCount++;
         cardEl.classList.add('selected-incorrect');
         Soundcn.retry();
         alertBox.className = 'alert-retry';
-        alertBox.innerHTML = `<b>⚠️ Almost there:</b> Look closely at the clue or ask the Socratic tutor in the chat below.`;
+        const hintText = currentIsomorphicQuiz?.concept_insight 
+          ? `Hint: ${currentIsomorphicQuiz.concept_insight}` 
+          : "Trace each line carefully, or ask the Socratic tutor in the chat below.";
+        alertBox.innerHTML = `<b>⚠️ Tier ${quizAttemptCount > 2 ? '3 (Flagged for Office Hours)' : '2 (Guided Trace)'}:</b> ${hintText}`;
       }
     }
 
@@ -1947,18 +1998,41 @@ if x = 5:
 
         const list = document.getElementById('tm-heatmap-list');
         list.innerHTML = '';
+
+        if (data.epidemics && data.epidemics.length > 0) {
+          const epBox = document.createElement('div');
+          epBox.style.cssText = "background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 0.78rem; color: #fca5a5;";
+          epBox.innerHTML = `
+            <div style="font-weight: 800; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span>🚨</span><span>CLASSROOM EPIDEMIC ALERT</span>
+            </div>
+            ${data.epidemics.map(ep => `<div>• <b>${ep.label} (${ep.name})</b>: ${ep.unresolved} active unresolved students. <i>Recommendation: ${ep.action_recommendation}</i></div>`).join('')}
+          `;
+          list.appendChild(epBox);
+        }
+
         TAXONOMY.forEach(t => {
           const count = (data.class_misconception_counts || {})[t.id] || 0;
+          const resCount = (data.resolved_counts || {})[t.id] || 0;
           const row = document.createElement('div');
           row.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.78rem;";
           row.innerHTML = `
-            <span><b>${t.id}</b>: ${t.name}</span>
+            <div>
+              <b>${t.id}</b>: ${t.name}
+              ${resCount > 0 ? `<span style="color: #34d399; font-size: 0.7rem; margin-left: 6px;">(${resCount} resolved)</span>` : ''}
+            </div>
             <span style="background: rgba(139, 92, 246, 0.15); color: #c4b5fd; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-family: var(--font-mono);">
-              ${count} occurrences
+              ${count} active
             </span>
           `;
           list.appendChild(row);
         });
+
+        // Research citation footer
+        const citeRow = document.createElement('div');
+        citeRow.style.cssText = "margin-top: 14px; font-size: 0.7rem; color: var(--text-muted); text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px;";
+        citeRow.innerHTML = "📚 Backed by Brown & Altadmri (2017) 100M+ events & Perkins (1986) Bugs vs Slips";
+        list.appendChild(citeRow);
       } catch(e){}
     }
 

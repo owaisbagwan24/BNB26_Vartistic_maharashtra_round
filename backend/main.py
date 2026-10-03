@@ -1,29 +1,36 @@
-"""Re:Learn backend — FastAPI.
-Hybrid Misconception Diagnostic Engine: AST Deterministic Pre-Screener + LLM Socratic Reasoning.
-Endpoints: /diagnose, /chat, /assess, /progress, /teacher/dashboard, /presets
+"""Re:Learn backend — FastAPI (Production Tri-Engine Router).
+Arbitrates between:
+1. AST Deterministic Pre-Screener (<5ms)
+2. Calibrated ML Classifier (Trained on Paired Hard Negatives)
+3. Guardrailed LLM Socratic Reasoner (Groq Llama-3.3-70B / Gemini)
+
+Endpoints: /run, /diagnose, /chat, /assess, /isomorphic/quiz, /progress/{session}, /teacher/dashboard, /presets
 """
 import json
 import sqlite3
 import os
 import uuid
 import csv
+import pickle
+import ast
+import sys
 from pathlib import Path
 from typing import List, Optional, Dict, Any
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import sys
-import subprocess
-import ast
 
 from ast_engine import analyze_code_and_error
 from runner import execute_sandbox_code
+from guardrail import check_adversarial_prompt, sanitize_and_guard_response, SOCRATIC_FALLBACK_REDIRECTS
+from isomorphic_engine import generate_isomorphic_quiz, evaluate_isomorphic_attempt
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 DATASET_DIR = PROJECT_ROOT / "dataset"
 LABEL_SCHEMA_PATH = DATASET_DIR / "label_schema.json"
 MISCONCEPTIONS_CSV_PATH = DATASET_DIR / "misconceptions.csv"
+CLASSIFIER_PATH = BASE_DIR / "classifier.pkl"
 
 # Load Taxonomy Schema
 if LABEL_SCHEMA_PATH.exists():
@@ -40,6 +47,16 @@ if MISCONCEPTIONS_CSV_PATH.exists():
     with open(MISCONCEPTIONS_CSV_PATH, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         GOLD_SAMPLES = list(reader)
+
+# Load Trained Calibrated ML Classifier
+LOCAL_CLASSIFIER = None
+if CLASSIFIER_PATH.exists():
+    try:
+        with open(CLASSIFIER_PATH, "rb") as f:
+            LOCAL_CLASSIFIER = pickle.load(f)
+        print("Loaded production ML classifier pipeline from classifier.pkl")
+    except Exception as e:
+        print(f"Notice: ML classifier loading deferred: {e}")
 
 DB_PATH = BASE_DIR / "relearn.db"
 
@@ -65,7 +82,7 @@ def log_event(session: str, kind: str, payload: dict):
             (str(uuid.uuid4()), session, kind, json.dumps(payload))
         )
 
-app = FastAPI(title="Re:Learn IDE API", version="1.0.0")
+app = FastAPI(title="Re:Learn IDE API", version="2.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -94,7 +111,12 @@ class AssessReq(BaseModel):
     misconception_id: str
     question: str
     student_answer: str
+    quiz_data: Optional[Dict[str, Any]] = None
+    attempt_number: int = 1
     api_key: Optional[str] = None
+
+class RunReq(BaseModel):
+    code: str
 
 DIAG_PROMPT = """You are Re:Learn's Misconception Engine for novice Python learners.
 Given student code, error/output, and chat history, identify the UNDERLYING misconception.
@@ -138,11 +160,9 @@ def health():
         "status": "healthy",
         "labels_loaded": len(LABELS),
         "gold_samples": len(GOLD_SAMPLES),
+        "ml_classifier_loaded": LOCAL_CLASSIFIER is not None,
         "db": str(DB_PATH)
     }
-
-class RunReq(BaseModel):
-    code: str
 
 @app.post("/run")
 def execute_python_code(req: RunReq):
@@ -158,6 +178,12 @@ def get_presets():
             "name": "M-01: Assignment vs Comparison",
             "code": "x = 5\nif x = 5:\n    print('x is five')\n",
             "description": "Uses single '=' instead of comparison '==' inside conditional."
+        },
+        {
+            "id": "demo-m09-pair",
+            "name": "M-09: Paired Hard Negative (Motor Slip)",
+            "code": "# Student demonstrated mastery of == on line 3\nscore = 10\nif score == 10:\n    print('Top mark!')\ntarget = 5\nif target = 5:\n    print('Target reached')\n",
+            "description": "Identical SyntaxError on target=5, but student knows ==. Classified as M-09 Sloppiness Slip."
         },
         {
             "id": "demo-m05",
@@ -176,21 +202,36 @@ def get_presets():
             "name": "M-03: Mutable List Aliasing",
             "code": "a = [1, 2]\nb = a\nb.append(3)\nprint('Original list a:', a)\n",
             "description": "Thinks assignment b = a creates an independent copy."
-        },
-        {
-            "id": "demo-m09",
-            "name": "M-09: Sloppiness Slip (Negative Class)",
-            "code": "pritn('Hello from Re:Learn!')\n",
-            "description": "Demonstrates carelessness/typo without conceptual deficit."
         }
     ]
 
+@app.get("/isomorphic/quiz")
+def get_isomorphic_quiz(misconception: str = Query("M-01")):
+    """Generates a novel isomorphic prediction problem with dynamic parameterization."""
+    return generate_isomorphic_quiz(misconception)
+
 @app.post("/diagnose")
 def diagnose(req: DiagnoseReq):
-    # Step 1: Run deterministic AST / Heuristic Analyzer
+    """Tri-Engine Arbitrator: AST Pre-Screener + ML Classifier + Socratic Guardrails."""
+    # Step 1: Run deterministic AST / Heuristic Analyzer (<5ms)
     ast_result = analyze_code_and_error(req.code, req.error, req.output, req.history)
     
-    # Step 2: Attempt LLM Diagnosis if API key is provided
+    # Step 2: Run Local Calibrated ML Classifier if available
+    ml_prediction = None
+    if LOCAL_CLASSIFIER:
+        try:
+            snippet = f"{req.code} [ERR] {req.error} [OUT] {req.output}"
+            probas = LOCAL_CLASSIFIER.predict_proba([snippet])[0]
+            top_idx = probas.argmax()
+            ml_prediction = {
+                "label": LOCAL_CLASSIFIER.classes_[top_idx],
+                "confidence": round(float(probas[top_idx]), 4),
+                "is_sloppiness": LOCAL_CLASSIFIER.classes_[top_idx] == "M-09"
+            }
+        except Exception as e:
+            print(f"ML inference error: {e}")
+
+    # Step 3: Run LLM Reasoning if API key provided
     client, model_name = get_llm_client(req.api_key)
     if client:
         try:
@@ -210,7 +251,10 @@ def diagnose(req: DiagnoseReq):
             llm_result = json.loads(r.choices[0].message.content)
             llm_result.setdefault("is_sloppiness", llm_result.get("label") == "M-09")
             
-            # If reassessment question missing, populate from gold samples
+            # Sanitize Socratic hint with Cognitive Firewall
+            safe_hint, _ = sanitize_and_guard_response(llm_result.get("socratic_hint", ""), llm_result.get("label", "M-01"))
+            llm_result["socratic_hint"] = safe_hint
+
             if not llm_result.get("reassessment_question"):
                 matched_gold = next((g for g in GOLD_SAMPLES if g["misconception_id"] == llm_result.get("label")), None)
                 if matched_gold:
@@ -219,53 +263,74 @@ def diagnose(req: DiagnoseReq):
             log_event(req.session, "diagnosis", llm_result)
             return llm_result
         except Exception as e:
-            # Gracefully fall back to AST analyzer
-            print(f"LLM diagnosis failed or timed out: {e}. Falling back to AST analyzer.")
+            print(f"LLM diagnosis failed or timed out: {e}. Falling back to AST/ML arbitrator.")
 
-    # Step 3: High-accuracy AST / Rule fallback
-    if ast_result:
-        # Match reassessment from gold samples if needed
-        if not ast_result.get("reassessment_question"):
-            matched_gold = next((g for g in GOLD_SAMPLES if g["misconception_id"] == ast_result["label"]), None)
-            if matched_gold:
-                ast_result["reassessment_question"] = matched_gold["reassessment_question"]
-        log_event(req.session, "diagnosis", ast_result)
-        return ast_result
+    # Step 4: Arbitration between AST and ML Classifier
+    if ast_result and ast_result.get("confidence", 0) >= 0.85:
+        # High confidence AST rule match
+        final_result = ast_result
+        final_result["engine"] = "AST Deterministic Pre-Screener"
+    elif ml_prediction and ml_prediction.get("confidence", 0) >= 0.60:
+        # Calibrated ML classifier match
+        lbl = ml_prediction["label"]
+        matched_gold = next((g for g in GOLD_SAMPLES if g["misconception_id"] == lbl), None)
+        final_result = {
+            "label": lbl,
+            "confidence": ml_prediction["confidence"],
+            "is_sloppiness": ml_prediction["is_sloppiness"],
+            "reasoning": f"Cognitive model matched misconception pattern {lbl} from code AST and runtime state.",
+            "socratic_hint": SOCRATIC_FALLBACK_REDIRECTS.get(lbl, "Take a step back: what value does each variable hold right before that line?"),
+            "reassessment_question": matched_gold["reassessment_question"] if matched_gold else "Explain what happened on that line in your own words.",
+            "engine": "Calibrated N-Gram Multinomial Classifier"
+        }
+    elif ast_result:
+        final_result = ast_result
+        final_result["engine"] = "AST Heuristic Engine"
+    else:
+        # Check if code is clean
+        if not req.error:
+            try:
+                ast.parse(req.code)
+                clean_result = {
+                    "label": "NONE",
+                    "confidence": 1.0,
+                    "is_sloppiness": False,
+                    "is_clean": True,
+                    "reasoning": "Code executed cleanly with zero syntax errors or cognitive misconceptions detected.",
+                    "socratic_hint": "Outstanding! Your program logic compiled and executed smoothly without cognitive traps.",
+                    "reassessment_question": "Can you explain how this logic handles boundary or edge cases?",
+                    "engine": "Compiler Clean Verification"
+                }
+                log_event(req.session, "diagnosis", clean_result)
+                return clean_result
+            except Exception:
+                pass
 
-    # If no error reported and code is syntactically sound, it is clean valid execution
-    if not req.error and ast_result is None:
-        try:
-            ast.parse(req.code)
-            clean_result = {
-                "label": "NONE",
-                "confidence": 1.0,
-                "is_sloppiness": False,
-                "is_clean": True,
-                "reasoning": "Code executed cleanly with zero syntax errors or cognitive misconceptions detected.",
-                "socratic_hint": "Outstanding! Your program logic compiled and executed smoothly without cognitive traps.",
-                "reassessment_question": "Can you explain how this logic handles boundary or edge cases?",
-                "rule_matched": "clean_execution"
-            }
-            log_event(req.session, "diagnosis", clean_result)
-            return clean_result
-        except Exception:
-            pass
+        final_result = {
+            "label": "M-09",
+            "confidence": 0.50,
+            "is_sloppiness": True,
+            "reasoning": "Standard syntax or runtime check. Check line numbers and operator formatting.",
+            "socratic_hint": "Trace through your code line by line. What is each variable holding right before the error?",
+            "reassessment_question": "Explain in your own words what line the error points to and what value caused it.",
+            "engine": "Default Fallback"
+        }
 
-    # Default fallback if error occurred but no specific rule triggered
-    fallback = {
-        "label": "M-09",
-        "confidence": 0.50,
-        "is_sloppiness": True,
-        "reasoning": "Standard syntax or runtime check. Check line numbers and operator formatting.",
-        "socratic_hint": "Trace through your code line by line. What is each variable holding right before the error?",
-        "reassessment_question": "Explain in your own words what line the error points to and what value caused it.",
-        "rule_matched": "default_fallback"
-    }
-    log_event(req.session, "diagnosis", fallback)
-    return fallback
+    # Ensure Cognitive Firewall sanitizes hint
+    safe_hint, _ = sanitize_and_guard_response(final_result.get("socratic_hint", ""), final_result.get("label", "M-01"))
+    final_result["socratic_hint"] = safe_hint
+
+    log_event(req.session, "diagnosis", final_result)
+    return final_result
 
 @app.post("/chat")
 def chat(req: ChatReq):
+    # 1. Adversarial Guardrail Pre-Check
+    if check_adversarial_prompt(req.message):
+        fallback = SOCRATIC_FALLBACK_REDIRECTS.get(req.misconception, SOCRATIC_FALLBACK_REDIRECTS["M-01"])
+        log_event(req.session, "chat", {"misconception": req.misconception, "msg": req.message, "reply": fallback, "guardrail_blocked": True})
+        return {"reply": fallback}
+
     client, model_name = get_llm_client(req.api_key)
     if client:
         try:
@@ -278,9 +343,10 @@ def chat(req: ChatReq):
                 temperature=0.3,
                 timeout=5.0
             )
-            reply = r.choices[0].message.content
-            log_event(req.session, "chat", {"misconception": req.misconception, "msg": req.message, "reply": reply})
-            return {"reply": reply}
+            raw_reply = r.choices[0].message.content
+            safe_reply, _ = sanitize_and_guard_response(raw_reply, req.misconception)
+            log_event(req.session, "chat", {"misconception": req.misconception, "msg": req.message, "reply": safe_reply})
+            return {"reply": safe_reply}
         except Exception as e:
             print(f"LLM Chat error: {e}")
 
@@ -302,13 +368,21 @@ def chat(req: ChatReq):
     elif m == "M-09":
         reply = "You've got the concept down! Just double-check your spelling or operator punctuation on that line."
     else:
-        reply = f"Great reflection! If you run this step in your head, what value does the variable take immediately before that line?"
+        reply = "Great reflection! If you run this step in your head, what value does the variable take immediately before that line?"
 
-    log_event(req.session, "chat", {"misconception": req.misconception, "msg": req.message, "reply": reply})
-    return {"reply": reply}
+    safe_reply, _ = sanitize_and_guard_response(reply, m)
+    log_event(req.session, "chat", {"misconception": req.misconception, "msg": req.message, "reply": safe_reply})
+    return {"reply": safe_reply}
 
 @app.post("/assess")
 def assess(req: AssessReq):
+    # Dynamic Isomorphic Assessment evaluation
+    if req.quiz_data:
+        eval_result = evaluate_isomorphic_attempt(req.quiz_data, req.student_answer, req.attempt_number)
+        log_event(req.session, "assessment", {"m": req.misconception_id, "isomorphic": True, **eval_result})
+        return eval_result
+
+    # Standard LLM Assessment evaluation
     client, model_name = get_llm_client(req.api_key)
     if client:
         try:
@@ -362,7 +436,7 @@ def assess(req: AssessReq):
             resolved = True
             explanation = "Spot on! Python's range stops right before the end boundary, and indices start at 0."
     else:
-        if len(ans) > 6:
+        if len(ans) > 4:
             resolved = True
             explanation = "Good explanation demonstrating conceptual understanding."
 
@@ -384,7 +458,7 @@ def progress(session: str):
     for kind, p in rows:
         d = json.loads(p)
         history_events.append({"kind": kind, "data": d})
-        m = d.get("label") or d.get("m")
+        m = d.get("label") or d.get("m") or d.get("misconception_id")
         if not m:
             continue
         if kind == "assessment" and d.get("resolved") is True:
@@ -415,15 +489,33 @@ def dashboard():
     for (p,) in assess_rows:
         d = json.loads(p)
         if d.get("resolved") is True:
-            m = d.get("m") or d.get("label", "Unknown")
+            m = d.get("m") or d.get("label") or d.get("misconception_id", "Unknown")
             resolved_counts[m] = resolved_counts.get(m, 0) + 1
+
+    # Detect Epidemics (misconceptions with >3 active unresolved cases)
+    epidemics = []
+    for lbl, total in counts.items():
+        if lbl in ["NONE", "Unknown"]:
+            continue
+        res = resolved_counts.get(lbl, 0)
+        unresolved = total - res
+        if unresolved >= 3:
+            epidemics.append({
+                "label": lbl,
+                "name": LABELS.get(lbl, {}).get("name", lbl),
+                "unresolved": unresolved,
+                "total": total,
+                "action_recommendation": f"Dedicate 10 minutes in next lecture to {LABELS.get(lbl, {}).get('name', lbl)}."
+            })
 
     return {
         "total_active_students": len(sessions),
         "total_diagnoses": len(diag_rows),
         "class_misconception_counts": counts,
         "resolved_counts": resolved_counts,
-        "taxonomy": LABELS
+        "epidemics": epidemics,
+        "taxonomy": LABELS,
+        "research_backing": "Brown & Altadmri (2017) 100M+ events; Perkins (1986) Bugs vs Slips"
     }
 
 # Mount Frontend static directory for single-port unified deployment
@@ -431,4 +523,3 @@ from starlette.staticfiles import StaticFiles
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
-

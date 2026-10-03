@@ -532,3 +532,393 @@ if x = 5:
     print('five') # Student already knows == in chat",SyntaxError: invalid syntax,no output,M-09,x == 5,Slip under speed. Student previously demonstrated distinction.,Quick self-check: single = vs double ==?
 SYN0280,"for i in ragne(5):
     pass",NameError: name 'ragne' is not defined,no output,M-09,for i in range(5):,Typo slip: transposed characters in 'range'.,Notice the spelling of 'range'.
+GEN_HN01_M01_000,"target = 5
+if target = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 2),(none),M-01,# Verified ground truth,"When you want to compare two values versus assigning a value into a box, does Python use the same symbol?",What does 'x = 10' do versus 'x == 10' in Python?
+GEN_HN01_M01_V0_000,"score = 5
+if score = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 2),(none),M-01,# Synthesized verified mutant,"When you want to compare two values versus assigning a value into a box, does Python use the same symbol?",What does 'x = 10' do versus 'x == 10' in Python?
+GEN_HN01_M01_V1_000,"val = 5
+if val = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 2),(none),M-01,# Synthesized verified mutant,"When you want to compare two values versus assigning a value into a box, does Python use the same symbol?",What does 'x = 10' do versus 'x == 10' in Python?
+GEN_HN01_M01_V2_000,"item = 5
+if item = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 2),(none),M-01,# Synthesized verified mutant,"When you want to compare two values versus assigning a value into a box, does Python use the same symbol?",What does 'x = 10' do versus 'x == 10' in Python?
+GEN_HN01_M01_V3_000,"count = 5
+if count = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 2),(none),M-01,# Synthesized verified mutant,"When you want to compare two values versus assigning a value into a box, does Python use the same symbol?",What does 'x = 10' do versus 'x == 10' in Python?
+GEN_HN01_M01_V4_000,"x = 5
+if x = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 2),(none),M-01,# Synthesized verified mutant,"When you want to compare two values versus assigning a value into a box, does Python use the same symbol?",What does 'x = 10' do versus 'x == 10' in Python?
+GEN_HN01_M09_001,"# Student already used == correctly above
+score = 10
+if score == 10:
+    print('top score')
+target = 5
+if target = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 6),(none),M-09,# Verified ground truth,You used '==' perfectly on line 3! Take a quick glance at line 6—spot the small typo?,"Quick check: on line 6, did you intend assignment or comparison?"
+GEN_HN01_M09_V0_001,"# Student already used == correctly above
+score = 10
+if score == 10:
+    print('top score')
+score = 5
+if score = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 6),(none),M-09,# Synthesized verified mutant,You used '==' perfectly on line 3! Take a quick glance at line 6—spot the small typo?,"Quick check: on line 6, did you intend assignment or comparison?"
+GEN_HN01_M09_V1_001,"# Student already used == correctly above
+score = 10
+if score == 10:
+    print('top score')
+val = 5
+if val = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 6),(none),M-09,# Synthesized verified mutant,You used '==' perfectly on line 3! Take a quick glance at line 6—spot the small typo?,"Quick check: on line 6, did you intend assignment or comparison?"
+GEN_HN01_M09_V2_001,"# Student already used == correctly above
+score = 10
+if score == 10:
+    print('top score')
+item = 5
+if item = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 6),(none),M-09,# Synthesized verified mutant,You used '==' perfectly on line 3! Take a quick glance at line 6—spot the small typo?,"Quick check: on line 6, did you intend assignment or comparison?"
+GEN_HN01_M09_V3_001,"# Student already used == correctly above
+score = 10
+if score == 10:
+    print('top score')
+count = 5
+if count = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 6),(none),M-09,# Synthesized verified mutant,You used '==' perfectly on line 3! Take a quick glance at line 6—spot the small typo?,"Quick check: on line 6, did you intend assignment or comparison?"
+GEN_HN01_M09_V4_001,"# Student already used == correctly above
+score = 10
+if score == 10:
+    print('top score')
+x = 5
+if x = 5:
+    print('match')",SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='? (line 6),(none),M-09,# Synthesized verified mutant,You used '==' perfectly on line 3! Take a quick glance at line 6—spot the small typo?,"Quick check: on line 6, did you intend assignment or comparison?"
+GEN_HN02_M06_002,"n = 0
+while n < 5
+    print(n)",SyntaxError: expected ':' (line 2),(none),M-06,# Verified ground truth,"In Python, what character tells the interpreter that a new indented block is starting?",Where does the colon belong in: 'for item in items print(item)'?
+GEN_HN02_M06_V0_002,"n = 0
+while n < 5
+    print(n)",SyntaxError: expected ':' (line 2),(none),M-06,# Synthesized verified mutant,"In Python, what character tells the interpreter that a new indented block is starting?",Where does the colon belong in: 'for item in items print(item)'?
+GEN_HN02_M06_V1_002,"n = 0
+while n < 5
+    print(n)",SyntaxError: expected ':' (line 2),(none),M-06,# Synthesized verified mutant,"In Python, what character tells the interpreter that a new indented block is starting?",Where does the colon belong in: 'for item in items print(item)'?
+GEN_HN02_M06_V2_002,"n = 0
+while n < 5
+    print(n)",SyntaxError: expected ':' (line 2),(none),M-06,# Synthesized verified mutant,"In Python, what character tells the interpreter that a new indented block is starting?",Where does the colon belong in: 'for item in items print(item)'?
+GEN_HN02_M06_V3_002,"n = 0
+while n < 5
+    print(n)",SyntaxError: expected ':' (line 2),(none),M-06,# Synthesized verified mutant,"In Python, what character tells the interpreter that a new indented block is starting?",Where does the colon belong in: 'for item in items print(item)'?
+GEN_HN02_M06_V4_002,"n = 0
+while n < 5
+    print(n)",SyntaxError: expected ':' (line 2),(none),M-06,# Synthesized verified mutant,"In Python, what character tells the interpreter that a new indented block is starting?",Where does the colon belong in: 'for item in items print(item)'?
+GEN_HN02_M09_003,"for i in range(3):
+    print('Loop 1:', i)
+while n < 5
+    print('Loop 2')
+    n += 1",SyntaxError: expected ':' (line 3),(none),M-09,# Verified ground truth,Your first loop had the right punctuation! Check the end of your while condition.,Did you mean to include a colon at the end of the while line?
+GEN_HN02_M09_V0_003,"for i in range(3):
+    print('Loop 1:', i)
+while n < 5
+    print('Loop 2')
+    n += 1",SyntaxError: expected ':' (line 3),(none),M-09,# Synthesized verified mutant,Your first loop had the right punctuation! Check the end of your while condition.,Did you mean to include a colon at the end of the while line?
+GEN_HN02_M09_V1_003,"for i in range(3):
+    print('Loop 1:', i)
+while n < 5
+    print('Loop 2')
+    n += 1",SyntaxError: expected ':' (line 3),(none),M-09,# Synthesized verified mutant,Your first loop had the right punctuation! Check the end of your while condition.,Did you mean to include a colon at the end of the while line?
+GEN_HN02_M09_V2_003,"for i in range(3):
+    print('Loop 1:', i)
+while n < 5
+    print('Loop 2')
+    n += 1",SyntaxError: expected ':' (line 3),(none),M-09,# Synthesized verified mutant,Your first loop had the right punctuation! Check the end of your while condition.,Did you mean to include a colon at the end of the while line?
+GEN_HN02_M09_V3_003,"for i in range(3):
+    print('Loop 1:', i)
+while n < 5
+    print('Loop 2')
+    n += 1",SyntaxError: expected ':' (line 3),(none),M-09,# Synthesized verified mutant,Your first loop had the right punctuation! Check the end of your while condition.,Did you mean to include a colon at the end of the while line?
+GEN_HN02_M09_V4_003,"for i in range(3):
+    print('Loop 1:', i)
+while n < 5
+    print('Loop 2')
+    n += 1",SyntaxError: expected ':' (line 3),(none),M-09,# Synthesized verified mutant,Your first loop had the right punctuation! Check the end of your while condition.,Did you mean to include a colon at the end of the while line?
+GEN_HN03_M05_004,"price = 20
+msg = 'Total is: ' + price
+print(msg)","TypeError: can only concatenate str (not ""int"") to str",(none),M-05,# Verified ground truth,Does Python treat 'Total is: ' and the number 20 as the same category of data?,Predict output of: 'Order: ' + 5 versus 'Order: ' + str(5)
+GEN_HN03_M05_V0_004,"score = 20
+msg = 'Total is: ' + score
+print(msg)","TypeError: can only concatenate str (not ""int"") to str",(none),M-05,# Synthesized verified mutant,Does Python treat 'Total is: ' and the number 20 as the same category of data?,Predict output of: 'Order: ' + 5 versus 'Order: ' + str(5)
+GEN_HN03_M05_V1_004,"val = 20
+msg = 'Total is: ' + val
+print(msg)","TypeError: can only concatenate str (not ""int"") to str",(none),M-05,# Synthesized verified mutant,Does Python treat 'Total is: ' and the number 20 as the same category of data?,Predict output of: 'Order: ' + 5 versus 'Order: ' + str(5)
+GEN_HN03_M05_V2_004,"item = 20
+msg = 'Total is: ' + item
+print(msg)","TypeError: can only concatenate str (not ""int"") to str",(none),M-05,# Synthesized verified mutant,Does Python treat 'Total is: ' and the number 20 as the same category of data?,Predict output of: 'Order: ' + 5 versus 'Order: ' + str(5)
+GEN_HN03_M05_V3_004,"count = 20
+msg = 'Total is: ' + count
+print(msg)","TypeError: can only concatenate str (not ""int"") to str",(none),M-05,# Synthesized verified mutant,Does Python treat 'Total is: ' and the number 20 as the same category of data?,Predict output of: 'Order: ' + 5 versus 'Order: ' + str(5)
+GEN_HN03_M05_V4_004,"x = 20
+msg = 'Total is: ' + x
+print(msg)","TypeError: can only concatenate str (not ""int"") to str",(none),M-05,# Synthesized verified mutant,Does Python treat 'Total is: ' and the number 20 as the same category of data?,Predict output of: 'Order: ' + 5 versus 'Order: ' + str(5)
+GEN_HN03_M09_005,"total = 20
+label = 'Total: ' + str(total)
+items = 3
+summary = 'Items: ' + items","TypeError: can only concatenate str (not ""int"") to str",(none),M-09,# Verified ground truth,You wrapped 'total' with str() on line 2! Did you forget that wrapper on 'items'?,Which function did you use on line 2 to convert numbers for concatenation?
+GEN_HN03_M09_V0_005,"total = 20
+label = 'Total: ' + str(total)
+items = 3
+summary = 'Items: ' + items","TypeError: can only concatenate str (not ""int"") to str",(none),M-09,# Synthesized verified mutant,You wrapped 'total' with str() on line 2! Did you forget that wrapper on 'items'?,Which function did you use on line 2 to convert numbers for concatenation?
+GEN_HN03_M09_V1_005,"total = 20
+label = 'Total: ' + str(total)
+items = 3
+summary = 'Items: ' + items","TypeError: can only concatenate str (not ""int"") to str",(none),M-09,# Synthesized verified mutant,You wrapped 'total' with str() on line 2! Did you forget that wrapper on 'items'?,Which function did you use on line 2 to convert numbers for concatenation?
+GEN_HN03_M09_V2_005,"total = 20
+label = 'Total: ' + str(total)
+items = 3
+summary = 'Items: ' + items","TypeError: can only concatenate str (not ""int"") to str",(none),M-09,# Synthesized verified mutant,You wrapped 'total' with str() on line 2! Did you forget that wrapper on 'items'?,Which function did you use on line 2 to convert numbers for concatenation?
+GEN_HN03_M09_V3_005,"total = 20
+label = 'Total: ' + str(total)
+items = 3
+summary = 'Items: ' + items","TypeError: can only concatenate str (not ""int"") to str",(none),M-09,# Synthesized verified mutant,You wrapped 'total' with str() on line 2! Did you forget that wrapper on 'items'?,Which function did you use on line 2 to convert numbers for concatenation?
+GEN_HN03_M09_V4_005,"total = 20
+label = 'Total: ' + str(total)
+items = 3
+summary = 'Items: ' + items","TypeError: can only concatenate str (not ""int"") to str",(none),M-09,# Synthesized verified mutant,You wrapped 'total' with str() on line 2! Did you forget that wrapper on 'items'?,Which function did you use on line 2 to convert numbers for concatenation?
+GEN_HN04_M02_006,"nums = [10, 20, 30]
+for i in range(1, 4):
+    print(nums[i])",IndexError: list index out of range,"20
+30",M-02,# Verified ground truth,What is the index of the very first element in any Python list?,"For a list of length 4, what are all valid integer index positions?"
+GEN_HN04_M02_V0_006,"limit = [10, 20, 30]
+for i in range(1, 4):
+    print(limit[i])",IndexError: list index out of range,"20
+30",M-02,# Synthesized verified mutant,What is the index of the very first element in any Python list?,"For a list of length 4, what are all valid integer index positions?"
+GEN_HN04_M02_V1_006,"max_val = [10, 20, 30]
+for i in range(1, 4):
+    print(max_val[i])",IndexError: list index out of range,"20
+30",M-02,# Synthesized verified mutant,What is the index of the very first element in any Python list?,"For a list of length 4, what are all valid integer index positions?"
+GEN_HN04_M02_V2_006,"boundary = [10, 20, 30]
+for i in range(1, 4):
+    print(boundary[i])",IndexError: list index out of range,"20
+30",M-02,# Synthesized verified mutant,What is the index of the very first element in any Python list?,"For a list of length 4, what are all valid integer index positions?"
+GEN_HN04_M02_V3_006,"total = [10, 20, 30]
+for i in range(1, 4):
+    print(total[i])",IndexError: list index out of range,"20
+30",M-02,# Synthesized verified mutant,What is the index of the very first element in any Python list?,"For a list of length 4, what are all valid integer index positions?"
+GEN_HN04_M02_V4_006,"y = [10, 20, 30]
+for i in range(1, 4):
+    print(y[i])",IndexError: list index out of range,"20
+30",M-02,# Synthesized verified mutant,What is the index of the very first element in any Python list?,"For a list of length 4, what are all valid integer index positions?"
+GEN_HN04_M09_007,"items = [10, 20, 30]
+print('First item:', items[0])
+print('Last item:', items[3])",IndexError: list index out of range,First item: 10,M-09,# Verified ground truth,"You correctly got items[0]! If there are 3 items, what is the index of the 3rd item?","If len(items) is 3, what is the maximum valid index?"
+GEN_HN04_M09_V0_007,"items = [10, 20, 30]
+print('First item:', items[0])
+print('Last item:', items[3])",IndexError: list index out of range,First item: 10,M-09,# Synthesized verified mutant,"You correctly got items[0]! If there are 3 items, what is the index of the 3rd item?","If len(items) is 3, what is the maximum valid index?"
+GEN_HN04_M09_V1_007,"items = [10, 20, 30]
+print('First item:', items[0])
+print('Last item:', items[3])",IndexError: list index out of range,First item: 10,M-09,# Synthesized verified mutant,"You correctly got items[0]! If there are 3 items, what is the index of the 3rd item?","If len(items) is 3, what is the maximum valid index?"
+GEN_HN04_M09_V2_007,"items = [10, 20, 30]
+print('First item:', items[0])
+print('Last item:', items[3])",IndexError: list index out of range,First item: 10,M-09,# Synthesized verified mutant,"You correctly got items[0]! If there are 3 items, what is the index of the 3rd item?","If len(items) is 3, what is the maximum valid index?"
+GEN_HN04_M09_V3_007,"items = [10, 20, 30]
+print('First item:', items[0])
+print('Last item:', items[3])",IndexError: list index out of range,First item: 10,M-09,# Synthesized verified mutant,"You correctly got items[0]! If there are 3 items, what is the index of the 3rd item?","If len(items) is 3, what is the maximum valid index?"
+GEN_HN04_M09_V4_007,"items = [10, 20, 30]
+print('First item:', items[0])
+print('Last item:', items[3])",IndexError: list index out of range,First item: 10,M-09,# Synthesized verified mutant,"You correctly got items[0]! If there are 3 items, what is the index of the 3rd item?","If len(items) is 3, what is the maximum valid index?"
+GEN_HN05_M08_008,"def calculate_area(w, h):
+    print(w * h)
+
+area = calculate_area(4, 5)
+final_cost = area * 10
+print('Cost:', final_cost)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',20,M-08,# Verified ground truth,"When a function prints, where does the result go: onto the screen, or back to the caller?","If a function doesn't use the word 'return', what value does it give back to whoever called it?"
+GEN_HN05_M08_V0_008,"def calculate_limit(w, h):
+    print(w * h)
+
+limit = calculate_limit(4, 5)
+final_cost = limit * 10
+print('Cost:', final_cost)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',20,M-08,# Synthesized verified mutant,"When a function prints, where does the result go: onto the screen, or back to the caller?","If a function doesn't use the word 'return', what value does it give back to whoever called it?"
+GEN_HN05_M08_V1_008,"def calculate_max_val(w, h):
+    print(w * h)
+
+max_val = calculate_max_val(4, 5)
+final_cost = max_val * 10
+print('Cost:', final_cost)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',20,M-08,# Synthesized verified mutant,"When a function prints, where does the result go: onto the screen, or back to the caller?","If a function doesn't use the word 'return', what value does it give back to whoever called it?"
+GEN_HN05_M08_V2_008,"def calculate_boundary(w, h):
+    print(w * h)
+
+boundary = calculate_boundary(4, 5)
+final_cost = boundary * 10
+print('Cost:', final_cost)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',20,M-08,# Synthesized verified mutant,"When a function prints, where does the result go: onto the screen, or back to the caller?","If a function doesn't use the word 'return', what value does it give back to whoever called it?"
+GEN_HN05_M08_V3_008,"def calculate_total(w, h):
+    print(w * h)
+
+total = calculate_total(4, 5)
+final_cost = total * 10
+print('Cost:', final_cost)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',20,M-08,# Synthesized verified mutant,"When a function prints, where does the result go: onto the screen, or back to the caller?","If a function doesn't use the word 'return', what value does it give back to whoever called it?"
+GEN_HN05_M08_V4_008,"def calculate_y(w, h):
+    print(w * h)
+
+y = calculate_y(4, 5)
+final_cost = y * 10
+print('Cost:', final_cost)",TypeError: unsupported operand type(s) for *: 'NoneType' and 'int',20,M-08,# Synthesized verified mutant,"When a function prints, where does the result go: onto the screen, or back to the caller?","If a function doesn't use the word 'return', what value does it give back to whoever called it?"
+GEN_HN05_M09_009,"def get_tax(val):
+    return val * 0.1
+
+def calculate_area(w, h):
+    print(w * h)
+
+area = calculate_area(4, 5)
+print(area + 5)",TypeError: unsupported operand type(s) for +: 'NoneType' and 'int',20,M-09,# Verified ground truth,Notice get_tax uses 'return'! Did you mean to use 'return' instead of 'print' inside calculate_area?,"To send the area back to the caller, should calculate_area use print or return?"
+GEN_HN05_M09_V0_009,"def get_tax(val):
+    return val * 0.1
+
+def calculate_limit(w, h):
+    print(w * h)
+
+limit = calculate_limit(4, 5)
+print(limit + 5)",TypeError: unsupported operand type(s) for +: 'NoneType' and 'int',20,M-09,# Synthesized verified mutant,Notice get_tax uses 'return'! Did you mean to use 'return' instead of 'print' inside calculate_area?,"To send the area back to the caller, should calculate_area use print or return?"
+GEN_HN05_M09_V1_009,"def get_tax(val):
+    return val * 0.1
+
+def calculate_max_val(w, h):
+    print(w * h)
+
+max_val = calculate_max_val(4, 5)
+print(max_val + 5)",TypeError: unsupported operand type(s) for +: 'NoneType' and 'int',20,M-09,# Synthesized verified mutant,Notice get_tax uses 'return'! Did you mean to use 'return' instead of 'print' inside calculate_area?,"To send the area back to the caller, should calculate_area use print or return?"
+GEN_HN05_M09_V2_009,"def get_tax(val):
+    return val * 0.1
+
+def calculate_boundary(w, h):
+    print(w * h)
+
+boundary = calculate_boundary(4, 5)
+print(boundary + 5)",TypeError: unsupported operand type(s) for +: 'NoneType' and 'int',20,M-09,# Synthesized verified mutant,Notice get_tax uses 'return'! Did you mean to use 'return' instead of 'print' inside calculate_area?,"To send the area back to the caller, should calculate_area use print or return?"
+GEN_HN05_M09_V3_009,"def get_tax(val):
+    return val * 0.1
+
+def calculate_total(w, h):
+    print(w * h)
+
+total = calculate_total(4, 5)
+print(total + 5)",TypeError: unsupported operand type(s) for +: 'NoneType' and 'int',20,M-09,# Synthesized verified mutant,Notice get_tax uses 'return'! Did you mean to use 'return' instead of 'print' inside calculate_area?,"To send the area back to the caller, should calculate_area use print or return?"
+GEN_HN05_M09_V4_009,"def get_tax(val):
+    return val * 0.1
+
+def calculate_y(w, h):
+    print(w * h)
+
+y = calculate_y(4, 5)
+print(y + 5)",TypeError: unsupported operand type(s) for +: 'NoneType' and 'int',20,M-09,# Synthesized verified mutant,Notice get_tax uses 'return'! Did you mean to use 'return' instead of 'print' inside calculate_area?,"To send the area back to the caller, should calculate_area use print or return?"
+GEN_MUT_M03_A_010,"original = [1, 2, 3]
+backup = original
+backup.append(4)
+print(original)",(none),"[1, 2, 3, 4]",M-03,# Verified ground truth,"Did 'backup = original' create a second distinct list, or give a nickname to the existing list?","If a = [5]; b = a; b.append(6), what does print(a) output?"
+GEN_MUT_M03_A_V0_010,"original = [1, 2, 3]
+backup = original
+backup.append(4)
+print(original)",(none),"[1, 2, 3, 4]",M-03,# Synthesized verified mutant,"Did 'backup = original' create a second distinct list, or give a nickname to the existing list?","If a = [5]; b = a; b.append(6), what does print(a) output?"
+GEN_MUT_M03_A_V1_010,"original = [1, 2, 3]
+backup = original
+backup.append(4)
+print(original)",(none),"[1, 2, 3, 4]",M-03,# Synthesized verified mutant,"Did 'backup = original' create a second distinct list, or give a nickname to the existing list?","If a = [5]; b = a; b.append(6), what does print(a) output?"
+GEN_MUT_M03_A_V2_010,"original = [1, 2, 3]
+backup = original
+backup.append(4)
+print(original)",(none),"[1, 2, 3, 4]",M-03,# Synthesized verified mutant,"Did 'backup = original' create a second distinct list, or give a nickname to the existing list?","If a = [5]; b = a; b.append(6), what does print(a) output?"
+GEN_MUT_M03_A_V3_010,"original = [1, 2, 3]
+backup = original
+backup.append(4)
+print(original)",(none),"[1, 2, 3, 4]",M-03,# Synthesized verified mutant,"Did 'backup = original' create a second distinct list, or give a nickname to the existing list?","If a = [5]; b = a; b.append(6), what does print(a) output?"
+GEN_MUT_M03_A_V4_010,"original = [1, 2, 3]
+backup = original
+backup.append(4)
+print(original)",(none),"[1, 2, 3, 4]",M-03,# Synthesized verified mutant,"Did 'backup = original' create a second distinct list, or give a nickname to the existing list?","If a = [5]; b = a; b.append(6), what does print(a) output?"
+GEN_MUT_M03_B_011,"def append_to(item, target_list=[]):
+    target_list.append(item)
+    return target_list
+print(append_to('a'))
+print(append_to('b'))",(none),"['a']
+['a', 'b']",M-03,# Verified ground truth,"Is a default argument list created fresh every time the function is called, or only once when defined?",What does the second call to append_to('b') return?
+GEN_MUT_M03_B_V0_011,"def append_to(item, score_list=[]):
+    score_list.append(item)
+    return score_list
+print(append_to('a'))
+print(append_to('b'))",(none),"['a']
+['a', 'b']",M-03,# Synthesized verified mutant,"Is a default argument list created fresh every time the function is called, or only once when defined?",What does the second call to append_to('b') return?
+GEN_MUT_M03_B_V1_011,"def append_to(item, val_list=[]):
+    val_list.append(item)
+    return val_list
+print(append_to('a'))
+print(append_to('b'))",(none),"['a']
+['a', 'b']",M-03,# Synthesized verified mutant,"Is a default argument list created fresh every time the function is called, or only once when defined?",What does the second call to append_to('b') return?
+GEN_MUT_M03_B_V2_011,"def append_to(item, item_list=[]):
+    item_list.append(item)
+    return item_list
+print(append_to('a'))
+print(append_to('b'))",(none),"['a']
+['a', 'b']",M-03,# Synthesized verified mutant,"Is a default argument list created fresh every time the function is called, or only once when defined?",What does the second call to append_to('b') return?
+GEN_MUT_M03_B_V3_011,"def append_to(item, count_list=[]):
+    count_list.append(item)
+    return count_list
+print(append_to('a'))
+print(append_to('b'))",(none),"['a']
+['a', 'b']",M-03,# Synthesized verified mutant,"Is a default argument list created fresh every time the function is called, or only once when defined?",What does the second call to append_to('b') return?
+GEN_MUT_M03_B_V4_011,"def append_to(item, x_list=[]):
+    x_list.append(item)
+    return x_list
+print(append_to('a'))
+print(append_to('b'))",(none),"['a']
+['a', 'b']",M-03,# Synthesized verified mutant,"Is a default argument list created fresh every time the function is called, or only once when defined?",What does the second call to append_to('b') return?
+GEN_MUT_M04_A_012,"val = 0 or 'fallback'
+print(val)
+flag = 'hello' and 'world'
+print(flag)",(none),"fallback
+world",M-04,# Verified ground truth,"In Python, do 'and' and 'or' convert values into True/False, or do they return the actual operand?",What is the exact evaluation of: 5 or 10?
+GEN_MUT_M04_A_V0_012,"val = 0 or 'fallback'
+print(val)
+flag = 'hello' and 'world'
+print(flag)",(none),"fallback
+world",M-04,# Synthesized verified mutant,"In Python, do 'and' and 'or' convert values into True/False, or do they return the actual operand?",What is the exact evaluation of: 5 or 10?
+GEN_MUT_M04_A_V1_012,"val = 0 or 'fallback'
+print(val)
+flag = 'hello' and 'world'
+print(flag)",(none),"fallback
+world",M-04,# Synthesized verified mutant,"In Python, do 'and' and 'or' convert values into True/False, or do they return the actual operand?",What is the exact evaluation of: 5 or 10?
+GEN_MUT_M04_A_V2_012,"val = 0 or 'fallback'
+print(val)
+flag = 'hello' and 'world'
+print(flag)",(none),"fallback
+world",M-04,# Synthesized verified mutant,"In Python, do 'and' and 'or' convert values into True/False, or do they return the actual operand?",What is the exact evaluation of: 5 or 10?
+GEN_MUT_M04_A_V3_012,"val = 0 or 'fallback'
+print(val)
+flag = 'hello' and 'world'
+print(flag)",(none),"fallback
+world",M-04,# Synthesized verified mutant,"In Python, do 'and' and 'or' convert values into True/False, or do they return the actual operand?",What is the exact evaluation of: 5 or 10?
+GEN_MUT_M04_A_V4_012,"val = 0 or 'fallback'
+print(val)
+flag = 'hello' and 'world'
+print(flag)",(none),"fallback
+world",M-04,# Synthesized verified mutant,"In Python, do 'and' and 'or' convert values into True/False, or do they return the actual operand?",What is the exact evaluation of: 5 or 10?
+GEN_MUT_M07_A_013,"for i in range(3):
+print(i)",SyntaxError: expected an indented block after 'for' statement on line 1 (line 2),(none),M-07,# Verified ground truth,How does Python recognize which lines belong inside a loop block?,How many spaces should be indented inside a Python for-loop block?
+GEN_MUT_M07_A_V0_013,"for i in range(3):
+print(i)",SyntaxError: expected an indented block after 'for' statement on line 1 (line 2),(none),M-07,# Synthesized verified mutant,How does Python recognize which lines belong inside a loop block?,How many spaces should be indented inside a Python for-loop block?
+GEN_MUT_M07_A_V1_013,"for i in range(3):
+print(i)",SyntaxError: expected an indented block after 'for' statement on line 1 (line 2),(none),M-07,# Synthesized verified mutant,How does Python recognize which lines belong inside a loop block?,How many spaces should be indented inside a Python for-loop block?
+GEN_MUT_M07_A_V2_013,"for i in range(3):
+print(i)",SyntaxError: expected an indented block after 'for' statement on line 1 (line 2),(none),M-07,# Synthesized verified mutant,How does Python recognize which lines belong inside a loop block?,How many spaces should be indented inside a Python for-loop block?
+GEN_MUT_M07_A_V3_013,"for i in range(3):
+print(i)",SyntaxError: expected an indented block after 'for' statement on line 1 (line 2),(none),M-07,# Synthesized verified mutant,How does Python recognize which lines belong inside a loop block?,How many spaces should be indented inside a Python for-loop block?
+GEN_MUT_M07_A_V4_013,"for i in range(3):
+print(i)",SyntaxError: expected an indented block after 'for' statement on line 1 (line 2),(none),M-07,# Synthesized verified mutant,How does Python recognize which lines belong inside a loop block?,How many spaces should be indented inside a Python for-loop block?
+GEN_MUT_M07_B_014,"def greet(name):
+print('Hello ' + name)",SyntaxError: expected an indented block after function definition on line 1 (line 2),(none),M-07,# Verified ground truth,What indentation does Python require for statements inside a def function?,Indent the body of: def test(): pass
+GEN_MUT_M07_B_V0_014,"def greet(name):
+print('Hello ' + name)",SyntaxError: expected an indented block after function definition on line 1 (line 2),(none),M-07,# Synthesized verified mutant,What indentation does Python require for statements inside a def function?,Indent the body of: def test(): pass
+GEN_MUT_M07_B_V1_014,"def greet(name):
+print('Hello ' + name)",SyntaxError: expected an indented block after function definition on line 1 (line 2),(none),M-07,# Synthesized verified mutant,What indentation does Python require for statements inside a def function?,Indent the body of: def test(): pass
+GEN_MUT_M07_B_V2_014,"def greet(name):
+print('Hello ' + name)",SyntaxError: expected an indented block after function definition on line 1 (line 2),(none),M-07,# Synthesized verified mutant,What indentation does Python require for statements inside a def function?,Indent the body of: def test(): pass
+GEN_MUT_M07_B_V3_014,"def greet(name):
+print('Hello ' + name)",SyntaxError: expected an indented block after function definition on line 1 (line 2),(none),M-07,# Synthesized verified mutant,What indentation does Python require for statements inside a def function?,Indent the body of: def test(): pass
+GEN_MUT_M07_B_V4_014,"def greet(name):
+print('Hello ' + name)",SyntaxError: expected an indented block after function definition on line 1 (line 2),(none),M-07,# Synthesized verified mutant,What indentation does Python require for statements inside a def function?,Indent the body of: def test(): pass

@@ -1,5 +1,5 @@
 {
-  "dataset_samples": 200,
+  "dataset_samples": 290,
   "classes": [
     "M-01",
     "M-02",
@@ -11,9 +11,12 @@
     "M-08",
     "M-09"
   ],
-  "test_samples": 50,
-  "overall_accuracy": 1.0,
-  "macro_f1": 1.0,
-  "sloppiness_precision": 1.0,
-  "sloppiness_recall": 1.0
+  "test_samples": 73,
+  "overall_accuracy": 0.9863,
+  "macro_f1": 0.9873,
+  "weighted_f1": 0.986,
+  "sloppiness_precision": 0.9286,
+  "sloppiness_recall": 1.0,
+  "hard_negatives_evaluated": true,
+  "methodology": "Executable runtime verification with paired hard negatives & stratified 75/25 split"
 }
