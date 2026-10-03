@@ -118,15 +118,17 @@
       letter-spacing: 0.04em;
     }
 
-    /* SCENARIO CHIPS (RareUI Floating Tactile Badges) */
+    /* RAREUI FLOATING DOCK COMMAND STRIP */
     .titlebar-presets {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
+      background: rgba(15, 20, 34, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
       padding: 3px 8px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
     }
     .preset-label {
       font-size: 0.68rem;
@@ -196,6 +198,32 @@
       transition: color 0.15s;
     }
     .sound-toggle-btn:hover { color: white; }
+
+    /* RAREUI PULSING LIVE PILL BADGE */
+    .rare-live-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    .rare-live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: rarePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes rarePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
 
     /* ==========================================================================
        2. WORKSPACE LAYOUT: ACTIVITY BAR, SIDEBAR, EDITOR, AI DRAWER
@@ -346,24 +374,46 @@
       gap: 8px;
       padding-right: 12px;
     }
+    /* RAREUI GLASS SHIMMER BUTTON */
     .btn-run-main {
+      position: relative;
+      overflow: hidden;
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: white;
-      border: none;
-      padding: 5px 14px;
-      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 6px 16px;
+      border-radius: 8px;
       font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
-      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
-      transition: all 0.15s ease;
+      gap: 7px;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-run-main::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        60deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.35) 50%,
+        transparent 70%
+      );
+      transform: rotate(30deg) translateX(-120%);
+      transition: transform 0.65s ease;
+    }
+    .btn-run-main:hover::after {
+      transform: rotate(30deg) translateX(120%);
     }
     .btn-run-main:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.6);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
     }
     .btn-run-main:active { transform: translateY(0); }
 
@@ -728,25 +778,28 @@
       flex-direction: column;
       gap: 7px;
     }
+    /* RAREUI TACTILE 3D QUIZ CARDS */
     .quiz-card {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 8px 10px;
+      background: rgba(22, 29, 47, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 9px 12px;
       font-size: 0.78rem;
       color: #e2e8f0;
       cursor: pointer;
       display: flex;
       align-items: flex-start;
-      gap: 8px;
-      transition: all 0.16s ease;
-      line-height: 1.35;
+      gap: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      line-height: 1.4;
     }
     .quiz-card:hover {
-      background: rgba(139, 92, 246, 0.2);
+      background: rgba(139, 92, 246, 0.15);
       border-color: #8b5cf6;
       color: white;
-      transform: translateX(2px);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
     .quiz-card.selected-correct {
       border-color: #10b981;
@@ -1000,7 +1053,7 @@
     <div class="titlebar-right">
       <button class="sound-toggle-btn" id="sound-toggle" onclick="toggleAudio()" title="Soundcn Haptic Audio Toggle">🔊</button>
       <button class="btn-top" onclick="openTeacherModal()">📊 Class Heatmap</button>
-      <div style="font-size: 0.68rem; color: #34d399; font-weight: 600;">● Engine Ready</div>
+      <div class="rare-live-pill"><span class="rare-live-dot"></span><span>Engine Ready</span></div>
     </div>
   </div>
 
