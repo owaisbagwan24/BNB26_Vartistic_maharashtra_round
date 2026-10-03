@@ -1,14 +1,21 @@
-"""Builds training/train_relearn.ipynb with clean Jupyter notebook JSON structure.
-Fixes linter problems:
-- Uses %pip instead of !pip
-- Adds # type: ignore to external cloud libraries (transformers, datasets, google.colab)
+"""Builds training/train_relearn.ipynb with embedded dataset.
+Completely eliminates the `files.upload()` hang inside the IDE!
 """
 import json
+import base64
+import zlib
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 NOTEBOOK_PATH = PROJECT_ROOT / "training" / "train_relearn.ipynb"
+DATASET_PATH = PROJECT_ROOT / "dataset" / "misconceptions_expanded.csv"
+
+# Read dataset and compress to base64
+with open(DATASET_PATH, "rb") as f:
+    raw_data = f.read()
+
+compressed_b64 = base64.b64encode(zlib.compress(raw_data)).decode("ascii")
 
 cells = [
     {
@@ -19,7 +26,7 @@ cells = [
             "### Fine-Tuning DistilBERT with Paired Hard Negatives on Cloud GPU\n",
             "\n",
             "- **Research Backing**: Brown & Altadmri (2017) 100M+ events; Perkins (1986) Bugs vs Slips\n",
-            "- **Runtime**: Connect via **Select Kernel > Colab > Auto Connect**\n"
+            "- **Zero Setup**: Dataset is pre-bundled into the notebook — zero file uploads required!\n"
         ]
     },
     {
@@ -28,7 +35,7 @@ cells = [
         "metadata": {},
         "outputs": [],
         "source": [
-            "# Step 1: Install Hugging Face & ML libraries (%pip magic for Jupyter)\n",
+            "# Step 1: Install Hugging Face & ML libraries\n",
             "%pip install -q transformers datasets accelerate scikit-learn matplotlib pandas\n"
         ]
     },
@@ -44,7 +51,7 @@ cells = [
             "if torch.cuda.is_available():\n",
             "    print(f'✅ GPU Accelerated Runtime Active: {torch.cuda.get_device_name(0)}')\n",
             "else:\n",
-            "    print('⚠️ Running on CPU. Select a GPU runtime in Colab for faster training.')\n"
+            "    print('ℹ️ Running on CPU runtime (fast for 290 samples).')\n"
         ]
     },
     {
@@ -53,29 +60,21 @@ cells = [
         "metadata": {},
         "outputs": [],
         "source": [
-            "# Step 3: Load the 290 Executable-Verified Samples\n",
-            "import os\n",
+            "# Step 3: Instant Self-Contained Dataset Loader (Zero-Upload, Never Hangs!)\n",
+            "import base64\n",
+            "import zlib\n",
+            "import io\n",
             "import pandas as pd\n",
             "\n",
-            "CANDIDATES = [\n",
-            "    'dataset/misconceptions_expanded.csv',\n",
-            "    '../dataset/misconceptions_expanded.csv',\n",
-            "    'misconceptions_expanded.csv',\n",
-            "    '/content/misconceptions_expanded.csv'\n",
-            "]\n",
-            "dataset_path = next((p for p in CANDIDATES if os.path.exists(p)), None)\n",
+            f'DATASET_B64 = "{compressed_b64}"\n',
             "\n",
-            "if dataset_path is None:\n",
-            "    print('Uploading dataset file...')\n",
-            "    try:\n",
-            "        from google.colab import files  # type: ignore\n",
-            "        uploaded = files.upload()\n",
-            "        dataset_path = list(uploaded.keys())[0]\n",
-            "    except Exception:\n",
-            "        raise FileNotFoundError('Please upload misconceptions_expanded.csv')\n",
+            "csv_bytes = zlib.decompress(base64.b64decode(DATASET_B64))\n",
+            "with open('misconceptions_expanded.csv', 'wb') as f:\n",
+            "    f.write(csv_bytes)\n",
             "\n",
-            "df = pd.read_csv(dataset_path)\n",
-            "print(f'✅ Loaded {len(df)} samples from {dataset_path}')\n",
+            "df = pd.read_csv('misconceptions_expanded.csv')\n",
+            "print(f'✅ Successfully loaded {len(df)} verified student samples into Colab!')\n",
+            "print('Taxonomy breakdown:')\n",
             "print(df['misconception_id'].value_counts())\n"
         ]
     },
@@ -103,7 +102,7 @@ cells = [
             "train_df, test_df = train_test_split(\n",
             "    df, test_size=0.25, random_state=42, stratify=df['label']\n",
             ")\n",
-            "print(f'Train samples: {len(train_df)} | Held-Out Test samples: {len(test_df)}')\n"
+            "print(f'Training samples: {len(train_df)} | Held-Out Test samples: {len(test_df)}')\n"
         ]
     },
     {
@@ -179,6 +178,7 @@ cells = [
             "    compute_metrics=compute_metrics\n",
             ")\n",
             "\n",
+            "print('Training started on Colab runtime...')\n",
             "trainer.train()\n"
         ]
     },
@@ -241,4 +241,4 @@ notebook = {
 with open(NOTEBOOK_PATH, "w", encoding="utf-8") as f:
     json.dump(notebook, f, indent=2)
 
-print(f"Successfully updated Jupyter Notebook: {NOTEBOOK_PATH}")
+print(f"Successfully generated self-contained notebook: {NOTEBOOK_PATH}")
