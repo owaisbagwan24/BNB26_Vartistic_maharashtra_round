@@ -41,12 +41,13 @@ In introductory computer science (CS1), compilers and AI code tools diagnose **w
 │ • Dynamic Isomorphic Quiz (RareUI 3D tactile cards, fresh parameterized logic)   │
 │ • Soundcn Audio Microfeedback (4 restrained synthesized acoustic signals)        │
 └────────────────────────────────────────┬─────────────────────────────────────────┘
+*Production demo ships as a zero-build web app with offline fallback; UI Spec documents the React/AntD X scale-up architecture.*
                                          │ JSON-RPC / REST
                                          ▼
 ┌─────────────────────────────── BACKEND API ENGINE ───────────────────────────────┐
 │ 1. TRI-ENGINE ARBITRATION ROUTER                                                 │
 │    ├─ AST Deterministic Pre-Screener (<5ms, zero cloud cost)                     │
-│    ├─ Fine-Tuned DistilBERT Classifier (Offline-capable, 98% accuracy)           │
+│    ├─ Calibrated Multimodal ML Classifier (<5ms offline, 92.3% Grouped CV)       │
 │    └─ LLM Socratic Reasoner (Groq Llama-3.3-70B / Gemini few-shot)               │
 │                                                                                  │
 │ 2. COGNITIVE FIREWALL & OUTPUT LEAK FILTER                                       │
