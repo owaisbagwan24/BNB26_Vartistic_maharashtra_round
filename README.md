@@ -12,10 +12,11 @@
 
 ## 📑 Core Documentation Index
 
-- 📘 [PRD.md](file:///c:/Users/JUBER/Downloads/hackathon/PRD.md): Formal Product Requirements Document with full cognitive research foundations.
-- 🏗️ [SYSTEM_DESIGN_AND_ARCHITECTURE.md](file:///c:/Users/JUBER/Downloads/hackathon/SYSTEM_DESIGN_AND_ARCHITECTURE.md): Complete UI system design, capacity math (120k runs/term), state machine, and scale path to 10k students.
-- 🏆 [PITCH.md](file:///c:/Users/JUBER/Downloads/hackathon/PITCH.md): 8-slide pitch deck blueprint with market timing ($44.2B ITS market) and unfair angles.
-- 🎬 [DEMO_SCRIPT.md](file:///c:/Users/JUBER/Downloads/hackathon/DEMO_SCRIPT.md): Rehearsed 3-minute winning presentation choreography.
+- 🏆 [PITCH.md](PITCH.md): 8-slide pitch deck blueprint with market timing ($44.2B ITS market) and unfair angles.
+- 🎬 [DEMO_SCRIPT.md](DEMO_SCRIPT.md): Rehearsed 3-minute winning presentation choreography.
+- 📘 [docs/PRD.md](docs/PRD.md): Formal Product Requirements Document with full cognitive research foundations.
+- 🏗️ [docs/SYSTEM_DESIGN_AND_ARCHITECTURE.md](docs/SYSTEM_DESIGN_AND_ARCHITECTURE.md): Complete UI system design, capacity math (120k runs/term), state machine, and scale path to 10k students.
+- 🔍 [docs/AUDIT_REPORT.md](docs/AUDIT_REPORT.md): Hackathon problem-statement compliance audit and verification report.
 
 ---
 
@@ -165,10 +166,15 @@ Open your browser to:
 │   ├── eval_guardrail.py        # 50-prompt adversarial red-teaming test harness
 │   ├── training_metrics.json    # Evaluated test metrics JSON
 │   └── confusion_matrix.png     # Pitch-ready dark-mode confusion matrix
-├── PRD.md                       # Product Requirements Document
-├── SYSTEM_DESIGN_AND_ARCHITECTURE.md # System design primer & capacity analysis
-├── PITCH.md                     # 8-slide presentation blueprint
-└── DEMO_SCRIPT.md               # 3-minute rehearsed walkthrough script
+├── PITCH.md                     # 8-slide presentation blueprint (Executive Pitch)
+├── DEMO_SCRIPT.md               # 3-minute rehearsed walkthrough script (Live Demo)
+├── run.bat                      # One-click launcher for FastAPI backend & browser
+└── docs/                        # In-depth technical specifications & audit reports
+    ├── PRD.md                   # Formal Product Requirements Document
+    ├── SYSTEM_DESIGN_AND_ARCHITECTURE.md # System architecture & capacity analysis
+    ├── UI_TEAM_SPEC.md          # Frontend architecture & Ant Design X design spec
+    ├── TEAM_DIVISION_AND_HANDOVER.md # Team roles, ownership & sprint breakdown
+    └── AUDIT_REPORT.md          # Comprehensive hackathon rubric compliance audit
 ```
 
 ---
