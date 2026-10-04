@@ -1098,6 +1098,7 @@
 
     <div class="titlebar-right">
       <button class="sound-toggle-btn" id="sound-toggle" onclick="toggleAudio()" title="Soundcn Haptic Audio Toggle">🔊</button>
+      <button class="btn-top" id="btn-api-key" onclick="openApiKeyModal()" title="Configure optional Groq LLM Acceleration">⚡ API Key</button>
       <button class="btn-top" onclick="openTeacherModal()">📊 Class Heatmap</button>
       <div class="rare-live-pill"><span class="rare-live-dot"></span><span>Engine Ready</span></div>
     </div>
@@ -1356,6 +1357,37 @@ if x = 5:
         Taxonomy Breakdown (Brown & Altadmri 2017 Benchmark):
       </div>
       <div id="tm-heatmap-list" style="max-height: 260px; overflow-y: auto; padding-right: 4px;"></div>
+    </div>
+  </div>
+
+  <!-- OPTIONAL GROQ API KEY MODAL -->
+  <div id="apikey-modal" onclick="if(event.target===this) closeApiKeyModal()" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.78); backdrop-filter: blur(12px); z-index: 300; align-items: center; justify-content: center;">
+    <div class="t-modal-content" style="width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px;">
+        <h3 style="font-size: 1.1rem; color: white; display: flex; align-items: center; gap: 8px;">
+          <span>⚡</span> Groq LLM Acceleration <span style="font-size: 0.7rem; color: #10b981; border: 1px solid rgba(16,185,129,0.3); padding: 2px 6px; border-radius: 4px;">Optional</span>
+        </h3>
+        <button class="btn-top" onclick="closeApiKeyModal()">✕ Close</button>
+      </div>
+
+      <div style="margin: 16px 0; font-size: 0.8rem; color: #cbd5e1; line-height: 1.5;">
+        <p style="margin-bottom: 10px;">
+          <b>Default Active Mode:</b> Re:Learn operates <b>100% offline with 0 API keys</b> using the local AST Pre-Screener and Calibrated ML Classifier.
+        </p>
+        <p style="color: #94a3b8;">
+          If you wish to test live generative dialogue with <b>Llama-3.3-70B</b> under strict Socratic guardrails, paste your free Groq API key below:
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input type="password" id="groq-key-input" placeholder="gsk_..." style="flex: 1; background: #060911; border: 1px solid var(--border-subtle); border-radius: 6px; padding: 10px 14px; color: white; font-family: var(--font-mono); font-size: 0.8rem; outline: none;">
+        <button class="rare-run-btn" style="padding: 0 18px; font-size: 0.78rem;" onclick="saveApiKey()">Save</button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 12px; font-size: 0.72rem; color: #64748b;">
+        <span id="api-key-status">Status: Offline ML Classifier Active</span>
+        <button style="background: transparent; border: none; color: #f43f5e; cursor: pointer; text-decoration: underline;" onclick="clearApiKey()">Clear Key</button>
+      </div>
     </div>
   </div>
 
@@ -1788,7 +1820,8 @@ if x = 5:
             code: code,
             error: error,
             output: output,
-            history: chatHistory
+            history: chatHistory,
+            api_key: localStorage.getItem('relearn_groq_key') || undefined
           })
         });
         const diag = await resp.json();
@@ -2010,7 +2043,8 @@ if x = 5:
             session: SESSION_ID,
             misconception: currentDiag?.label || "General",
             message: msg,
-            code: getCode()
+            code: getCode(),
+            api_key: localStorage.getItem('relearn_groq_key') || undefined
           })
         });
         const data = await resp.json();
@@ -2116,8 +2150,67 @@ if x = 5:
       document.getElementById('teacher-modal').style.display = 'none';
     }
 
+    /* ==========================================================================
+       OPTIONAL GROQ API KEY MODAL CONTROLLERS
+       ========================================================================== */
+    function openApiKeyModal() {
+      Soundcn.click();
+      const modal = document.getElementById('apikey-modal');
+      modal.style.display = 'flex';
+      const saved = localStorage.getItem('relearn_groq_key') || '';
+      document.getElementById('groq-key-input').value = saved;
+      updateApiKeyStatus(saved);
+    }
+
+    function closeApiKeyModal() {
+      Soundcn.click();
+      document.getElementById('apikey-modal').style.display = 'none';
+    }
+
+    function saveApiKey() {
+      Soundcn.success();
+      const val = document.getElementById('groq-key-input').value.trim();
+      if (val) {
+        localStorage.setItem('relearn_groq_key', val);
+      } else {
+        localStorage.removeItem('relearn_groq_key');
+      }
+      updateApiKeyStatus(val);
+      closeApiKeyModal();
+    }
+
+    function clearApiKey() {
+      Soundcn.retry();
+      localStorage.removeItem('relearn_groq_key');
+      document.getElementById('groq-key-input').value = '';
+      updateApiKeyStatus('');
+    }
+
+    function updateApiKeyStatus(key) {
+      const btn = document.getElementById('btn-api-key');
+      const stat = document.getElementById('api-key-status');
+      if (key && key.startsWith('gsk_')) {
+        if (btn) {
+          btn.innerHTML = '⚡ Groq: Active';
+          btn.style.borderColor = '#10b981';
+          btn.style.color = '#34d399';
+        }
+        if (stat) stat.innerHTML = 'Status: <span style="color: #10b981; font-weight: 700;">⚡ Llama-3.3-70B Active</span>';
+      } else {
+        if (btn) {
+          btn.innerHTML = '⚡ API Key';
+          btn.style.borderColor = '';
+          btn.style.color = '';
+        }
+        if (stat) stat.innerHTML = 'Status: <span style="color: #38bdf8;">Offline ML Classifier Active</span>';
+      }
+    }
+
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeTeacherModal();
+      if (e.key === 'Escape') {
+        closeTeacherModal();
+        closeApiKeyModal();
+      }
     });
 
     /* ==========================================================================
@@ -2125,6 +2218,7 @@ if x = 5:
        ========================================================================== */
     window.addEventListener('DOMContentLoaded', () => {
       initEditor();
+      updateApiKeyStatus(localStorage.getItem('relearn_groq_key') || '');
       renderQuizCards("M-01");
       setTimeout(() => { executeCode(); }, 350);
     });
