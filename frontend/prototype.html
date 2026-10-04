@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Re:Learn IDE</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F5F9;--pan:#FFFFFF;--ink:#13213C;--mut:#5B6880;--line:#D5DCE7;--ed:#FBFCFE;--teal:#0E8A8C;--coral:#E2552D;--amber:#E9A23B;--tealbg:#DDF1F1;--coralbg:#FBE4DC;--amberbg:#FBEFD8;--term:#13213C;--termt:#DDE6F5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1428;--pan:#142038;--ink:#EAF0FA;--mut:#9AA8C2;--line:#2B3B5C;--ed:#101B31;--tealbg:#12383F;--coralbg:#43262A;--amberbg:#43361F;--term:#070D1A}}
+:root[data-theme="dark"]{--bg:#0C1428;--pan:#142038;--ink:#EAF0FA;--mut:#9AA8C2;--line:#2B3B5C;--ed:#101B31;--tealbg:#12383F;--coralbg:#43262A;--amberbg:#43361F;--term:#070D1A}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 Manrope,system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+button{font:700 13px Manrope,sans-serif;cursor:pointer;border:1px solid var(--line);background:var(--pan);color:var(--ink);border-radius:8px;padding:7px 12px}
+button:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.run{background:var(--teal);border-color:var(--teal);color:#fff}
+header{display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--pan);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font:800 20px 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em}
+.tab{padding:6px 12px;border-radius:8px 8px 0 0;background:var(--bg);font-weight:700;font-size:13px;border:1px solid var(--line);border-bottom:0}
+.sp{flex:1}
+select{font:700 13px Manrope,sans-serif;padding:7px;border-radius:8px;border:1px solid var(--line);background:var(--pan);color:var(--ink)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:220px 1fr 360px}
+aside,section.right{background:var(--pan);overflow-y:auto;padding:12px}
+aside{border-right:1px solid var(--line)}
+section.right{border-left:1px solid var(--line)}
+.center{display:flex;flex-direction:column;min-width:0;min-height:0}
+h2{font:700 12px Manrope,sans-serif;color:var(--mut);margin:0 0 8px;letter-spacing:.02em}
+.task{padding:9px 10px;border-radius:8px;margin-bottom:6px;border:1px solid var(--line);font-size:13px}
+.task.cur{border-color:var(--teal);background:var(--tealbg)}
+.task small{display:block;color:var(--mut)}
+.editor{flex:1;min-height:160px;display:flex;background:var(--ed);overflow:hidden}
+.gut{padding:12px 8px;text-align:right;color:var(--mut);font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;user-select:none;background:var(--bg);min-width:42px}
+.gut div{height:1.6em}.gut .bad{color:var(--coral);font-weight:700}
+textarea{flex:1;border:0;resize:none;background:transparent;color:var(--ink);font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;padding:12px;white-space:pre;overflow:auto}
+.term{background:var(--term);color:var(--termt);font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;padding:10px 14px;height:130px;overflow:auto;border-top:1px solid var(--line)}
+.term b{color:var(--amber)}.err{color:#FF8F70}.ok{color:#6FE0C5}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+.card{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.card.c{border-left:5px solid var(--coral);background:var(--coralbg)}
+.card.t{border-left:5px solid var(--teal)}
+.card.a{border-left:5px solid var(--amber)}
+.card h3{margin:0 0 4px;font:700 15px 'Bricolage Grotesque',sans-serif}
+.card p{margin:0;color:var(--mut)}
+.conf{height:6px;background:var(--line);border-radius:9px;margin-top:8px;overflow:hidden}.conf i{display:block;height:100%;background:var(--coral);width:0;transition:width .4s}
+.chat{display:flex;flex-direction:column;gap:8px}
+.m{padding:8px 11px;border-radius:12px;max-width:92%}
+.m.ai{background:var(--tealbg);align-self:flex-start}
+.m.me{background:var(--ink);color:var(--bg);align-self:flex-end}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.hints button{width:100%;text-align:left;margin-bottom:6px}
+.hints .txt{padding:8px 10px;background:var(--amberbg);border-radius:8px;margin-bottom:6px}
+.tag{display:inline-block;font-weight:700;font-size:12px;padding:2px 9px;border-radius:99px}
+.tag.act{background:var(--coralbg);color:var(--coral)}.tag.imp{background:var(--amberbg);color:#9A6410}.tag.res{background:var(--tealbg);color:var(--teal)}.tag.new{background:var(--bg);color:var(--mut);border:1px solid var(--line)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+footer{display:flex;gap:16px;padding:5px 14px calc(5px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);font-size:12px;flex-wrap:wrap}
+.lbl{position:relative}
+body.labels .lbl::after{content:attr(data-n);position:absolute;top:4px;right:4px;background:var(--coral);color:#fff;font-weight:800;font-size:12px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:5}
+.hide{display:none}
+@media(max-width:900px){main{grid-template-columns:1fr;overflow-y:auto;display:block}body{overflow:auto}aside{border-right:0;border-bottom:1px solid var(--line)}section.right{border-left:0}.editor{min-height:240px}}
+@media(prefers-reduced-motion:reduce){.conf i{transition:none}}
+</style>
+</head>
+<body>
+<header class="lbl" data-n="1">
+  <span class="logo">Re:Learn</span>
+  <span class="tab">conditionals.py</span>
+  <span class="sp"></span>
+  <label>Coach style <select id="mode"><option>Guide me with questions</option><option>Hints only</option><option>Test mode (no help)</option></select></label>
+  <button id="lblBtn">Show component numbers</button>
+  <button class="run" id="run">Run code</button>
+</header>
+<main>
+  <aside class="lbl" data-n="2">
+    <h2>Your path</h2>
+    <div class="task"><b>1. Variables</b><small>Mastered</small></div>
+    <div class="task cur"><b>2. Making decisions</b><small>Task: check if x equals 5</small></div>
+    <div class="task"><b>3. Loops</b><small>Locked until step 2 is verified</small></div>
+    <h2 style="margin-top:14px">Task</h2>
+    <p style="margin:0;color:var(--mut)">Print "x is five" only when x is 5. Fix line 2, then run your code.</p>
+  </aside>
+
+  <div class="center">
+    <div class="editor lbl" data-n="3">
+      <div class="gut" id="gut"></div>
+      <textarea id="code" spellcheck="false" aria-label="Code editor">x = 5
+if x = 5:
+    print("x is five")</textarea>
+    </div>
+    <div class="term lbl" data-n="4" id="term"><b>Console</b><br>Press "Run code" to start.</div>
+  </div>
+
+  <section class="right">
+    <div class="tabs"><button class="on" id="tCoach">Coach</button><button id="tProg">My progress</button></div>
+    <div id="coach">
+      <div class="card c lbl hide" data-n="5" id="diag">
+        <h3 id="dTitle">Misconception spotted</h3>
+        <p id="dText"></p>
+        <div class="conf"><i id="conf"></i></div>
+        <p style="margin-top:6px;font-size:12px" id="dConf"></p>
+      </div>
+      <div class="card a hints lbl hide" data-n="6" id="hints">
+        <h3>Hints (no spoilers)</h3>
+        <div id="hintOut"></div>
+        <button id="hintBtn">Show hint 1 of 3</button>
+      </div>
+      <div class="card t lbl hide" data-n="7" id="chatCard">
+        <h3>Ask me anything, or answer my questions</h3>
+        <div class="chat" id="chat"></div>
+        <div class="opts" id="opts" style="margin-top:10px"></div>
+      </div>
+      <div class="card t lbl hide" data-n="8" id="re">
+        <h3>Check: has it really clicked?</h3>
+        <div id="reBody"></div>
+      </div>
+      <p id="idle" style="color:var(--mut)">Your coach appears here after you run your code. It looks for the idea behind a mistake, not just the error message.</p>
+    </div>
+    <div id="prog" class="hide lbl" data-n="9">
+      <h2>What the system knows about you</h2>
+      <div class="row"><span>Variables</span><span class="tag res">Mastered</span></div>
+      <div class="row"><span>Conditionals: "=" vs "=="</span><span id="pState" class="tag new">Not seen yet</span></div>
+      <div class="row"><span>Loops</span><span class="tag new">Not started</span></div>
+      <div class="row"><span>Times this idea tripped you up</span><b id="pCount">0</b></div>
+      <p style="color:var(--mut);margin-top:10px">A concept is marked Resolved only after you pass a new question, not when you copy a fix.</p>
+    </div>
+  </section>
+</main>
+<footer class="lbl" data-n="10"><span>Python 3 (in browser)</span><span id="sMode">Coach: guide with questions</span><span id="sErr">Issues: 0</span><span>Learner model: live</span></footer>
+
+<script>
+var $=function(i){return document.getElementById(i)},code=$('code'),count=0,hint=0,step=0,fixed=false;
+function gut(bad){var n=code.value.split('\n').length,h='';for(var i=1;i<=n;i++)h+='<div'+(i===bad?' class="bad"':'')+'>'+(i===bad?'⚠ ':'')+i+'</div>';$('gut').innerHTML=h}
+code.addEventListener('input',function(){gut(0)});code.addEventListener('scroll',function(){$('gut').style.transform='translateY(-'+code.scrollTop+'px)'});gut(0);
+function term(h){$('term').innerHTML='<b>Console</b><br>'+h}
+function state(t,c){var e=$('pState');e.textContent=t;e.className='tag '+c}
+function say(t,w){var d=document.createElement('div');d.className='m '+w;d.textContent=t;$('chat').appendChild(d)}
+function ask(q,o,cb){say(q,'ai');$('opts').innerHTML='';o.forEach(function(x){var b=document.createElement('button');b.textContent=x[0];b.onclick=function(){say(x[0],'me');$('opts').innerHTML='';cb(x[1])};$('opts').appendChild(b)})}
+var hints=['Look at line 2. What is the if statement supposed to do: store a value or ask a question?','In Python, one symbol stores a value and a different symbol asks "are these equal?". Which one does an if need?','Compare line 1 with line 2. Both use the same symbol, but they do different jobs.'];
+$('run').onclick=function(){
+  var bad=/if\s+\w+\s*=\s*[^=]/.test(code.value);
+  if(bad){
+    count++;$('pCount').textContent=count;state('Active','act');$('sErr').textContent='Issues: 1';gut(2);
+    term('<span class="err">SyntaxError: invalid syntax (line 2)</span>');
+    $('idle').classList.add('hide');['diag','hints','chatCard'].forEach(function(i){$(i).classList.remove('hide')});$('re').classList.add('hide');
+    $('dTitle').textContent='Looks like: assignment vs comparison';
+    $('dText').textContent='You used "=" where the if needs a question. This is different from a typing slip, so we will work on the idea itself.';
+    $('conf').style.width='86%';$('dConf').textContent='Diagnosis confidence 86%. Other possibility: typing slip (9%).';
+    if(step===0){step=1;$('chat').innerHTML='';ask('Before I say anything: what does a single "=" do in Python?',[['It compares two values',0],['It stores a value in a variable',1]],s1)}
+  }else{
+    $('sErr').textContent='Issues: 0';gut(0);
+    var ok=/==\s*5/.test(code.value);
+    term(ok?'<span class="ok">x is five</span><br><span class="ok">Process finished with no errors</span>':'<span class="err">Output does not match the task.</span>');
+    if(ok&&count>0&&!fixed){fixed=true;state('Improving','imp');['diag','hints','chatCard'].forEach(function(i){$(i).classList.add('hide')});reassess()}
+  }
+};
+function s1(r){if(r){say('Right. It puts a value in a named box.','ai');ask('And what does "==" do?',[['It asks: are these two equal?',1],['It stores a value',0]],s2)}else{say('Not quite. x = 5 puts 5 into a box called x. It does not ask anything.','ai');ask('Try again: what does "=" do?',[['It compares two values',0],['It stores a value in a variable',1]],s1)}}
+function s2(r){if(r){say('Exactly. An if needs a question that is either True or False. Which symbol fits on line 2? Fix it in the editor, then run again.','ai')}else{say('Close, but that is "=". The double symbol asks a question.','ai');ask('Once more: what does "==" do?',[['It asks: are these two equal?',1],['It stores a value',0]],s2)}}
+$('hintBtn').onclick=function(){if(hint<3){var d=document.createElement('div');d.className='txt';d.textContent=hints[hint];$('hintOut').appendChild(d);hint++;$('hintBtn').textContent=hint<3?'Show hint '+(hint+1)+' of 3':'No more hints. Try the questions.';if(hint===3)$('hintBtn').disabled=true}};
+function reassess(){
+  $('re').classList.remove('hide');var q=0,right=0;
+  var Q=[['New situation: <code>score = 7</code> then <code>if score ___ 10:</code>. Which symbol checks whether score is 10?',[['=',0],['==',1]]],['What does this print? <code>a = 3; b = 3; print(a == b)</code>',[['True',1],['3',0],['An error',0]]]];
+  function render(){if(q>=Q.length){var good=right===Q.length;$('reBody').innerHTML='<p><b>'+(good?'Resolved. You applied the idea in new situations.':'Not yet. We will try a different explanation next.')+'</b></p>';state(good?'Resolved':'Improving',good?'res':'imp');return}
+    $('reBody').innerHTML='<p style="color:var(--ink);margin-bottom:8px">'+Q[q][0]+'</p><div class="opts"></div>';
+    Q[q][1].forEach(function(o){var b=document.createElement('button');b.textContent=o[0];b.onclick=function(){right+=o[1];q++;render()};$('reBody').lastChild.appendChild(b)})}
+  render()}
+$('mode').onchange=function(){$('sMode').textContent='Coach: '+this.value.toLowerCase()};
+$('lblBtn').onclick=function(){var on=document.body.classList.toggle('labels');this.textContent=on?'Hide component numbers':'Show component numbers'};
+$('tCoach').onclick=function(){$('coach').classList.remove('hide');$('prog').classList.add('hide');$('tCoach').className='on';$('tProg').className=''};
+$('tProg').onclick=function(){$('prog').classList.remove('hide');$('coach').classList.add('hide');$('tProg').className='on';$('tCoach').className=''};
+</script>
+</body>
+</html>

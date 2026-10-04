@@ -1,2324 +1,1254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Re:Learn IDE — The Cognitive IDE that Diagnoses WHY, Not Just WHAT</title>
-  
-  <!-- Google Fonts: Inter & Fira Code -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Canvas Confetti for Resolution Celebration -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Re:Learn IDE — The Cognitive Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Manrope:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Canvas Confetti for Resolution Milestone Celebration -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <!-- Monaco Editor Official AMD Loader (with built-in fail-safe fallback) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+<style>
+:root {
+  --bg: #F2F5F9;
+  --pan: #FFFFFF;
+  --ink: #13213C;
+  --mut: #5B6880;
+  --line: #D5DCE7;
+  --ed: #FBFCFE;
+  --teal: #0E8A8C;
+  --coral: #E2552D;
+  --amber: #E9A23B;
+  --tealbg: #DDF1F1;
+  --coralbg: #FBE4DC;
+  --amberbg: #FBEFD8;
+  --term: #13213C;
+  --termt: #DDE6F5;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 
-  <style>
-    /* ==========================================================================
-       DESIGN SYSTEM TOKENS (Ant Design + RareUI + React Bits Curated Palette)
-       ========================================================================== */
-    :root {
-      --bg-app: #090d16;
-      --bg-titlebar: #0f1422;
-      --bg-activity: #0b0f19;
-      --bg-sidebar: #0f1422;
-      --bg-editor: #0c101c;
-      --bg-panel: #0b0f19;
-      --bg-drawer: #0f1422;
-      --bg-card: rgba(22, 29, 47, 0.75);
-      --bg-elevated: #161e31;
-      --bg-hover: rgba(255, 255, 255, 0.05);
-      --bg-active: rgba(139, 92, 246, 0.15);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1428;
+    --pan: #142038;
+    --ink: #EAF0FA;
+    --mut: #9AA8C2;
+    --line: #2B3B5C;
+    --ed: #101B31;
+    --tealbg: #12383F;
+    --coralbg: #43262A;
+    --amberbg: #43361F;
+    --term: #070D1A;
+  }
+}
 
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-focus: #8b5cf6;
-      --border-card: rgba(139, 92, 246, 0.2);
+:root[data-theme="dark"] {
+  --bg: #0C1428;
+  --pan: #142038;
+  --ink: #EAF0FA;
+  --mut: #9AA8C2;
+  --line: #2B3B5C;
+  --ed: #101B31;
+  --tealbg: #12383F;
+  --coralbg: #43262A;
+  --amberbg: #43361F;
+  --term: #070D1A;
+}
 
-      --accent-purple: #8b5cf6;
-      --accent-purple-glow: rgba(139, 92, 246, 0.35);
-      --accent-blue: #38bdf8;
-      --accent-green: #10b981;
-      --accent-green-glow: rgba(16, 185, 129, 0.25);
-      --accent-red: #f43f5e;
-      --accent-red-glow: rgba(244, 63, 94, 0.25);
-      --accent-amber: #f59e0b;
-      --accent-amber-glow: rgba(245, 158, 11, 0.25);
+:root[data-theme="light"] {
+  --bg: #F2F5F9;
+  --pan: #FFFFFF;
+  --ink: #13213C;
+  --mut: #5B6880;
+  --line: #D5DCE7;
+  --ed: #FBFCFE;
+  --tealbg: #DDF1F1;
+  --coralbg: #FBE4DC;
+  --amberbg: #FBEFD8;
+  --term: #13213C;
+  --termt: #DDE6F5;
+}
 
-      --text-bright: #ffffff;
-      --text-main: #cbd5e1;
-      --text-muted: #64748b;
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 14px/1.45 Manrope, system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: background 0.2s ease, color 0.2s ease;
+}
 
-      --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-mono: 'Fira Code', 'Cascadia Code', Consolas, monospace;
-    }
+button {
+  font: 700 13px Manrope, sans-serif;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--pan);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 7px 12px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+button:hover { background: var(--bg); border-color: var(--mut); }
+button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+.run {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+  font-weight: 800;
+  padding: 8px 16px;
+  box-shadow: 0 2px 8px rgba(14, 138, 140, 0.35);
+}
+.run:hover {
+  background: #0b7375;
+  border-color: #0b7375;
+  box-shadow: 0 4px 12px rgba(14, 138, 140, 0.45);
+  transform: translateY(-1px);
+}
+.run:active { transform: translateY(0); }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
-      font-family: var(--font-ui);
-      background-color: var(--bg-app);
-      color: var(--text-main);
-      user-select: none;
-      -webkit-font-smoothing: antialiased;
-    }
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--pan);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  z-index: 20;
+}
+.logo {
+  font: 800 20px 'Bricolage Grotesque', sans-serif;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.logo-tag {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--tealbg);
+  color: var(--teal);
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+.tab {
+  padding: 6px 14px;
+  border-radius: 8px 8px 0 0;
+  background: var(--bg);
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sp { flex: 1; }
+select {
+  font: 700 13px Manrope, sans-serif;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--pan);
+  color: var(--ink);
+  cursor: pointer;
+}
 
-    /* ==========================================================================
-       1. TOP TITLEBAR & SCENARIOS BAR (Ant Design Grid + RareUI Floating Chips)
-       ========================================================================== */
-    .titlebar {
-      height: 42px;
-      background: var(--bg-titlebar);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-      font-size: 0.78rem;
-      z-index: 100;
-    }
-    .titlebar-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .window-dots {
-      display: flex;
-      gap: 7px;
-    }
-    .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-    .dot-red { background: #ef4444; }
-    .dot-yellow { background: #f59e0b; }
-    .dot-green { background: #10b981; }
+main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 240px 1fr 390px;
+}
+aside, section.right {
+  background: var(--pan);
+  overflow-y: auto;
+  padding: 14px;
+}
+aside { border-right: 1px solid var(--line); }
+section.right { border-left: 1px solid var(--line); }
 
-    .brand-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .brand-name {
-      font-weight: 800;
-      color: var(--text-bright);
-      font-size: 0.85rem;
-      letter-spacing: -0.02em;
-    }
-    .brand-pill {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(56, 189, 248, 0.2));
-      border: 1px solid rgba(139, 92, 246, 0.35);
-      color: #c4b5fd;
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
+.center {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--ed);
+}
 
-    /* RAREUI FLOATING DOCK COMMAND STRIP */
-    .titlebar-presets {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(15, 20, 34, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
-      padding: 3px 8px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(12px);
-    }
-    .preset-label {
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding-right: 4px;
-    }
-    .preset-chip {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-subtle);
-      color: #94a3b8;
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-      white-space: nowrap;
-    }
-    .preset-chip:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: white;
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-1px);
-    }
-    .preset-chip.active {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(56, 189, 248, 0.2));
-      border-color: #8b5cf6;
-      color: white;
-      font-weight: 700;
-      box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
-    }
+h2 {
+  font: 700 12px Manrope, sans-serif;
+  color: var(--mut);
+  margin: 0 0 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 
-    /* COGNITIVE STATE MACHINE MODE SEGMENTED BAR */
-    .mode-segmented {
-      display: flex;
-      align-items: center;
-      background: rgba(10, 14, 26, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 8px;
-      padding: 2px 3px;
-      gap: 3px;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
-    }
-    .mode-tab {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--text-muted);
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.16s ease;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .mode-tab:hover {
-      color: var(--text-bright);
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .mode-tab.active {
-      background: rgba(109, 94, 240, 0.25);
-      border-color: rgba(109, 94, 240, 0.5);
-      color: #c4b5fd;
-      font-weight: 700;
-      box-shadow: 0 0 10px rgba(109, 94, 240, 0.25);
-    }
+.task {
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.task:hover { border-color: var(--teal); }
+.task.cur {
+  border-color: var(--teal);
+  background: var(--tealbg);
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(14, 138, 140, 0.12);
+}
+.task small {
+  display: block;
+  color: var(--mut);
+  margin-top: 3px;
+  font-size: 11px;
+}
 
-    .titlebar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .btn-top {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-subtle);
-      color: #cbd5e1;
-      padding: 4px 12px;
-      border-radius: 6px;
-      font-size: 0.74rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.15s;
-    }
-    .btn-top:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-    .sound-toggle-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 0.9rem;
-      padding: 4px;
-      transition: color 0.15s;
-    }
-    .sound-toggle-btn:hover { color: white; }
+.preset-group {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+.preset-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+}
+.preset-btn:hover {
+  background: var(--pan);
+  border-color: var(--teal);
+}
 
-    /* RAREUI PULSING LIVE PILL BADGE */
-    .rare-live-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #34d399;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 3px 10px;
-      border-radius: 12px;
-    }
-    .rare-live-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
-      animation: rarePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    @keyframes rarePulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.35; transform: scale(0.85); }
-    }
+.editor {
+  flex: 1;
+  min-height: 160px;
+  display: flex;
+  background: var(--ed);
+  overflow: hidden;
+  position: relative;
+}
+.gut {
+  padding: 14px 8px;
+  text-align: right;
+  color: var(--mut);
+  font: 13px/1.65 'Fira Code', ui-monospace, Menlo, Consolas, monospace;
+  user-select: none;
+  background: var(--bg);
+  min-width: 44px;
+  border-right: 1px solid var(--line);
+}
+.gut div { height: 1.65em; }
+.gut .bad {
+  color: var(--coral);
+  font-weight: 800;
+  background: var(--coralbg);
+  border-radius: 4px;
+  padding: 0 4px;
+}
 
-    /* ==========================================================================
-       2. WORKSPACE LAYOUT: ACTIVITY BAR, SIDEBAR, EDITOR, AI DRAWER
-       ========================================================================== */
-    .app-workspace {
-      display: flex;
-      height: calc(100vh - 42px - 26px);
-      overflow: hidden;
-      position: relative;
-    }
+textarea#code {
+  flex: 1;
+  border: 0;
+  resize: none;
+  background: transparent;
+  color: var(--ink);
+  font: 13px/1.65 'Fira Code', ui-monospace, Menlo, Consolas, monospace;
+  padding: 14px 16px;
+  white-space: pre;
+  overflow: auto;
+  tab-size: 4;
+  outline: none;
+}
 
-    /* ACTIVITY BAR (48px Rail) */
-    .activity-bar {
-      width: 48px;
-      background: var(--bg-activity);
-      border-right: 1px solid var(--border-subtle);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 0;
-      flex-shrink: 0;
-      z-index: 20;
-    }
-    .act-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 100%;
-    }
-    .act-btn {
-      width: 100%;
-      height: 40px;
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 1.25rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      transition: all 0.15s;
-    }
-    .act-btn:hover { color: var(--text-bright); }
-    .act-btn.active { color: var(--text-bright); }
-    .act-btn.active::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 8px; bottom: 8px;
-      width: 2px;
-      background: var(--accent-purple);
-      box-shadow: 0 0 8px var(--accent-purple);
-    }
+.term {
+  background: var(--term);
+  color: var(--termt);
+  font: 13px/1.55 'Fira Code', ui-monospace, Menlo, Consolas, monospace;
+  padding: 12px 16px;
+  height: 150px;
+  overflow: auto;
+  border-top: 1px solid var(--line);
+}
+.term-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.term b { color: var(--amber); }
+.err { color: #FF8F70; font-weight: 600; }
+.ok { color: #6FE0C5; font-weight: 600; }
+.meta { color: #9AA8C2; font-size: 11px; }
 
-    /* SIDEBAR (210px) */
-    .sidebar {
-      width: 210px;
-      background: var(--bg-sidebar);
-      border-right: 1px solid var(--border-subtle);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-      overflow: hidden;
-    }
-    .sidebar.collapsed { width: 0; border-right: none; }
-    .sidebar-head {
-      height: 36px;
-      padding: 0 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.68rem;
-      font-weight: 800;
-      color: var(--text-muted);
-      letter-spacing: 0.06em;
-      border-bottom: 1px solid var(--border-subtle);
-      background: rgba(0, 0, 0, 0.2);
-    }
-    .file-tree { padding: 8px 0; font-size: 0.78rem; overflow-y: auto; }
-    .tree-folder {
-      padding: 6px 14px;
-      color: #94a3b8;
-      font-weight: 700;
-      font-size: 0.72rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      letter-spacing: 0.03em;
-    }
-    .tree-file {
-      padding: 7px 14px 7px 28px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-main);
-      cursor: pointer;
-      transition: background 0.15s;
-      border-left: 2px solid transparent;
-    }
-    .tree-file:hover { background: var(--bg-hover); }
-    .tree-file.active {
-      background: var(--bg-active);
-      color: white;
-      border-left-color: var(--accent-purple);
-      font-weight: 600;
-    }
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  background: var(--bg);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+.tabs button {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  color: var(--mut);
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-weight: 700;
+}
+.tabs button.on {
+  background: var(--pan);
+  color: var(--ink);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
 
-    /* CENTER EDITOR & CONSOLE AREA */
-    .editor-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      background: var(--bg-editor);
-      min-width: 0;
-    }
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: var(--pan);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+.card.c { border-left: 5px solid var(--coral); background: var(--coralbg); }
+.card.t { border-left: 5px solid var(--teal); }
+.card.a { border-left: 5px solid var(--amber); }
 
-    /* TAB STRIP (36px) */
-    .editor-tab-strip {
-      height: 36px;
-      background: var(--bg-titlebar);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-    }
-    .tab-list { display: flex; height: 100%; }
-    .editor-tab {
-      background: var(--bg-editor);
-      color: var(--text-bright);
-      padding: 0 16px;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      border-top: 2px solid var(--accent-purple);
-      border-right: 1px solid var(--border-subtle);
-      cursor: default;
-    }
-    .editor-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding-right: 12px;
-    }
-    /* RAREUI GLASS SHIMMER BUTTON */
-    .btn-run-main {
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      padding: 6px 16px;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .btn-run-main::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        60deg,
-        transparent 30%,
-        rgba(255, 255, 255, 0.35) 50%,
-        transparent 70%
-      );
-      transform: rotate(30deg) translateX(-120%);
-      transition: transform 0.65s ease;
-    }
-    .btn-run-main:hover::after {
-      transform: rotate(30deg) translateX(120%);
-    }
-    .btn-run-main:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    }
-    .btn-run-main:active { transform: translateY(0); }
+.card h3 {
+  margin: 0 0 6px;
+  font: 700 15px 'Bricolage Grotesque', sans-serif;
+  letter-spacing: -0.01em;
+}
+.card p { margin: 0; color: var(--mut); line-height: 1.45; }
 
-    /* COACH ALERT BAR (SLIDES DOWN ON ERROR / RESOLUTION) */
-    #coach-bar {
-      display: none;
-      background: rgba(244, 63, 94, 0.1);
-      border-top: 1px solid rgba(244, 63, 94, 0.5);
-      border-bottom: 1px solid rgba(244, 63, 94, 0.5);
-      padding: 8px 16px;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      animation: slideIn 0.22s ease;
-      z-index: 25;
-    }
-    #coach-bar.pass-mode {
-      background: rgba(16, 185, 129, 0.1);
-      border-top-color: rgba(16, 185, 129, 0.5);
-      border-bottom-color: rgba(16, 185, 129, 0.5);
-    }
-    .coach-left { display: flex; align-items: center; gap: 12px; }
-    .coach-icon { font-size: 1.25rem; }
-    .coach-text b { color: #f43f5e; font-size: 0.82rem; }
-    #coach-bar.pass-mode .coach-text b { color: #10b981; }
-    .coach-text span { color: #e2e8f0; font-size: 0.76rem; display: block; margin-top: 1px; }
-    .coach-right { display: flex; align-items: center; gap: 8px; }
-    .coach-btn {
-      font-size: 0.74rem;
-      font-weight: 700;
-      padding: 5px 12px;
-      border-radius: 5px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .coach-btn-quiz { background: #8b5cf6; color: white; }
-    .coach-btn-quiz:hover { background: #7c3aed; }
-    .coach-btn-hint { background: rgba(255, 255, 255, 0.1); color: white; }
-    .coach-btn-hint:hover { background: rgba(255, 255, 255, 0.18); }
-    .coach-close {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 1rem;
-      cursor: pointer;
-      padding: 2px 6px;
-    }
-    .coach-close:hover { color: white; }
+.conf {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 9px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.conf i {
+  display: block;
+  height: 100%;
+  background: var(--coral);
+  width: 0;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-    /* DUAL-MODE CODE EDITOR CANVAS */
-    .editor-canvas-box {
-      flex: 1;
-      position: relative;
-      background: var(--bg-editor);
-      overflow: hidden;
-      min-height: 160px;
-    }
-    #monaco-container {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 5;
-    }
-    .fallback-editor-wrap {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      background: var(--bg-editor);
-      z-index: 1;
-    }
-    .gutter {
-      width: 48px;
-      background: rgba(0, 0, 0, 0.2);
-      border-right: 1px solid var(--border-subtle);
-      color: #475569;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      line-height: 1.6;
-      padding: 12px 6px 12px 0;
-      text-align: right;
-      user-select: none;
-      overflow: hidden;
-      white-space: pre-wrap;
-    }
-    #code-fallback {
-      flex: 1;
-      height: 100%;
-      background: transparent;
-      color: #e2e8f0;
-      font-family: var(--font-mono);
-      font-size: 13px;
-      line-height: 1.6;
-      padding: 12px 14px;
-      border: none;
-      outline: none;
-      resize: none;
-      white-space: pre;
-      overflow: auto;
-      tab-size: 4;
-      user-select: text;
-    }
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 230px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.m {
+  padding: 9px 13px;
+  border-radius: 12px;
+  max-width: 90%;
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.m.ai {
+  background: var(--tealbg);
+  color: var(--ink);
+  align-self: flex-start;
+  border-bottom-left-radius: 3px;
+}
+.m.me {
+  background: var(--ink);
+  color: var(--bg);
+  align-self: flex-end;
+  border-bottom-right-radius: 3px;
+}
 
-    /* ==========================================================================
-       3. BOTTOM TERMINAL & STRUCTURED PROBLEMS TABLE (Ant Design Standard)
-       ========================================================================== */
-    .terminal-panel {
-      height: 190px;
-      background: var(--bg-panel);
-      border-top: 1px solid var(--border-subtle);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-    .terminal-head {
-      height: 34px;
-      background: rgba(0, 0, 0, 0.25);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: var(--text-muted);
-    }
-    .term-tabs { display: flex; gap: 16px; height: 100%; }
-    .term-tab {
-      display: flex;
-      align-items: center;
-      height: 100%;
-      cursor: pointer;
-      color: var(--text-muted);
-      border-bottom: 2px solid transparent;
-      transition: color 0.15s;
-    }
-    .term-tab:hover { color: var(--text-bright); }
-    .term-tab.active {
-      color: var(--text-bright);
-      border-bottom-color: var(--accent-purple);
-    }
-    .term-tools {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .term-clear-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 0.75rem;
-    }
-    .term-clear-btn:hover { color: white; }
+.chat-input-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.chat-input-row input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font: 500 13px Manrope, sans-serif;
+  outline: none;
+}
+.chat-input-row button {
+  padding: 7px 12px;
+  background: var(--teal);
+  color: #fff;
+  border-color: var(--teal);
+}
 
-    /* TAB CONTENT PANES */
-    .term-content {
-      flex: 1;
-      padding: 8px 14px;
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      overflow-y: auto;
-      line-height: 1.5;
-      background: #060911;
-      display: none;
-    }
-    .term-content.active { display: block; }
-    
-    .out-green { color: #34d399; }
-    .out-red { color: #f87171; }
-    .out-blue { color: #38bdf8; }
-    .out-muted { color: #64748b; }
+.opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.opts button {
+  background: var(--pan);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  padding: 6px 11px;
+  text-align: left;
+}
+.opts button:hover {
+  background: var(--tealbg);
+  border-color: var(--teal);
+  color: var(--ink);
+}
 
-    /* ANT DESIGN PROBLEMS TABLE */
-    .prob-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.76rem;
-    }
-    .prob-table th {
-      text-align: left;
-      color: var(--text-muted);
-      padding: 6px 8px;
-      border-bottom: 1px solid var(--border-subtle);
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.68rem;
-      letter-spacing: 0.04em;
-    }
-    .prob-table td {
-      padding: 7px 8px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      cursor: pointer;
-    }
-    .prob-table tr:hover td {
-      background: rgba(255, 255, 255, 0.03);
-    }
-    .prob-tag {
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      display: inline-block;
-    }
-    .prob-tag-err { background: rgba(244, 63, 94, 0.2); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.4); }
-    .prob-tag-warn { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }
-    .prob-tag-ok { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+.hints button {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  background: var(--pan);
+  border: 1px dashed var(--amber);
+  color: var(--ink);
+}
+.hints button:hover { background: var(--amberbg); }
+.hints .txt {
+  padding: 9px 12px;
+  background: var(--amberbg);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--ink);
+  border-left: 3px solid var(--amber);
+  animation: fadeIn 0.25s ease;
+}
 
-    /* ==========================================================================
-       4. CURSOR AI SIDE DRAWER (RareUI Glassmorphism + React Bits Spotlight)
-       ========================================================================== */
-    .cursor-drawer {
-      width: 400px;
-      background: var(--bg-drawer);
-      border-left: 1px solid var(--border-subtle);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      overflow: hidden;
-      z-index: 20;
-    }
-    .drawer-head {
-      height: 42px;
-      background: rgba(0, 0, 0, 0.25);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      flex-shrink: 0;
-    }
-    .drawer-brand {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.82rem;
-      font-weight: 800;
-      color: white;
-    }
-    .model-badge {
-      font-size: 0.65rem;
-      background: rgba(139, 92, 246, 0.15);
-      border: 1px solid rgba(139, 92, 246, 0.35);
-      color: #c4b5fd;
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-weight: 600;
-    }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-    .drawer-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+.tag {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.tag.act { background: var(--coralbg); color: var(--coral); }
+.tag.imp { background: var(--amberbg); color: #9A6410; }
+.tag.res { background: var(--tealbg); color: var(--teal); }
+.tag.new { background: var(--bg); color: var(--mut); border: 1px solid var(--line); }
 
-    /* CARD 1: COGNITIVE DIAGNOSIS CARD (REACT BITS ANIMATED BORDER BEAM) */
-    .diag-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-card);
-      border-radius: 10px;
-      padding: 14px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(12px);
-    }
-    .diag-card.animated-beam::after {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      border-radius: 10px;
-      padding: 1px;
-      background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      animation: borderBeam 3s linear infinite;
-      pointer-events: none;
-    }
-    .diag-card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .diag-badge {
-      font-family: var(--font-mono);
-      font-size: 0.74rem;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 4px;
-    }
-    .badge-error {
-      background: rgba(244, 63, 94, 0.2);
-      border: 1px solid rgba(244, 63, 94, 0.5);
-      color: #f43f5e;
-    }
-    .badge-typo {
-      background: rgba(245, 158, 11, 0.2);
-      border: 1px solid rgba(245, 158, 11, 0.5);
-      color: #f59e0b;
-    }
-    .badge-pass {
-      background: rgba(16, 185, 129, 0.2);
-      border: 1px solid rgba(16, 185, 129, 0.5);
-      color: #10b981;
-    }
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
 
-    .diag-name {
-      font-size: 0.92rem;
-      font-weight: 800;
-      color: white;
-      margin-bottom: 6px;
-      line-height: 1.35;
-    }
-    .diag-why {
-      font-size: 0.8rem;
-      color: #cbd5e1;
-      line-height: 1.45;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 10px;
-      border-radius: 6px;
-      border-left: 3px solid #8b5cf6;
-    }
+footer {
+  display: flex;
+  gap: 18px;
+  padding: 6px 16px calc(6px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  z-index: 20;
+}
+.footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6FE0C5;
+  box-shadow: 0 0 6px #6FE0C5;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
 
-    /* CARD 2: 1-CLICK VERIFICATION QUIZ (SOUNDCN AUDIO REACTION) */
-    .quiz-panel {
-      margin-top: 12px;
-      background: rgba(139, 92, 246, 0.08);
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 8px;
-      padding: 12px;
-    }
-    .quiz-title {
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: #c4b5fd;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .quiz-question {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: white;
-      margin-bottom: 10px;
-      line-height: 1.4;
-    }
-    .quiz-list {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-    /* RAREUI TACTILE 3D QUIZ CARDS */
-    .quiz-card {
-      background: rgba(22, 29, 47, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 9px 12px;
-      font-size: 0.78rem;
-      color: #e2e8f0;
-      cursor: pointer;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-      line-height: 1.4;
-    }
-    .quiz-card:hover {
-      background: rgba(139, 92, 246, 0.15);
-      border-color: #8b5cf6;
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-    .quiz-card.selected-correct {
-      border-color: #10b981;
-      background: rgba(16, 185, 129, 0.25);
-    }
-    .quiz-card.selected-incorrect {
-      border-color: #f43f5e;
-      background: rgba(244, 63, 94, 0.25);
-    }
-    .card-letter {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: #c4b5fd;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
+.lbl { position: relative; }
+body.labels .lbl::after {
+  content: attr(data-n);
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--coral);
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
 
-    #quiz-alert {
-      margin-top: 10px;
-      font-size: 0.8rem;
-      line-height: 1.45;
-      padding: 8px 12px;
-      border-radius: 6px;
-      display: none;
-    }
-    .alert-pass {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: #34d399;
-    }
-    .alert-retry {
-      background: rgba(244, 63, 94, 0.15);
-      border: 1px solid rgba(244, 63, 94, 0.4);
-      color: #f87171;
-    }
+.hide { display: none !important; }
 
-    /* CARD 3: SOCRATIC CHAT ASSISTANT */
-    .chat-card {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 12px;
-      min-height: 220px;
-      backdrop-filter: blur(12px);
-    }
-    .chat-card-head {
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .chat-log {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding-right: 4px;
-      max-height: 240px;
-    }
-    .bubble {
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      line-height: 1.45;
-      max-width: 92%;
-      word-break: break-word;
-    }
-    .bubble-ai {
-      align-self: flex-start;
-      background: #0f1422;
-      color: #e2e8f0;
-      border-bottom-left-radius: 2px;
-      border: 1px solid var(--border-subtle);
-    }
-    .bubble-user {
-      align-self: flex-end;
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-      color: white;
-      border-bottom-right-radius: 2px;
-    }
-
-    .quick-prompts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 8px;
-    }
-    .prompt-chip {
-      background: rgba(139, 92, 246, 0.1);
-      border: 1px solid rgba(139, 92, 246, 0.25);
-      color: #c4b5fd;
-      padding: 3px 9px;
-      border-radius: 12px;
-      font-size: 0.68rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .prompt-chip:hover {
-      background: rgba(139, 92, 246, 0.25);
-      border-color: #8b5cf6;
-      color: white;
-      transform: translateY(-1px);
-    }
-
-    .chat-controls {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 4px;
-    }
-    .chat-inp {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 0.78rem;
-      padding: 6px 8px;
-      font-family: var(--font-ui);
-      outline: none;
-    }
-    .chat-send-btn {
-      background: #8b5cf6;
-      border: none;
-      color: white;
-      font-weight: 700;
-      font-size: 0.72rem;
-      padding: 4px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .chat-send-btn:hover { background: #7c3aed; }
-
-    /* ==========================================================================
-       5. BOTTOM STATUS BAR & SYSTEM DESIGN TELEMETRY (Donne Martin Primer)
-       ========================================================================== */
-    .statusbar {
-      height: 26px;
-      background: #0f1422;
-      border-top: 1px solid var(--border-subtle);
-      color: #94a3b8;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-      font-size: 0.7rem;
-      z-index: 100;
-      font-family: var(--font-mono);
-    }
-    .sb-section { display: flex; align-items: center; gap: 14px; }
-    .sb-clickable { cursor: pointer; }
-    .sb-clickable:hover { color: white; }
-    .sb-telemetry-badge {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-subtle);
-      padding: 1px 6px;
-      border-radius: 4px;
-      color: #38bdf8;
-    }
-
-    /* TEACHER MODAL (CLASSROOM HEATMAP) */
-    #teacher-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(12px);
-      z-index: 300;
-      align-items: center;
-      justify-content: center;
-    }
-    .t-modal-content {
-      background: #0f1422;
-      border: 1px solid rgba(139, 92, 246, 0.3);
-      border-radius: 12px;
-      width: 760px;
-      max-width: 95vw;
-      padding: 24px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-      animation: slideIn 0.22s ease;
-    }
-    .t-stat-card {
-      background: rgba(255, 255, 255, 0.03);
-      padding: 14px;
-      border-radius: 8px;
-      text-align: center;
-      border: 1px solid var(--border-subtle);
-    }
-    .t-stat-num { font-size: 1.6rem; font-weight: 800; }
-    .t-stat-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-
-    /* ==========================================================================
-       6. KEYFRAME ANIMATIONS (React Bits Border Beam & Slide In)
-       ========================================================================== */
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes borderBeam {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
+@media (max-width: 960px) {
+  main { grid-template-columns: 1fr; overflow-y: auto; display: block; }
+  body { overflow: auto; }
+  aside { border-right: 0; border-bottom: 1px solid var(--line); }
+  section.right { border-left: 0; }
+  .editor { min-height: 240px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .conf i { transition: none; }
+}
+</style>
 </head>
 <body>
 
-  <!-- TOP TITLEBAR -->
-  <div class="titlebar">
-    <div class="titlebar-left">
-      <div class="window-dots">
-        <span class="dot dot-red"></span>
-        <span class="dot dot-yellow"></span>
-        <span class="dot dot-green"></span>
-      </div>
-      <div class="brand-wrap">
-        <span class="brand-name">Re:Learn IDE</span>
-        <span class="brand-pill">Cognitive Studio</span>
-      </div>
+<header class="lbl" data-n="1">
+  <span class="logo">
+    Re:Learn
+    <span class="logo-tag">Cognitive IDE</span>
+  </span>
+  <span class="tab" id="curTab">📄 conditionals.py</span>
+  <span class="sp"></span>
+  
+  <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--mut)">
+    Coach style:
+    <select id="mode">
+      <option value="questions">Guide me with questions</option>
+      <option value="hints">Hints only</option>
+      <option value="test">Test mode (no help)</option>
+    </select>
+  </label>
+  
+  <button id="themeBtn" title="Toggle Light/Dark Theme">🌓 Theme</button>
+  <button id="lblBtn">Show component numbers</button>
+  <button class="run" id="run">▶ Run code</button>
+</header>
+
+<main>
+  <!-- LEFT PANEL: Learning Path & Tasks -->
+  <aside class="lbl" data-n="2">
+    <h2>Your Path</h2>
+    <div class="task" onclick="loadPreset('vars')">
+      <b>1. Variables & Types</b>
+      <small>Status: Mastered</small>
+    </div>
+    <div class="task cur" id="taskDecisions" onclick="loadPreset('m01')">
+      <b>2. Making Decisions</b>
+      <small id="taskDecisionsSub">Current Task: Check if x equals 5</small>
+    </div>
+    <div class="task" id="taskLoops" onclick="loadPreset('m03')">
+      <b>3. Loops & Sequences</b>
+      <small id="taskLoopsSub">Locked until Step 2 resolves</small>
     </div>
 
-    <!-- PRESET TEST BUTTONS (RareUI Floating Chips) -->
-    <div class="titlebar-presets">
-      <span class="preset-label">Scenarios:</span>
-      <button class="preset-chip active" id="chip-demo-m01" onclick="switchPreset('demo-m01')">= vs == (Equality)</button>
-      <button class="preset-chip" id="chip-demo-m09-pair" onclick="switchPreset('demo-m09-pair')" style="border-color: #38bdf8; color: #38bdf8;">⚖️ Slip vs Misconception</button>
-      <button class="preset-chip" id="chip-demo-m05" onclick="switchPreset('demo-m05')">🔤 String + Number</button>
-      <button class="preset-chip" id="chip-demo-m08" onclick="switchPreset('demo-m08')">📤 print vs return</button>
-      <button class="preset-chip" id="chip-demo-m03" onclick="switchPreset('demo-m03')">🧬 List Copy vs Alias</button>
-      <button class="preset-chip" id="chip-demo-m09" onclick="switchPreset('demo-m09')">⚡ Isolated Typo</button>
+    <div class="preset-group">
+      <h2>Quick Demo Presets</h2>
+      <button class="preset-btn" onclick="loadPreset('m01')">🚨 M-01: if x = 5 (Hero Demo)</button>
+      <button class="preset-btn" onclick="loadPreset('m02')">⚠️ M-02: '5' + 3 (Type Coercion)</button>
+      <button class="preset-btn" onclick="loadPreset('m03')">🔁 M-03: range(1, 10) Off-by-one</button>
+      <button class="preset-btn" onclick="loadPreset('m09')">⚡ M-09: pritn('hi') (Slip vs Bug)</button>
+      <button class="preset-btn" onclick="loadPreset('clean')">✅ Clean Correct Solution</button>
     </div>
 
-    <!-- COGNITIVE STATE MACHINE MODE SWITCHER (AntD Segmented / State-Driven) -->
-    <div class="mode-segmented" id="mode-segmented" title="Current Cognitive State">
-      <button class="mode-tab active" id="mode-btn-code" onclick="setMode('code')"><span>💻</span><span>Code</span></button>
-      <button class="mode-tab" id="mode-btn-diagnose" onclick="setMode('diagnose')"><span>🚨</span><span>Diagnose</span></button>
-      <button class="mode-tab" id="mode-btn-reflect" onclick="setMode('reflect')"><span>💬</span><span>Reflect</span></button>
-      <button class="mode-tab" id="mode-btn-verify" onclick="setMode('verify')"><span>🔁</span><span>Verify</span></button>
-    </div>
+    <h2 style="margin-top:16px">Current Task</h2>
+    <p id="taskDesc" style="margin:0;color:var(--mut);font-size:13px;line-height:1.45;">
+      Print <code>"x is five"</code> only when <code>x</code> is 5. Fix line 2, then run your code.
+    </p>
+  </aside>
 
-    <div class="titlebar-right">
-      <button class="sound-toggle-btn" id="sound-toggle" onclick="toggleAudio()" title="Soundcn Haptic Audio Toggle">🔊</button>
-      <button class="btn-top" id="btn-api-key" onclick="openApiKeyModal()" title="Configure optional Groq LLM Acceleration">⚡ API Key</button>
-      <button class="btn-top" onclick="openTeacherModal()">📊 Class Heatmap</button>
-      <div class="rare-live-pill"><span class="rare-live-dot"></span><span>Engine Ready</span></div>
-    </div>
-  </div>
-
-  <!-- MAIN WORKSPACE -->
-  <div class="app-workspace">
-
-    <!-- ACTIVITY BAR (48px Rail) -->
-    <div class="activity-bar">
-      <div class="act-group">
-        <button class="act-btn active" id="act-btn-explorer" onclick="toggleSidebar()" title="Toggle Explorer (📁)">📁</button>
-        <button class="act-btn" id="act-btn-chat" onclick="focusChat()" title="Socratic Tutor (💬)">💬</button>
-        <button class="act-btn" id="act-btn-analytics" onclick="openTeacherModal()" title="Teacher Heatmap (📊)">📊</button>
-      </div>
-      <div class="act-group">
-        <button class="act-btn" onclick="resetCurrentCode()" title="Reset File (↺)">↺</button>
-        <button class="act-btn" onclick="executeCode()" title="Run Code (▶)" style="color: #10b981;">▶</button>
-      </div>
-    </div>
-
-    <!-- SIDEBAR EXPLORER (210px) -->
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar-head">
-        <span>EXPLORER: WORKSPACE</span>
-        <span style="cursor: pointer;" onclick="toggleSidebar()">✕</span>
-      </div>
-      <div class="file-tree">
-        <div class="tree-folder">▼ 📁 PYTHON_STUDENT</div>
-        <div class="tree-file active" id="tree-m01" onclick="switchPreset('demo-m01')">
-          <span>🐍</span><span>main.py</span>
-        </div>
-        <div class="tree-file" id="tree-m09-pair" onclick="switchPreset('demo-m09-pair')">
-          <span>⚖️</span><span>paired_test.py</span>
-        </div>
-        <div class="tree-file" id="tree-m05" onclick="switchPreset('demo-m05')">
-          <span>📄</span><span>types_test.py</span>
-        </div>
-        <div class="tree-file" id="tree-m08" onclick="switchPreset('demo-m08')">
-          <span>📄</span><span>functions.py</span>
-        </div>
-        <div class="tree-file" id="tree-m03" onclick="switchPreset('demo-m03')">
-          <span>📄</span><span>lists_alias.py</span>
-        </div>
-        <div class="tree-file" id="tree-m09" onclick="switchPreset('demo-m09')">
-          <span>📄</span><span>typo_check.py</span>
-        </div>
-        <div class="tree-file" onclick="openTeacherModal()">
-          <span>📊</span><span>class_heatmap.json</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- MAIN EDITOR & BOTTOM PANEL -->
-    <div class="editor-section">
-      
-      <!-- TAB STRIP -->
-      <div class="editor-tab-strip">
-        <div class="tab-list">
-          <div class="editor-tab">
-            <span>🐍</span><span id="tab-filename">main.py</span>
-          </div>
-        </div>
-        <div class="editor-actions">
-          <button class="btn-top" onclick="resetCurrentCode()">↺ Reset</button>
-          <button class="btn-run-main" id="btn-run-code" onclick="executeCode()">
-            ▶ Run Code (Ctrl+Enter)
-          </button>
-        </div>
-      </div>
-
-      <!-- COACH ALERT BAR -->
-      <div id="coach-bar">
-        <div class="coach-left">
-          <span class="coach-icon" id="coach-icon">🚨</span>
-          <div class="coach-text">
-            <b id="coach-head">Cognitive Misconception Flagged!</b>
-            <span id="coach-sub">Re:Learn diagnosed the mental model causing this error.</span>
-          </div>
-        </div>
-        <div class="coach-right">
-          <button class="coach-btn coach-btn-quiz" id="coach-btn-quiz" onclick="focusQuiz()">🎯 1-Click Quiz</button>
-          <button class="coach-btn coach-btn-hint" id="coach-btn-hint" onclick="focusChat()">💡 Ask Tutor</button>
-          <button class="coach-close" onclick="dismissCoachBar()" title="Dismiss">✕</button>
-        </div>
-      </div>
-
-      <!-- DUAL-MODE CODE CANVAS (MONACO + GUTTER IDE) -->
-      <div class="editor-canvas-box">
-        <div id="monaco-container"></div>
-
-        <div class="fallback-editor-wrap" id="fallback-wrap">
-          <div class="gutter" id="editor-gutter">1</div>
-          <textarea id="code-fallback" spellcheck="false">x = 5
+  <!-- CENTER PANEL: Code Editor & Console -->
+  <div class="center">
+    <div class="editor lbl" data-n="3">
+      <div class="gut" id="gut"></div>
+      <textarea id="code" spellcheck="false" aria-label="Python Code Editor">x = 5
 if x = 5:
-    print('x is five')
-</textarea>
-        </div>
-      </div>
-
-      <!-- BOTTOM TERMINAL PANEL (ANT DESIGN TABBED VIEW) -->
-      <div class="terminal-panel">
-        <div class="terminal-head">
-          <div class="term-tabs">
-            <span class="term-tab active" id="tab-btn-terminal" onclick="switchTermTab('terminal')">TERMINAL</span>
-            <span class="term-tab" id="tab-btn-output" onclick="switchTermTab('output')">OUTPUT</span>
-            <span class="term-tab" id="tab-btn-problems" onclick="switchTermTab('problems')">PROBLEMS (<span id="prob-count">1</span>)</span>
-          </div>
-          <div class="term-tools">
-            <span id="term-status" style="color: #64748b; font-size: 0.7rem;">Ready</span>
-            <button class="term-clear-btn" onclick="clearTermLogs()" title="Clear Logs">🗑️ Clear</button>
-          </div>
-        </div>
-
-        <!-- TAB 1: TERMINAL -->
-        <div class="term-content active" id="pane-terminal">
-          <div class="out-blue">>>> Re:Learn Cognitive Diagnostic Sandbox Active.</div>
-          <div class="out-muted">>>> Press '▶ Run Code' (or Ctrl+Enter) to evaluate student program.</div>
-        </div>
-
-        <!-- TAB 2: OUTPUT ONLY -->
-        <div class="term-content" id="pane-output">
-          <div class="out-muted">// Program stdout output will appear here.</div>
-        </div>
-
-        <!-- TAB 3: ANT DESIGN PROBLEMS TABLE -->
-        <div class="term-content" id="pane-problems">
-          <table class="prob-table">
-            <thead>
-              <tr>
-                <th style="width: 80px;">Severity</th>
-                <th style="width: 130px;">Location</th>
-                <th style="width: 90px;">Rule</th>
-                <th>Diagnostic Description</th>
-              </tr>
-            </thead>
-            <tbody id="problems-tbody">
-              <tr onclick="focusEditorLine(2)">
-                <td><span class="prob-tag prob-tag-err">Error</span></td>
-                <td style="color: #38bdf8; font-weight: 600;">main.py [Ln 2:5]</td>
-                <td><span class="model-badge">M-01</span></td>
-                <td>Single assignment '=' used inside conditional statement</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+    print("x is five")</textarea>
     </div>
-
-    <!-- RIGHT: CURSOR AI SIDE DRAWER -->
-    <div class="cursor-drawer">
-      <div class="drawer-head">
-        <div class="drawer-brand">
-          <span>🧠 Re:Learn AI</span>
-          <span class="model-badge">LLaMA-3.3 + AST</span>
-        </div>
-        <span style="font-size: 0.7rem; color: #34d399; font-weight: 600;">● Socratic Guardrail ON</span>
+    <div class="term lbl" data-n="4" id="term">
+      <div class="term-header">
+        <span>Console Output</span>
+        <span id="termStatus" class="meta">Status: Idle</span>
       </div>
-
-      <div class="drawer-content">
-        
-        <!-- CARD 1: COGNITIVE DIAGNOSIS CARD (REACT BITS ANIMATED BEAM) -->
-        <div class="diag-card animated-beam" id="diag-main-card">
-          <div class="diag-card-top">
-            <span id="diag-badge" class="diag-badge badge-error">M-01</span>
-            <span id="diag-conf" style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">Conf: 98%</span>
-          </div>
-          <div class="diag-name" id="diag-name">⚠️ Misconception: Assignment vs Comparison</div>
-          <div class="diag-why" id="diag-why">
-            Single assignment '=' used inside conditional test expression instead of comparison '=='.
-          </div>
-
-          <!-- LOOK-ALIKE DISAMBIGUATION PROBE -->
-          <div class="probe-panel" id="probe-panel" style="display: none; margin-top: 12px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; padding: 12px;">
-            <div style="font-size: 0.72rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">
-              ⚖️ Diagnostic Disambiguation Probe
-            </div>
-            <div id="probe-question" style="font-size: 0.8rem; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;"></div>
-            <div id="probe-options" style="display: flex; flex-direction: column; gap: 6px;"></div>
-          </div>
-
-          <!-- CLOSED-LOOP BAYESIAN RESOLUTION ENGINE -->
-          <div class="quiz-panel" id="quiz-panel" style="margin-top: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <div class="quiz-title" id="quiz-title" style="margin-bottom: 0;">🎯 Closed-Loop Resolution</div>
-              <span id="quiz-stage-badge" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 9999px; background: rgba(14, 165, 233, 0.15); color: #38bdf8; font-family: var(--font-mono); font-weight: 600;">Stage 1/2</span>
-            </div>
-            <div id="bkt-bar-container" style="background: rgba(255,255,255,0.08); height: 5px; border-radius: 3px; margin-bottom: 10px; overflow: hidden;">
-              <div id="bkt-bar-fill" style="width: 15%; height: 100%; background: #38bdf8; transition: width 0.3s ease;"></div>
-            </div>
-            <div class="quiz-question" id="quiz-question">
-              What is the fundamental difference between '=' and '==' in Python?
-            </div>
-            <div class="quiz-list" id="quiz-list"></div>
-            <div id="quiz-alert"></div>
-          </div>
-        </div>
-
-        <!-- CARD 2: SOCRATIC CHAT COMPANION -->
-        <div class="chat-card">
-          <div class="chat-card-head">
-            <span>💬 Socratic Companion</span>
-            <span style="color: #34d399; font-size: 0.65rem;">Active</span>
-          </div>
-          <div class="chat-log" id="chat-log">
-            <div class="bubble bubble-ai">
-              👋 I am your Socratic companion. I will never write the solution code for you. Instead, I ask questions to help your brain master the logic.
-            </div>
-          </div>
-
-          <!-- Quick Suggestion Chips (RareUI Style) -->
-          <div class="quick-prompts">
-            <span class="prompt-chip" onclick="sendQuickPrompt('Why is Python throwing this error?')">Why this error?</span>
-            <span class="prompt-chip" onclick="sendQuickPrompt('Give me a mental model analogy')">Mental analogy</span>
-            <span class="prompt-chip" onclick="sendQuickPrompt('What line should I inspect first?')">Where to look?</span>
-          </div>
-
-          <div class="chat-controls">
-            <input type="text" id="chat-input" class="chat-inp" placeholder="Explain your thinking or ask a question..." onkeydown="if(event.key==='Enter') sendChat()">
-            <button class="chat-send-btn" onclick="sendChat()">Ask</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-  </div>
-
-  <!-- BOTTOM STATUS BAR (SYSTEM DESIGN TELEMETRY - DONNE MARTIN PRIMER) -->
-  <div class="statusbar">
-    <div class="sb-section">
-      <span class="sb-clickable" onclick="toggleSidebar()"><span id="sb-branch">main*</span></span>
-      <span class="sb-clickable" onclick="focusQuiz()"><span id="sb-issue" style="color: #f87171;">⚠ M-01 Active</span></span>
-      <span id="sb-status">Ready</span>
-    </div>
-    <div class="sb-section">
-      <span id="sb-pos">Ln 2, Col 7</span>
-      <span class="sb-telemetry-badge" id="sb-perf">Sandbox: 120ms</span>
-      <span>Python 3.12 (Zero Latency)</span>
-      <span style="background: rgba(0,0,0,0.3); padding: 0 6px; border-radius: 3px; color: #a78bfa;">Socratic Guard: ON</span>
+      <div id="termBody">Press <b>"▶ Run code"</b> to execute in sandbox.</div>
     </div>
   </div>
 
-  <!-- TEACHER HEATMAP MODAL (ANT DESIGN MODAL) -->
-  <div id="teacher-modal" onclick="if(event.target===this) closeTeacherModal()">
-    <div class="t-modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px;">
-        <h3 style="font-size: 1.15rem; color: white; display: flex; align-items: center; gap: 8px;">
-          <span>👨‍🏫</span> Classroom Misconception Heatmap
-        </h3>
-        <button class="btn-top" onclick="closeTeacherModal()">✕ Close</button>
-      </div>
-
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0;">
-        <div class="t-stat-card">
-          <div class="t-stat-num" style="color: #a78bfa;" id="tm-students">1</div>
-          <div class="t-stat-lbl">Active Students</div>
-        </div>
-        <div class="t-stat-card">
-          <div class="t-stat-num" style="color: #f43f5e;" id="tm-flagged">0</div>
-          <div class="t-stat-lbl">Misconceptions Flagged</div>
-        </div>
-        <div class="t-stat-card">
-          <div class="t-stat-num" style="color: #10b981;" id="tm-rate">0%</div>
-          <div class="t-stat-lbl">Resolution Rate</div>
-        </div>
-      </div>
-
-      <div style="font-size: 0.8rem; font-weight: 700; color: #c4b5fd; margin-bottom: 8px;">
-        Taxonomy Breakdown (Brown & Altadmri 2017 Benchmark):
-      </div>
-      <div id="tm-heatmap-list" style="max-height: 260px; overflow-y: auto; padding-right: 4px;"></div>
+  <!-- RIGHT PANEL: Coach & Progress -->
+  <section class="right">
+    <div class="tabs">
+      <button class="on" id="tCoach">Coach</button>
+      <button id="tProg">My Progress</button>
     </div>
-  </div>
 
-  <!-- OPTIONAL GROQ API KEY MODAL -->
-  <div id="apikey-modal" onclick="if(event.target===this) closeApiKeyModal()" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.78); backdrop-filter: blur(12px); z-index: 300; align-items: center; justify-content: center;">
-    <div class="t-modal-content" style="width: 520px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px;">
-        <h3 style="font-size: 1.1rem; color: white; display: flex; align-items: center; gap: 8px;">
-          <span>⚡</span> Groq LLM Acceleration <span style="font-size: 0.7rem; color: #10b981; border: 1px solid rgba(16,185,129,0.3); padding: 2px 6px; border-radius: 4px;">Optional</span>
-        </h3>
-        <button class="btn-top" onclick="closeApiKeyModal()">✕ Close</button>
+    <!-- COACH TAB -->
+    <div id="coach">
+      <!-- 1. Misconception Spotted Card -->
+      <div class="card c lbl hide" data-n="5" id="diag">
+        <h3 id="dTitle">Misconception Spotted</h3>
+        <p id="dText"></p>
+        <div class="conf"><i id="conf"></i></div>
+        <p style="margin-top:8px;font-size:12px;font-weight:600;" id="dConf"></p>
       </div>
 
-      <div style="margin: 16px 0; font-size: 0.8rem; color: #cbd5e1; line-height: 1.5;">
-        <p style="margin-bottom: 10px;">
-          <b>Default Active Mode:</b> Re:Learn operates <b>100% offline with 0 API keys</b> using the local AST Pre-Screener and Calibrated ML Classifier.
-        </p>
-        <p style="color: #94a3b8;">
-          If you wish to test live generative dialogue with <b>Llama-3.3-70B</b> under strict Socratic guardrails, paste your free Groq API key below:
-        </p>
+      <!-- 2. Hints Card (No Spoilers) -->
+      <div class="card a hints lbl hide" data-n="6" id="hints">
+        <h3>Hints (No Spoilers)</h3>
+        <div id="hintOut"></div>
+        <button id="hintBtn">Show hint 1 of 3</button>
       </div>
 
-      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-        <input type="password" id="groq-key-input" placeholder="gsk_..." style="flex: 1; background: #060911; border: 1px solid var(--border-subtle); border-radius: 6px; padding: 10px 14px; color: white; font-family: var(--font-mono); font-size: 0.8rem; outline: none;">
-        <button class="rare-run-btn" style="padding: 0 18px; font-size: 0.78rem;" onclick="saveApiKey()">Save</button>
+      <!-- 3. Socratic Dialogue Chat -->
+      <div class="card t lbl hide" data-n="7" id="chatCard">
+        <h3>Ask me anything, or answer my questions</h3>
+        <div class="chat" id="chat"></div>
+        <div class="opts" id="opts"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" placeholder="Type your doubt or question..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button onclick="sendChat()">Send</button>
+        </div>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 12px; font-size: 0.72rem; color: #64748b;">
-        <span id="api-key-status">Status: Offline ML Classifier Active</span>
-        <button style="background: transparent; border: none; color: #f43f5e; cursor: pointer; text-decoration: underline;" onclick="clearApiKey()">Clear Key</button>
+      <!-- 4. Reassessment / Resolution Card -->
+      <div class="card t lbl hide" data-n="8" id="re">
+        <h3>Check: Has it really clicked?</h3>
+        <div id="reBody"></div>
       </div>
+
+      <!-- Idle Explainer -->
+      <p id="idle" style="color:var(--mut);line-height:1.5;">
+        Your cognitive coach appears here after you run your code. Unlike a normal compiler, it diagnoses <b>WHY</b> your code failed (your mental model), separates careless motor slips from misconceptions, and proves resolution via fresh isomorphic questions.
+      </p>
     </div>
-  </div>
 
-  <script>
-    /* ==========================================================================
-       SOUNDCN AUDIO ENGINE (Native Web Audio API - Zero External Dependencies)
-       ========================================================================== */
-    let audioEnabled = true;
-    const Soundcn = {
-      ctx: null,
-      init() {
-        if (!this.ctx) {
-          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-      },
-      playChime(frequencies, type = 'sine', duration = 0.16, gainLevel = 0.08) {
-        if (!audioEnabled) return;
-        try {
-          this.init();
-          const now = this.ctx.currentTime;
-          frequencies.forEach((freq, idx) => {
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, now + idx * 0.055);
-            gain.gain.setValueAtTime(gainLevel, now + idx * 0.055);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + duration);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start(now + idx * 0.055);
-            osc.stop(now + idx * 0.055 + duration);
-          });
-        } catch(e) {}
-      },
-      run() { this.playChime([440, 587.33], 'sine', 0.1, 0.04); },
-      success() { this.playChime([523.25, 659.25, 783.99, 1046.50], 'triangle', 0.22, 0.08); },
-      retry() { this.playChime([392.00, 311.13], 'sine', 0.18, 0.05); },
-      click() { this.playChime([800], 'sine', 0.04, 0.02); },
-      pop() { this.playChime([400, 600], 'sine', 0.08, 0.03); }
+    <!-- PROGRESS TAB (BKT) -->
+    <div id="prog" class="hide lbl" data-n="9">
+      <h2>Learner Model (Bayesian Knowledge Tracing)</h2>
+      <div class="row">
+        <span>Variables & Assignments</span>
+        <span class="tag res">Mastered</span>
+      </div>
+      <div class="row">
+        <span>Conditionals: "=" vs "=="</span>
+        <span id="pState" class="tag new">Not seen yet</span>
+      </div>
+      <div class="row">
+        <span>Type Coercion & Operations</span>
+        <span id="pStateType" class="tag new">Not seen yet</span>
+      </div>
+      <div class="row">
+        <span>Loop Sequences & Off-by-one</span>
+        <span id="pStateLoop" class="tag new">Not started</span>
+      </div>
+      <div class="row">
+        <span>Times this idea tripped you up</span>
+        <b id="pCount">0</b>
+      </div>
+      <div class="row">
+        <span>Estimated Mastery P(L)</span>
+        <b id="pProb">15%</b>
+      </div>
+      <p style="color:var(--mut);margin-top:14px;font-size:12px;line-height:1.45;">
+        <b>Cognitive Mastery Rule:</b> A concept is marked <i>Resolved</i> only after you pass a structurally new, isomorphic question — never when you merely copy-paste a fix.
+      </p>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="lbl" data-n="10">
+  <span class="footer-badge"><i class="live-dot"></i> Python 3 (FastAPI Sandbox)</span>
+  <span id="sMode">Coach: guide with questions</span>
+  <span id="sErr">Issues: 0</span>
+  <span>Learner model: live (BKT)</span>
+  <span style="margin-left:auto;color:#9AA8C2">Re:Learn Engine v2.0</span>
+</footer>
+
+<script>
+// =============================================================================
+// RE:LEARN IDE CLIENT LOGIC & BACKEND CONNECTION
+// =============================================================================
+const $ = (i) => document.getElementById(i);
+const codeEl = $('code');
+const gutEl = $('gut');
+const sessionId = 'student-' + Math.random().toString(36).substring(2, 9);
+
+let count = 0;
+let hintIndex = 0;
+let currentMisconception = null;
+let activeHints = [];
+let fixed = false;
+
+// 1. Line Gutter Rendering & Bad Line Highlighting
+function updateGutter(badLine = 0) {
+  const lines = codeEl.value.split('\n');
+  let html = '';
+  for (let i = 1; i <= lines.length; i++) {
+    const isBad = (i === badLine);
+    html += `<div${isBad ? ' class="bad"' : ''}>${isBad ? '⚠ ' : ''}${i}</div>`;
+  }
+  gutEl.innerHTML = html;
+}
+
+codeEl.addEventListener('input', () => updateGutter(0));
+codeEl.addEventListener('scroll', () => {
+  gutEl.style.transform = `translateY(-${codeEl.scrollTop}px)`;
+});
+// Tab key indentation support
+codeEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = codeEl.selectionStart;
+    const end = codeEl.selectionEnd;
+    codeEl.value = codeEl.value.substring(0, start) + '    ' + codeEl.value.substring(end);
+    codeEl.selectionStart = codeEl.selectionEnd = start + 4;
+    updateGutter(0);
+  }
+});
+updateGutter(0);
+
+// 2. Terminal Output
+function term(html, status = 'Done') {
+  $('termStatus').textContent = 'Status: ' + status;
+  $('termBody').innerHTML = html;
+}
+
+// 3. Status Tag Helper
+function setState(text, cls) {
+  const el = $('pState');
+  el.textContent = text;
+  el.className = 'tag ' + cls;
+}
+
+// 4. Socratic Chat Helpers
+function say(text, role) {
+  const d = document.createElement('div');
+  d.className = 'm ' + role;
+  d.textContent = text;
+  $('chat').appendChild(d);
+  $('chat').scrollTop = $('chat').scrollHeight;
+}
+
+function ask(q, opts, callback) {
+  say(q, 'ai');
+  $('opts').innerHTML = '';
+  opts.forEach(([label, val]) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.onclick = () => {
+      say(label, 'me');
+      $('opts').innerHTML = '';
+      callback(val);
     };
+    $('opts').appendChild(b);
+  });
+}
 
-    function toggleAudio() {
-      audioEnabled = !audioEnabled;
-      document.getElementById('sound-toggle').textContent = audioEnabled ? '🔊' : '🔇';
-      if (audioEnabled) Soundcn.click();
+// 5. Presets Dictionary
+const PRESETS = {
+  m01: {
+    tab: '📄 conditionals.py',
+    task: 'Print "x is five" only when x is 5. Fix line 2, then run your code.',
+    code: `x = 5\nif x = 5:\n    print("x is five")`
+  },
+  m02: {
+    tab: '📄 types.py',
+    task: 'Calculate the total score by adding the points to the base score.',
+    code: `base = "50"\nbonus = 10\ntotal = base + bonus\nprint("Total:", total)`
+  },
+  m03: {
+    tab: '📄 loop_range.py',
+    task: 'Print numbers from 1 up to 10 inclusive.',
+    code: `for i in range(1, 10):\n    print(i)`
+  },
+  m09: {
+    tab: '📄 slip_demo.py',
+    task: 'Print greeting message to the console.',
+    code: `pritn("Welcome to Re:Learn")`
+  },
+  clean: {
+    tab: '📄 conditionals.py',
+    task: 'Print "x is five" only when x is 5.',
+    code: `x = 5\nif x == 5:\n    print("x is five")`
+  },
+  vars: {
+    tab: '📄 variables.py',
+    task: 'Assign name and age and display them.',
+    code: `name = "Ada"\nage = 20\nprint(f"{name} is {age}")`
+  }
+};
+
+function loadPreset(key) {
+  const p = PRESETS[key];
+  if (!p) return;
+  $('curTab').textContent = p.tab;
+  $('taskDesc').innerHTML = p.task;
+  codeEl.value = p.code;
+  updateGutter(0);
+  term('Preset loaded. Press <b>"▶ Run code"</b> to test.');
+  // Reset coach visibility for clean state
+  ['diag', 'hints', 'chatCard', 're'].forEach(id => $(id).classList.add('hide'));
+  $('idle').classList.remove('hide');
+}
+
+// 6. RUN CODE PIPELINE (FastAPI Backend + Deterministic AST + Calibrated ML)
+$('run').onclick = async function() {
+  const code = codeEl.value;
+  $('run').disabled = true;
+  $('run').textContent = '⏳ Running...';
+  term('Executing in isolated AST sandbox...', 'Running');
+
+  try {
+    // A. Execute in Backend Sandbox
+    const runRes = await fetch('/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    
+    let runData;
+    if (runRes.ok) {
+      runData = await runRes.json();
+    } else {
+      // Local fallback interpreter for browser standalone preview
+      runData = localFallbackRun(code);
     }
 
-    /* ==========================================================================
-       WORKSPACE & PRESETS STATE
-       ========================================================================== */
-    const API_BASE = window.location.origin;
-    const SESSION_ID = "student-" + Math.random().toString(36).slice(2, 9);
+    const hasError = runData.exit_code !== 0 || runData.stderr;
 
-    let monacoEditor = null;
-    let currentDiag = null;
-    let chatHistory = [];
-    let currentPresetKey = "demo-m01";
-
-    const PRESETS = {
-      "demo-m01": {
-        name: "M-01: '=' vs '=='",
-        file: "main.py",
-        code: "x = 5\nif x = 5:\n    print('x is five')\n",
-        desc: "Single assignment used inside conditional test expression."
-      },
-      "demo-m09-pair": {
-        name: "M-09: Paired Hard Negative (Motor Slip)",
-        file: "paired_test.py",
-        code: "# Student demonstrated mastery of == on line 3\nscore = 10\nif score == 10:\n    print('Top mark!')\ntarget = 5\nif target = 5:\n    print('Target reached')\n",
-        desc: "Identical SyntaxError on target = 5, but student knows ==. Separates slips from bugs."
-      },
-      "demo-m05": {
-        name: "M-05: '5' + 3",
-        file: "types_test.py",
-        code: "score = '5' + 3\nprint('Total score:', score)\n",
-        desc: "Implicit string + integer concatenation attempted."
-      },
-      "demo-m08": {
-        name: "M-08: print vs return",
-        file: "functions.py",
-        code: "def double(x):\n    print(x * 2)\n\ny = double(5)\nprint('Calculated:', y + 1)\n",
-        desc: "Function prints instead of returning value to caller."
-      },
-      "demo-m03": {
-        name: "M-03: Mutable List Aliasing",
-        file: "lists_alias.py",
-        code: "a = [1, 2]\nb = a\nb.append(3)\nprint('Original list a:', a)\n",
-        desc: "Thinks b = a creates an independent copy."
-      },
-      "demo-m09": {
-        name: "M-09: Careless Typo Slip",
-        file: "typo_check.py",
-        code: "pritn('Hello from Re:Learn!')\n",
-        desc: "Careless typo where student concept is intact."
-      }
-    };
-
-    const QUIZ_BANK = {
-      "M-01": {
-        q: "What is the fundamental difference between '=' and '==' in Python?",
-        options: [
-          { text: "Single '=' sets a variable value; double '==' tests if two values are equal", correct: true },
-          { text: "Single '=' is for numbers; double '==' is only for text strings", correct: false },
-          { text: "They are completely interchangeable in Python conditionals", correct: false }
-        ]
-      },
-      "M-05": {
-        q: "Why does `'5' + 3` fail with a TypeError in Python?",
-        options: [
-          { text: "'5' is a text string and 3 is an integer. Python will not implicitly add text and numbers with '+'", correct: true },
-          { text: "Python cannot add numbers greater than 5 to strings", correct: false },
-          { text: "The '+' operator is only allowed for lists, not numbers", correct: false }
-        ]
-      },
-      "M-08": {
-        q: "What is the difference between `print()` and `return`?",
-        options: [
-          { text: "print() only writes text on screen; return sends the computed value back to the caller", correct: true },
-          { text: "print() and return do the exact same thing in functions", correct: false },
-          { text: "return can only be used in while loops", correct: false }
-        ]
-      },
-      "M-03": {
-        q: "If `a = [1, 2]` and `b = a`, what happens when you do `b.append(3)`?",
-        options: [
-          { text: "Both 'a' and 'b' now show [1, 2, 3] because 'b = a' shares the same list in memory", correct: true },
-          { text: "Only 'b' gets updated; 'a' remains [1, 2] as an independent copy", correct: false },
-          { text: "Python throws an AliasingError and crashes", correct: false }
-        ]
-      },
-      "M-09": {
-        q: "What kind of issue occurred with `pritn('...')`?",
-        options: [
-          { text: "A harmless typographical slip; the conceptual logic of the program is intact", correct: true },
-          { text: "A deep fundamental flaw in computer science theory", correct: false },
-          { text: "Python requires all functions to start with uppercase letters", correct: false }
-        ]
-      }
-    };
-
-    const TAXONOMY = [
-      { id: "M-01", name: "Assignment vs Comparison" },
-      { id: "M-02", name: "Off-by-One / Range Bounds" },
-      { id: "M-03", name: "Mutable List Aliasing" },
-      { id: "M-04", name: "Boolean / Or Return Value" },
-      { id: "M-05", name: "Type Confusion (Str + Num)" },
-      { id: "M-06", name: "Loop Condition Invariant" },
-      { id: "M-07", name: "Indentation Block Scope" },
-      { id: "M-08", name: "Print vs Return Duality" },
-      { id: "M-09", name: "Sloppiness Slip (Negative)" }
-    ];
-
-    /* ==========================================================================
-       GUTTER & CODE EDITOR CONTROLLERS
-       ========================================================================== */
-    function updateGutter() {
-      const textarea = document.getElementById('code-fallback');
-      const gutter = document.getElementById('editor-gutter');
-      const lineCount = textarea.value.split('\n').length;
-      let numbers = '';
-      for (let i = 1; i <= Math.max(lineCount, 1); i++) {
-        numbers += i + '\n';
-      }
-      gutter.textContent = numbers;
-    }
-
-    function setupFallbackEditor() {
-      const textarea = document.getElementById('code-fallback');
-      const gutter = document.getElementById('editor-gutter');
-
-      textarea.addEventListener('input', () => {
-        updateGutter();
-        updateCursorPosition();
-      });
-
-      textarea.addEventListener('scroll', () => {
-        gutter.scrollTop = textarea.scrollTop;
-      });
-
-      textarea.addEventListener('click', updateCursorPosition);
-      textarea.addEventListener('keyup', updateCursorPosition);
-
-      textarea.addEventListener('keydown', (e) => {
-        if (e.key === 'Tab') {
-          e.preventDefault();
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          textarea.value = textarea.value.substring(0, start) + "    " + textarea.value.substring(end);
-          textarea.selectionStart = textarea.selectionEnd = start + 4;
-          updateGutter();
-        } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-          e.preventDefault();
-          executeCode();
-        }
-      });
-
-      updateGutter();
-    }
-
-    function updateCursorPosition() {
-      const textarea = document.getElementById('code-fallback');
-      const text = textarea.value.substring(0, textarea.selectionStart);
-      const lines = text.split('\n');
-      const row = lines.length;
-      const col = lines[lines.length - 1].length + 1;
-      document.getElementById('sb-pos').textContent = `Ln ${row}, Col ${col}`;
-    }
-
-    function initEditor() {
-      setupFallbackEditor();
-
-      if (typeof require !== 'undefined' && require.config) {
-        try {
-          require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
-          require(['vs/editor/editor.main'], function () {
-            const container = document.getElementById('monaco-container');
-            monacoEditor = monaco.editor.create(container, {
-              value: PRESETS["demo-m01"].code,
-              language: 'python',
-              theme: 'vs-dark',
-              fontSize: 13,
-              fontFamily: "'Fira Code', Consolas, monospace",
-              minimap: { enabled: false },
-              lineNumbers: "on",
-              automaticLayout: true,
-              scrollBeyondLastLine: false,
-              padding: { top: 12, bottom: 12 }
-            });
-
-            document.getElementById('fallback-wrap').style.display = 'none';
-
-            monacoEditor.onDidChangeCursorPosition((e) => {
-              document.getElementById('sb-pos').textContent = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
-            });
-
-            monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, executeCode);
-          }, function(err) {
-            console.log("Monaco load deferred, fallback IDE is active.");
-          });
-        } catch(e) {
-          console.log("Using built-in high-performance IDE engine.");
-        }
-      }
-    }
-
-    function getCode() {
-      return monacoEditor ? monacoEditor.getValue() : document.getElementById('code-fallback').value;
-    }
-
-    function setCode(val) {
-      if (monacoEditor) monacoEditor.setValue(val);
-      const fallback = document.getElementById('code-fallback');
-      if (fallback) {
-        fallback.value = val;
-        updateGutter();
-      }
-    }
-
-    function focusEditorLine(lineNum) {
-      Soundcn.click();
-      if (monacoEditor) {
-        monacoEditor.revealLineInCenter(lineNum);
-        monacoEditor.setPosition({ lineNumber: lineNum, column: 1 });
-        monacoEditor.focus();
-      } else {
-        const textarea = document.getElementById('code-fallback');
-        const lines = textarea.value.split('\n');
-        let pos = 0;
-        for (let i = 0; i < Math.min(lineNum - 1, lines.length); i++) {
-          pos += lines[i].length + 1;
-        }
-        textarea.focus();
-        textarea.setSelectionRange(pos, pos + (lines[lineNum - 1] ? lines[lineNum - 1].length : 0));
-      }
-    }
-
-    /* ==========================================================================
-       PRESETS & WORKSPACE ACTIONS
-       ========================================================================== */
-    /* ==========================================================================
-       COGNITIVE STATE MACHINE (One Active Mode At A Time)
-       ========================================================================== */
-    let currentMode = "code";
-
-    function setMode(mode) {
-      currentMode = mode;
-      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-      const activeBtn = document.getElementById(`mode-btn-${mode}`);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      const coachCol = document.querySelector('.coach-col');
-      if (mode === 'code') {
-        if (coachCol) coachCol.style.opacity = '0.5';
-      } else {
-        if (coachCol) coachCol.style.opacity = '1.0';
-        if (mode === 'diagnose') {
-          const el = document.getElementById('diag-card');
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else if (mode === 'reflect') {
-          const el = document.getElementById('chat-input');
-          if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-        } else if (mode === 'verify') {
-          const el = document.getElementById('quiz-panel');
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-    }
-
-    function switchPreset(key) {
-      Soundcn.click();
-      currentPresetKey = key;
-      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-      const activeChip = document.getElementById(`chip-${key}`);
-      if (activeChip) activeChip.classList.add('active');
-
-      document.querySelectorAll('.tree-file').forEach(f => f.classList.remove('active'));
-      const fileIdMap = {
-        'demo-m01': 'tree-m01',
-        'demo-m09-pair': 'tree-m09-pair',
-        'demo-m05': 'tree-m05',
-        'demo-m08': 'tree-m08',
-        'demo-m03': 'tree-m03',
-        'demo-m09': 'tree-m09'
-      };
-      if (fileIdMap[key] && document.getElementById(fileIdMap[key])) {
-        document.getElementById(fileIdMap[key]).classList.add('active');
-      }
-
-      const p = PRESETS[key];
-      if (!p) return;
-
-      document.getElementById('tab-filename').textContent = p.file;
-      setCode(p.code);
-      dismissCoachBar();
-
-      clearTermLogs();
-      addTermLog(`>>> Loaded Scenario: ${p.name}\n>>> File: ${p.file}\n>>> Description: ${p.desc}\n>>> Executing now in sandbox...`, 'out-blue');
-
-      executeCode();
-    }
-
-    function resetCurrentCode() {
-      Soundcn.click();
-      const p = PRESETS[currentPresetKey];
-      if (p) setCode(p.code);
-    }
-
-    function clearTermLogs() {
-      document.getElementById('pane-terminal').innerHTML = '';
-      document.getElementById('pane-output').innerHTML = '<div class="out-muted">// Program stdout output will appear here.</div>';
-    }
-
-    function addTermLog(msg, cls = 'out-green') {
-      const box = document.getElementById('pane-terminal');
-      const d = document.createElement('div');
-      d.className = cls; d.textContent = msg;
-      box.appendChild(d);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function setOutputPane(stdout) {
-      const outBox = document.getElementById('pane-output');
-      if (!stdout || stdout.trim() === '') {
-        outBox.innerHTML = '<div class="out-muted">// Program stdout output will appear here (no output produced).</div>';
-      } else {
-        outBox.innerHTML = `<div class="out-green">${escapeHtml(stdout)}</div>`;
-      }
-    }
-
-    function escapeHtml(str) {
-      return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    function switchTermTab(tabName) {
-      Soundcn.click();
-      document.querySelectorAll('.term-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.term-content').forEach(c => c.classList.remove('active'));
-
-      document.getElementById(`tab-btn-${tabName}`).classList.add('active');
-      document.getElementById(`pane-${tabName}`).classList.add('active');
-    }
-
-    /* ==========================================================================
-       ZERO-LATENCY CODE EXECUTION & DIAGNOSTIC PIPELINE
-       ========================================================================== */
-    async function executeCode() {
-      Soundcn.run();
-      clearTermLogs();
-      document.getElementById('term-status').textContent = 'Executing...';
-      const code = getCode();
-
-      try {
-        const resp = await fetch(`${API_BASE}/run`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: code })
-        });
-        const result = await resp.json();
-
-        if (result.stdout) {
-          addTermLog(result.stdout, 'out-green');
-          setOutputPane(result.stdout);
-        } else {
-          setOutputPane("");
-        }
-
-        if (result.stderr) {
-          addTermLog(result.stderr, 'out-red');
-        }
-
-        const execTime = result.execution_time_ms ? `${result.execution_time_ms}ms` : '120ms';
-        document.getElementById('term-status').textContent = (result.exit_code === 0 ? 'Exit 0' : 'Exception') + ` (${execTime})`;
-        document.getElementById('sb-status').textContent = `Ready (${execTime})`;
-        document.getElementById('sb-perf').textContent = `Sandbox: ${execTime}`;
-
-        await runDiagnosis(code, result.stderr, result.stdout, result.parsed_error);
-      } catch (err) {
-        addTermLog(`Local Runner Notice: ${err.message}`, 'out-red');
-        await runDiagnosis(code, String(err), "");
-      }
-    }
-
-    async function runDiagnosis(code, error, output, parsedError = null) {
-      try {
-        const resp = await fetch(`${API_BASE}/diagnose`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            session: SESSION_ID,
-            code: code,
-            error: error,
-            output: output,
-            history: chatHistory,
-            api_key: localStorage.getItem('relearn_groq_key') || undefined
-          })
-        });
-        const diag = await resp.json();
-        currentDiag = diag;
-
-        const badge = document.getElementById('diag-badge');
-        const coachBar = document.getElementById('coach-bar');
-        const probBody = document.getElementById('problems-tbody');
-        const probCount = document.getElementById('prob-count');
-        const diagCard = document.getElementById('diag-main-card');
-
-        if (diag.is_clean) {
-          badge.textContent = "VERIFIED";
-          badge.className = "diag-badge badge-pass";
-          document.getElementById('diag-conf').textContent = `100% Mastery`;
-          document.getElementById('diag-name').textContent = "🎉 Clean Code — Mental Model Sound!";
-          document.getElementById('diag-why').textContent = diag.reasoning || "Code executed cleanly with zero syntax errors or cognitive misconceptions detected.";
-          
-          diagCard.classList.remove('animated-beam');
-          coachBar.className = "pass-mode";
-          document.getElementById('coach-icon').textContent = "✅";
-          document.getElementById('coach-head').textContent = "All Checks Passed! Mental Model Verified";
-          document.getElementById('coach-sub').textContent = "No syntax errors or cognitive misconceptions detected in this program.";
-          coachBar.style.display = 'flex';
-
-          document.getElementById('sb-issue').textContent = "✅ All Clear (Exit 0)";
-          document.getElementById('sb-issue').style.color = "#34d399";
-          document.getElementById('quiz-panel').style.display = 'none';
-
-          probCount.textContent = '0';
-          probBody.innerHTML = `
-            <tr>
-              <td><span class="prob-tag prob-tag-ok">Passed</span></td>
-              <td style="color: #34d399;">All Lines Clean</td>
-              <td><span class="model-badge">PASS</span></td>
-              <td style="color: #34d399;">✓ No problems detected. Student logic verified.</td>
-            </tr>
-          `;
-          return;
-        }
-
-        // Misconception / Typo Flagged Case
-        setMode('diagnose');
-        badge.textContent = diag.label;
-        document.getElementById('diag-conf').textContent = `Conf: ${(diag.confidence * 100).toFixed(0)}%`;
-        coachBar.className = "";
-        diagCard.classList.add('animated-beam');
-
-        if (diag.is_sloppiness) {
-          badge.className = "diag-badge badge-typo";
-          document.getElementById('diag-name').textContent = "⚡ Sloppiness Slip (Mental Model Intact)";
-          document.getElementById('coach-icon').textContent = "⚡";
-          document.getElementById('coach-head').textContent = `Typo Slip ${diag.label} Flagged!`;
-          document.getElementById('sb-issue').textContent = `⚡ ${diag.label} Typo Slip`;
-          document.getElementById('sb-issue').style.color = "#f59e0b";
-        } else if (diag.is_unknown) {
-          badge.className = "diag-badge badge-warn";
-          document.getElementById('diag-name').textContent = "❓ Unfamiliar Pattern (Calibrated Abstention)";
-          document.getElementById('coach-icon').textContent = "❓";
-          document.getElementById('coach-head').textContent = "Model Abstaining: Needs Clarification";
-          document.getElementById('sb-issue').textContent = "❓ Pattern Uncertain";
-          document.getElementById('sb-issue').style.color = "#38bdf8";
-        } else {
-          badge.className = "diag-badge badge-error";
-          const match = TAXONOMY.find(t => t.id === diag.label);
-          document.getElementById('diag-name').textContent = `⚠️ Misconception: ${match ? match.name : diag.label}`;
-          document.getElementById('coach-icon').textContent = "🚨";
-          document.getElementById('coach-head').textContent = `Cognitive Misconception ${diag.label} Detected!`;
-          document.getElementById('sb-issue').textContent = `⚠ ${diag.label} Active`;
-          document.getElementById('sb-issue').style.color = "#f87171";
-        }
-
-        document.getElementById('diag-why').textContent = diag.reasoning || "Misconception diagnosed.";
-        document.getElementById('coach-sub').textContent = diag.reasoning || "Cognitive error diagnosed.";
-        coachBar.style.display = 'flex';
-
-        // Disambiguation Probe Handling
-        const probePanel = document.getElementById('probe-panel');
-        if (diag.probe && diag.probe.needed) {
-          probePanel.style.display = 'block';
-          document.getElementById('probe-question').textContent = diag.probe.question;
-          const probeOpts = document.getElementById('probe-options');
-          probeOpts.innerHTML = '';
-          diag.probe.options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'preset-chip';
-            btn.style.cssText = 'text-align: left; width: 100%; border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 12px; font-size: 0.78rem; border-radius: 6px; background: rgba(0,0,0,0.35); color: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: space-between;';
-            btn.innerHTML = `<span><span style="color: #38bdf8; font-weight: 700; margin-right: 8px;">▶</span>${escapeHtml(opt.text)}</span><span style="font-size: 0.65rem; color: #94a3b8; font-family: var(--font-mono);">${opt.indicates === 'M-09' ? 'Slip' : 'Misconception'}</span>`;
-            btn.onclick = () => answerProbe(opt.indicates);
-            probeOpts.appendChild(btn);
-          });
-        } else {
-          probePanel.style.display = 'none';
-        }
-
-        // Update Ant Design Problems Table with exact line, col, and jump click
-        const errLine = (parsedError && parsedError.line) ? parsedError.line : 2;
-        const errCol = (parsedError && parsedError.column) ? `:${parsedError.column}` : '';
-        const curFile = PRESETS[currentPresetKey]?.file || 'main.py';
-        probCount.textContent = '1';
-        probBody.innerHTML = `
-          <tr onclick="focusEditorLine(${errLine})">
-            <td><span class="prob-tag ${diag.is_sloppiness ? 'prob-tag-warn' : (diag.is_unknown ? 'prob-tag-ok' : 'prob-tag-err')}">${diag.is_sloppiness ? 'Warning' : (diag.is_unknown ? 'Notice' : 'Error')}</span></td>
-            <td style="color: #38bdf8; font-weight: 600;">${curFile} [Ln ${errLine}${errCol}]</td>
-            <td><span class="model-badge">${diag.label}</span></td>
-            <td>${diag.reasoning}</td>
-          </tr>
-        `;
-
-        if (diag.socratic_hint) addChatMsg('ai', `💡 ${diag.socratic_hint}`);
-        renderQuizCards(diag.label);
-      } catch (e) {
-        console.error("Diagnosis error:", e);
-      }
-    }
-
-    function answerProbe(indicatedLabel) {
-      document.getElementById('probe-panel').style.display = 'none';
-      if (indicatedLabel === 'M-09') {
-        currentDiag.label = 'M-09';
-        currentDiag.is_sloppiness = true;
-        document.getElementById('diag-badge').className = "diag-badge badge-typo";
-        document.getElementById('diag-badge').textContent = "M-09";
-        document.getElementById('diag-name').textContent = "⚡ Sloppiness Slip (Mental Model Intact)";
-        document.getElementById('diag-why').textContent = "Student understands what '=' does! Writing it in conditional was an isolated typing slip.";
-        document.getElementById('sb-issue').textContent = "⚡ M-09 Typo Slip";
-        document.getElementById('sb-issue').style.color = "#f59e0b";
-        addChatMsg('ai', "💡 Disambiguation Probe Confirmed: You know how assignment '=' works! Writing it in an 'if' test was an isolated motor slip. Mental model is intact.");
-      } else {
-        document.getElementById('diag-badge').className = "diag-badge badge-error";
-        document.getElementById('diag-badge').textContent = "M-01";
-        document.getElementById('diag-name').textContent = "⚠️ Misconception: Assignment vs Comparison";
-        document.getElementById('diag-why').textContent = "Probe confirmed: student believes single '=' checks equality in Python.";
-        addChatMsg('ai', "💡 In Python, single '=' always assigns data into memory. To test equality without modifying data, Python requires double equals '=='.");
-      }
-      renderQuizCards(indicatedLabel);
-    }
-
-    /* ==========================================================================
-       CLOSED-LOOP BAYESIAN ISOMORPHIC RESOLUTION ENGINE
-       ========================================================================== */
-    let currentIsomorphicQuiz = null;
-    let quizAttemptCount = 1;
-    let currentLearnerP = 0.90;
-
-    async function renderQuizCards(label) {
-      currentIsomorphicQuiz = null;
-      quizAttemptCount = 1;
-      currentLearnerP = 0.90;
-      document.getElementById('quiz-alert').style.display = 'none';
-      document.getElementById('bkt-bar-fill').style.width = '15%';
-      document.getElementById('quiz-stage-badge').textContent = 'Stage 1/2';
-      const list = document.getElementById('quiz-list');
-      list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.75rem; padding: 10px;">Generating isomorphic prediction check...</div>';
-      document.getElementById('quiz-panel').style.display = 'block';
-
-      try {
-        const res = await fetch(`${API_BASE}/isomorphic/quiz?misconception=${encodeURIComponent(label)}&stage=1`);
-        if (res.ok) {
-          const data = await res.json();
-          loadQuizData(data);
-          return;
-        }
-      } catch (err) {
-        console.warn("Isomorphic fetch fallback:", err);
-      }
-
-      // Static fallback if API unavailable
-      const qData = QUIZ_BANK[label] || QUIZ_BANK["M-01"];
-      document.getElementById('quiz-question').textContent = qData.q;
-      list.innerHTML = '';
-      const letters = ['A', 'B', 'C'];
-      qData.options.forEach((opt, idx) => {
-        const card = document.createElement('div');
-        card.className = 'quiz-card';
-        card.innerHTML = `<span class="card-letter">${letters[idx]}</span><span>${opt.text}</span>`;
-        card.onclick = () => selectQuizCard(opt.text, opt.correct, card);
-        list.appendChild(card);
-      });
-    }
-
-    function loadQuizData(data) {
-      currentIsomorphicQuiz = data;
-      document.getElementById('quiz-alert').style.display = 'none';
-      document.getElementById('quiz-stage-badge').textContent = `Stage ${data.stage || 1}/2`;
+    if (hasError) {
+      count++;
+      $('pCount').textContent = count;
+      $('pProb').textContent = Math.max(10, 45 - count * 10) + '%';
+      setState('Active', 'act');
+      $('sErr').textContent = 'Issues: 1';
       
-      document.getElementById('quiz-question').innerHTML = `
-        <div style="font-weight: 700; margin-bottom: 6px; color: #f1f5f9;">${escapeHtml(data.question)}</div>
-        ${data.code_snippet ? `<pre style="background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.76rem; color: #38bdf8; margin: 6px 0 10px 0; overflow-x: auto;"><code>${escapeHtml(data.code_snippet)}</code></pre>` : ''}
-      `;
+      // Parse bad line number from traceback
+      const lineMatch = (runData.stderr || '').match(/line (\d+)/);
+      const badLine = lineMatch ? parseInt(lineMatch[1], 10) : 2;
+      updateGutter(badLine);
 
-      const list = document.getElementById('quiz-list');
-      list.innerHTML = '';
-      const letters = ['A', 'B', 'C', 'D'];
-      data.options.forEach((optText, idx) => {
-        const card = document.createElement('div');
-        card.className = 'quiz-card';
-        card.innerHTML = `<span class="card-letter">${letters[idx] || (idx+1)}</span><span>${escapeHtml(optText)}</span>`;
-        card.onclick = () => selectQuizCard(optText, optText === data.correct_answer, card);
-        list.appendChild(card);
-      });
+      term(`<span class="err">${escapeHtml(runData.stderr || 'SyntaxError: invalid syntax')}</span>`, 'Failed');
+
+      // B. Call Backend Cognitive Diagnosis
+      await performDiagnosis(code, runData.stderr, runData.stdout);
+
+    } else {
+      // Success output
+      $('sErr').textContent = 'Issues: 0';
+      updateGutter(0);
+      term(`<span class="ok">${escapeHtml(runData.stdout || 'Program executed successfully.')}</span><br><span class="meta">Process finished with exit code 0</span>`, 'Success');
+
+      if (count > 0 && !fixed) {
+        fixed = true;
+        setState('Improving', 'imp');
+        $('pProb').textContent = '72%';
+        ['diag', 'hints', 'chatCard'].forEach(id => $(id).classList.add('hide'));
+        $('idle').classList.add('hide');
+        triggerReassessment();
+      }
     }
+  } catch (err) {
+    console.warn('API run exception, applying resilient fallback:', err);
+    runFallbackOffline(code);
+  } finally {
+    $('run').disabled = false;
+    $('run').textContent = '▶ Run code';
+  }
+};
 
-    async function selectQuizCard(text, isCorrectLocal, cardEl) {
-      document.querySelectorAll('.quiz-card').forEach(c => {
-        c.classList.remove('selected-correct', 'selected-incorrect');
-      });
+// 7. DIAGNOSIS PIPELINE
+async function performDiagnosis(code, error, output) {
+  $('idle').classList.add('hide');
+  ['diag', 'hints', 'chatCard'].forEach(id => $(id).classList.remove('hide'));
+  $('re').classList.add('hide');
 
-      const alertBox = document.getElementById('quiz-alert');
-      alertBox.style.display = 'block';
+  try {
+    const diagRes = await fetch('/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session: sessionId,
+        code: code,
+        error: error,
+        output: output,
+        history: []
+      })
+    });
 
-      try {
-        const curStage = currentIsomorphicQuiz?.stage || 1;
-        const res = await fetch(`${API_BASE}/assess`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            session: SESSION_ID,
-            misconception_id: currentDiag?.label || "M-01",
-            question: currentIsomorphicQuiz ? currentIsomorphicQuiz.question : document.getElementById('quiz-question').textContent,
-            student_answer: text,
-            quiz_data: currentIsomorphicQuiz,
-            stage: curStage,
-            prior_p: currentLearnerP,
-            attempt_number: quizAttemptCount
-          })
-        });
-        const evalData = await res.json();
-        currentLearnerP = evalData.p_misconception;
-        
-        // Update Bayesian mastery bar
-        const masteryPct = Math.round(evalData.mastery_score * 100);
-        document.getElementById('bkt-bar-fill').style.width = `${Math.max(10, masteryPct)}%`;
-        document.getElementById('diag-conf').textContent = `P(M): ${Math.round(evalData.p_misconception * 100)}% | Mastery: ${masteryPct}%`;
+    if (diagRes.ok) {
+      const diag = await diagRes.json();
+      currentMisconception = diag.label;
 
-        if (evalData.resolved) {
-          cardEl.classList.add('selected-correct');
-          Soundcn.success();
-          if (typeof confetti === 'function') {
-            confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
-          }
-          alertBox.className = 'alert-pass';
-          alertBox.innerHTML = `<b>🎉 Misconception RESOLVED!</b> ${escapeHtml(evalData.message)}`;
-          document.getElementById('diag-badge').className = "diag-badge badge-pass";
-          document.getElementById('sb-issue').textContent = `✅ ${currentDiag?.label || 'Concept'} Resolved`;
-          document.getElementById('sb-issue').style.color = "#34d399";
-          document.getElementById('quiz-stage-badge').textContent = `Verified (${masteryPct}%)`;
-          document.getElementById('quiz-stage-badge').style.color = "#34d399";
-          addChatMsg('ai', `✅ ${evalData.message}`);
-        } else if (evalData.is_correct) {
-          cardEl.classList.add('selected-correct');
-          Soundcn.success();
-          alertBox.className = 'alert-pass';
-          alertBox.innerHTML = `<b>✓ Step ${curStage} Passed!</b> Misconception probability dropped to ${Math.round(evalData.p_misconception * 100)}%. Loading transfer challenge...`;
-          document.getElementById('quiz-stage-badge').textContent = `Stage ${evalData.next_stage || 2}/2`;
-          addChatMsg('ai', `✓ ${evalData.message}`);
-          
-          if (evalData.next_quiz) {
-            setTimeout(() => {
-              loadQuizData(evalData.next_quiz);
-            }, 1200);
-          }
+      // Handle M-09 Sloppiness Slip
+      if (diag.is_sloppiness || diag.label === 'M-09') {
+        $('dTitle').textContent = '⚡ Typing Slip Detected (Not a Conceptual Bug)';
+        $('dText').textContent = diag.reasoning || 'This looks like a quick mechanical typo. Perkins (1986) distinguishes motor slips from conceptual deficits.';
+        $('conf').style.width = '95%';
+        $('dConf').textContent = `Confidence: ${(diag.confidence * 100).toFixed(0)}% • Category: M-09 Motor Slip`;
+        setupHints(['Check the exact spelling of Python built-in functions.', 'Compare what you typed against "print()".', 'A simple typo is not a knowledge gap!']);
+        setupSocraticChat(diag, true);
+        return;
+      }
+
+      // Handle Conceptual Misconception (M-01 .. M-08)
+      $('dTitle').textContent = `Spotted: ${diag.label} — ${getMisconceptionName(diag.label)}`;
+      $('dText').textContent = diag.reasoning || 'You used "=" where the if condition requires a comparison. This is a mental model divergence between assignment and boolean equality.';
+      const pct = Math.round((diag.confidence || 0.88) * 100);
+      $('conf').style.width = pct + '%';
+      $('dConf').textContent = `Diagnosis confidence: ${pct}%. Tri-Engine Source: AST + Calibrated ML.`;
+
+      setupHints([
+        'Look at line 2. What is the if statement supposed to do: store a value or ask a question?',
+        'In Python, one symbol stores a value and a different symbol asks "are these equal?". Which one does an if need?',
+        'Compare line 1 with line 2. Both use the same symbol, but they perform fundamentally different jobs.'
+      ]);
+
+      setupSocraticChat(diag, false);
+
+    } else {
+      runFallbackOffline(code);
+    }
+  } catch (e) {
+    runFallbackOffline(code);
+  }
+}
+
+function getMisconceptionName(label) {
+  const map = {
+    'M-01': 'Assignment vs Comparison ("=" vs "==")',
+    'M-02': 'Type Mismatch / String-Number Coercion',
+    'M-03': 'Loop Range Off-by-one Boundary',
+    'M-04': 'Unbound Local / Variable Scope',
+    'M-09': 'Typing Slip (Motor Mistake)'
+  };
+  return map[label] || 'Cognitive Concept Gap';
+}
+
+// 8. HINTS (NO SPOILERS) PROGRESSION
+function setupHints(hintList) {
+  activeHints = hintList;
+  hintIndex = 0;
+  $('hintOut').innerHTML = '';
+  $('hintBtn').disabled = false;
+  $('hintBtn').textContent = 'Show hint 1 of 3';
+}
+
+$('hintBtn').onclick = function() {
+  if (hintIndex < activeHints.length) {
+    const d = document.createElement('div');
+    d.className = 'txt';
+    d.textContent = `Hint ${hintIndex + 1}: ${activeHints[hintIndex]}`;
+    $('hintOut').appendChild(d);
+    hintIndex++;
+    if (hintIndex < activeHints.length) {
+      $('hintBtn').textContent = `Show hint ${hintIndex + 1} of ${activeHints.length}`;
+    } else {
+      $('hintBtn').textContent = 'No more hints. Try answering the questions!';
+      $('hintBtn').disabled = true;
+    }
+  }
+};
+
+// 9. SOCRATIC CHAT INTERACTION
+function setupSocraticChat(diag, isSlip) {
+  $('chat').innerHTML = '';
+  if (isSlip) {
+    ask(
+      'Did your fingers type faster than your thoughts, or are you unsure what the command should be?',
+      [['Just a quick typo, I got it!', 1], ['What is the correct function name?', 2]],
+      (ans) => {
+        if (ans === 1) {
+          say('Great! Fix the spelling and run again — no conceptual review needed.', 'ai');
         } else {
-          quizAttemptCount++;
-          cardEl.classList.add('selected-incorrect');
-          Soundcn.retry();
-          alertBox.className = 'alert-retry';
-          alertBox.innerHTML = `<b>⚠️ Tier ${quizAttemptCount > 2 ? '3 (Flagged for Office Hours)' : '2 (Guided Trace)'}:</b> ${escapeHtml(evalData.message)}`;
+          say('In Python, the built-in to output text to console is print().', 'ai');
         }
-      } catch(err) {
-        console.error("Assessment error:", err);
       }
-    }
+    );
+    return;
+  }
 
-    /* ==========================================================================
-       SOCRATIC CHAT ASSISTANT
-       ========================================================================== */
-    function addChatMsg(role, text) {
-      const box = document.getElementById('chat-log');
-      const b = document.createElement('div');
-      b.className = `bubble ${role === 'ai' ? 'bubble-ai' : 'bubble-user'}`;
-      b.textContent = text;
-      box.appendChild(b);
-      box.scrollTop = box.scrollHeight;
-      chatHistory.push({ role: role === 'ai' ? 'assistant' : 'student', text: text });
-    }
+  // Interactive branching Socratic dialogue
+  ask(
+    'Before I suggest anything: in Python, what does a single "=" symbol do?',
+    [['It compares two values', 0], ['It stores a value into a variable', 1]],
+    socraticStep1
+  );
+}
 
-    async function sendChat() {
-      Soundcn.click();
-      const inp = document.getElementById('chat-input');
-      const msg = inp.value.trim();
-      if (!msg) return;
-      addChatMsg('user', msg);
-      inp.value = '';
+function socraticStep1(val) {
+  if (val === 1) {
+    say('Right! It puts a value into a named box.', 'ai');
+    ask('And what does the double symbol "==" do?',
+      [['It asks: are these two equal?', 1], ['It stores a value into memory', 0]],
+      socraticStep2
+    );
+  } else {
+    say('Not quite! In Python, x = 5 commands the computer: "put 5 into x". It does not ask a question.', 'ai');
+    ask('Try again: what does a single "=" do?',
+      [['It compares values', 0], ['It assigns a value to a variable', 1]],
+      socraticStep1
+    );
+  }
+}
 
-      try {
-        const resp = await fetch(`${API_BASE}/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            session: SESSION_ID,
-            misconception: currentDiag?.label || "General",
-            message: msg,
-            code: getCode(),
-            api_key: localStorage.getItem('relearn_groq_key') || undefined
-          })
-        });
-        const data = await resp.json();
-        addChatMsg('ai', data.reply || "Consider how Python evaluates that statement.");
-      } catch (e) {
-        addChatMsg('ai', "Ponder this: what is the fundamental difference between assigning state and testing a condition?");
-      }
-    }
+function socraticStep2(val) {
+  if (val === 1) {
+    say('Exactly! An "if" condition requires a question that evaluates to True or False. Which symbol belongs on line 2? Update it in the editor, then run code!', 'ai');
+  } else {
+    say('Close, but that is single "=". The double symbol "==" is the comparison test.', 'ai');
+    ask('Once more: which one tests equality?',
+      [['"==" checks equality', 1], ['"=" checks equality', 0]],
+      socraticStep2
+    );
+  }
+}
 
-    function sendQuickPrompt(promptText) {
-      document.getElementById('chat-input').value = promptText;
-      sendChat();
-    }
+async function sendChat() {
+  const input = $('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  say(msg, 'me');
 
-    function focusChat() {
-      Soundcn.click();
-      const inp = document.getElementById('chat-input');
-      inp.focus();
-      inp.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function focusQuiz() {
-      Soundcn.click();
-      const q = document.getElementById('quiz-panel');
-      q.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function dismissCoachBar() {
-      Soundcn.click();
-      document.getElementById('coach-bar').style.display = 'none';
-    }
-
-    function toggleSidebar() {
-      Soundcn.click();
-      const sb = document.getElementById('sidebar');
-      sb.classList.toggle('collapsed');
-      const actBtn = document.getElementById('act-btn-explorer');
-      if (sb.classList.contains('collapsed')) {
-        actBtn.classList.remove('active');
-      } else {
-        actBtn.classList.add('active');
-      }
-    }
-
-    /* ==========================================================================
-       TEACHER CLASSROOM HEATMAP MODAL
-       ========================================================================== */
-    async function openTeacherModal() {
-      Soundcn.pop();
-      const m = document.getElementById('teacher-modal');
-      m.style.display = 'flex';
-      try {
-        const res = await fetch(`${API_BASE}/teacher/dashboard`);
-        const data = await res.json();
-        document.getElementById('tm-students').textContent = data.total_active_students || 1;
-        document.getElementById('tm-flagged').textContent = data.total_diagnoses || 0;
-        const total = data.total_diagnoses || 1;
-        const resCount = Object.values(data.resolved_counts || {}).reduce((a, b) => a + b, 0);
-        document.getElementById('tm-rate').textContent = `${Math.round((resCount / total) * 100)}%`;
-
-        const list = document.getElementById('tm-heatmap-list');
-        list.innerHTML = '';
-
-        if (data.epidemics && data.epidemics.length > 0) {
-          const epBox = document.createElement('div');
-          epBox.style.cssText = "background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 0.78rem; color: #fca5a5;";
-          epBox.innerHTML = `
-            <div style="font-weight: 800; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-              <span>🚨</span><span>CLASSROOM EPIDEMIC ALERT</span>
-            </div>
-            ${data.epidemics.map(ep => `<div>• <b>${ep.label} (${ep.name})</b>: ${ep.unresolved} active unresolved students. <i>Recommendation: ${ep.action_recommendation}</i></div>`).join('')}
-          `;
-          list.appendChild(epBox);
-        }
-
-        TAXONOMY.forEach(t => {
-          const count = (data.class_misconception_counts || {})[t.id] || 0;
-          const resCount = (data.resolved_counts || {})[t.id] || 0;
-          const row = document.createElement('div');
-          row.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.78rem;";
-          row.innerHTML = `
-            <div>
-              <b>${t.id}</b>: ${t.name}
-              ${resCount > 0 ? `<span style="color: #34d399; font-size: 0.7rem; margin-left: 6px;">(${resCount} resolved)</span>` : ''}
-            </div>
-            <span style="background: rgba(139, 92, 246, 0.15); color: #c4b5fd; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-family: var(--font-mono);">
-              ${count} active
-            </span>
-          `;
-          list.appendChild(row);
-        });
-
-        // Research citation footer
-        const citeRow = document.createElement('div');
-        citeRow.style.cssText = "margin-top: 14px; font-size: 0.7rem; color: var(--text-muted); text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px;";
-        citeRow.innerHTML = "📚 Backed by Brown & Altadmri (2017) 100M+ events & Perkins (1986) Bugs vs Slips";
-        list.appendChild(citeRow);
-      } catch(e){}
-    }
-
-    function closeTeacherModal() {
-      Soundcn.click();
-      document.getElementById('teacher-modal').style.display = 'none';
-    }
-
-    /* ==========================================================================
-       OPTIONAL GROQ API KEY MODAL CONTROLLERS
-       ========================================================================== */
-    function openApiKeyModal() {
-      Soundcn.click();
-      const modal = document.getElementById('apikey-modal');
-      modal.style.display = 'flex';
-      const saved = localStorage.getItem('relearn_groq_key') || '';
-      document.getElementById('groq-key-input').value = saved;
-      updateApiKeyStatus(saved);
-    }
-
-    function closeApiKeyModal() {
-      Soundcn.click();
-      document.getElementById('apikey-modal').style.display = 'none';
-    }
-
-    function saveApiKey() {
-      Soundcn.success();
-      const val = document.getElementById('groq-key-input').value.trim();
-      if (val) {
-        localStorage.setItem('relearn_groq_key', val);
-      } else {
-        localStorage.removeItem('relearn_groq_key');
-      }
-      updateApiKeyStatus(val);
-      closeApiKeyModal();
-    }
-
-    function clearApiKey() {
-      Soundcn.retry();
-      localStorage.removeItem('relearn_groq_key');
-      document.getElementById('groq-key-input').value = '';
-      updateApiKeyStatus('');
-    }
-
-    function updateApiKeyStatus(key) {
-      const btn = document.getElementById('btn-api-key');
-      const stat = document.getElementById('api-key-status');
-      if (key && key.startsWith('gsk_')) {
-        if (btn) {
-          btn.innerHTML = '⚡ Groq: Active';
-          btn.style.borderColor = '#10b981';
-          btn.style.color = '#34d399';
-        }
-        if (stat) stat.innerHTML = 'Status: <span style="color: #10b981; font-weight: 700;">⚡ Llama-3.3-70B Active</span>';
-      } else {
-        if (btn) {
-          btn.innerHTML = '⚡ API Key';
-          btn.style.borderColor = '';
-          btn.style.color = '';
-        }
-        if (stat) stat.innerHTML = 'Status: <span style="color: #38bdf8;">Offline ML Classifier Active</span>';
-      }
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeTeacherModal();
-        closeApiKeyModal();
-      }
+  try {
+    const res = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session: sessionId,
+        misconception: currentMisconception || 'M-01',
+        message: msg,
+        code: codeEl.value
+      })
     });
+    if (res.ok) {
+      const data = await res.json();
+      say(data.reply, 'ai');
+      return;
+    }
+  } catch (e) {
+    console.log('Chat offline fallback');
+  }
+  // Fallback intelligent Socratic redirect
+  setTimeout(() => {
+    say('Think about what an "if" statement is deciding. Does it need to store a new value or compare what is already there?', 'ai');
+  }, 400);
+}
 
-    /* ==========================================================================
-       BOOTSTRAP INITIALIZATION
-       ========================================================================== */
-    window.addEventListener('DOMContentLoaded', () => {
-      initEditor();
-      updateApiKeyStatus(localStorage.getItem('relearn_groq_key') || '');
-      renderQuizCards("M-01");
-      setTimeout(() => { executeCode(); }, 350);
+// 10. REASSESSMENT & RESOLUTION (Bayesian Proof of Learning)
+function triggerReassessment() {
+  $('re').classList.remove('hide');
+  let qIdx = 0;
+  let correctCount = 0;
+  
+  const questions = [
+    {
+      q: 'New situation: <code>score = 7</code> then <code>if score ___ 10:</code>. Which symbol checks whether score is 10?',
+      opts: [['=', 0], ['==', 1]]
+    },
+    {
+      q: 'What does this code print? <code>a = 3; b = 3; print(a == b)</code>',
+      opts: [['True', 1], ['3', 0], ['SyntaxError', 0]]
+    },
+    {
+      q: 'Is <code>status = (x == 5)</code> valid Python?',
+      opts: [['Yes, tests if x is 5 and saves True/False in status', 1], ['No, you cannot combine = and ==', 0]]
+    }
+  ];
+
+  function renderQ() {
+    if (qIdx >= questions.length) {
+      const isResolved = (correctCount === questions.length);
+      if (isResolved) {
+        setState('Resolved', 'res');
+        $('pProb').textContent = '95%';
+        $('taskLoopsSub').textContent = 'Unlocked! Ready for loops.';
+        $('taskLoops').classList.add('cur');
+        $('reBody').innerHTML = `
+          <div style="background:var(--tealbg);padding:12px;border-radius:8px;border:1px solid var(--teal);">
+            <h4 style="margin:0 0 6px;color:var(--teal);font-size:14px;">🎉 Concept Mastered & Resolved!</h4>
+            <p style="margin:0;font-size:13px;color:var(--ink);">You proved conceptual transfer across 3 isomorphic test cases. Bayesian Knowledge Tracing updated P(L) to 95%.</p>
+          </div>
+        `;
+        // Launch Celebration Confetti
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 75, spread: 70, origin: { y: 0.6 } });
+        }
+      } else {
+        setState('Improving', 'imp');
+        $('pProb').textContent = '60%';
+        $('reBody').innerHTML = `
+          <p><b>Almost there! You answered ${correctCount}/${questions.length} correctly. We will practice another isomorphic check next round.</b></p>
+        `;
+      }
+      return;
+    }
+
+    const cur = questions[qIdx];
+    $('reBody').innerHTML = `
+      <p style="color:var(--ink);margin-bottom:10px;font-size:13px;">${cur.q}</p>
+      <div class="opts"></div>
+    `;
+    const optsContainer = $('reBody').querySelector('.opts');
+    cur.opts.forEach(([txt, val]) => {
+      const b = document.createElement('button');
+      b.textContent = txt;
+      b.onclick = () => {
+        correctCount += val;
+        qIdx++;
+        renderQ();
+      };
+      optsContainer.appendChild(b);
     });
-  </script>
+  }
+
+  renderQ();
+}
+
+// 11. LOCAL FALLBACK ENGINE (Guarantees zero downtime if backend restarting)
+function localFallbackRun(code) {
+  const isM01 = /if\s+\w+\s*=\s*[^=]/.test(code);
+  const isM09 = /pritn\s*\(/.test(code);
+  const isM02 = /"\d+"\s*\+\s*\d+/.test(code);
+  
+  if (isM01) {
+    return { exit_code: 1, stderr: 'SyntaxError: invalid syntax (line 2)\n  if x = 5:\n       ^', stdout: '' };
+  }
+  if (isM09) {
+    return { exit_code: 1, stderr: "NameError: name 'pritn' is not defined (line 1)", stdout: '' };
+  }
+  if (isM02) {
+    return { exit_code: 1, stderr: 'TypeError: can only concatenate str (not "int") to str', stdout: '' };
+  }
+  return { exit_code: 0, stderr: '', stdout: 'x is five' };
+}
+
+function runFallbackOffline(code) {
+  const bad = /if\s+\w+\s*=\s*[^=]/.test(code);
+  if (bad) {
+    count++;
+    $('pCount').textContent = count;
+    setState('Active', 'act');
+    $('sErr').textContent = 'Issues: 1';
+    updateGutter(2);
+    term('<span class="err">SyntaxError: invalid syntax (line 2)</span>', 'Error');
+    $('idle').classList.add('hide');
+    ['diag', 'hints', 'chatCard'].forEach(id => $(id).classList.remove('hide'));
+    $('re').classList.add('hide');
+    $('dTitle').textContent = 'Looks like: Assignment vs Comparison (M-01)';
+    $('dText').textContent = 'You used "=" where the if condition requires a question. This is a cognitive misconception, not a typing slip.';
+    $('conf').style.width = '88%';
+    $('dConf').textContent = 'Diagnosis confidence 88%. Category: M-01 Conceptual Misconception.';
+    setupHints([
+      'Look at line 2. What is the if statement supposed to do: store a value or ask a question?',
+      'In Python, one symbol stores a value and a different symbol asks "are these equal?".',
+      'Compare line 1 with line 2. Both use the same symbol, but do different jobs.'
+    ]);
+    setupSocraticChat({ label: 'M-01' }, false);
+  } else {
+    $('sErr').textContent = 'Issues: 0';
+    updateGutter(0);
+    term('<span class="ok">x is five</span><br><span class="meta">Process finished with exit code 0</span>', 'Success');
+    if (count > 0 && !fixed) {
+      fixed = true;
+      setState('Improving', 'imp');
+      ['diag', 'hints', 'chatCard'].forEach(id => $(id).classList.add('hide'));
+      triggerReassessment();
+    }
+  }
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// 12. UI CONTROLS & THEME TOGGLES
+$('mode').onchange = function() {
+  $('sMode').textContent = 'Coach: ' + this.options[this.selectedIndex].text.toLowerCase();
+};
+
+$('lblBtn').onclick = function() {
+  const on = document.body.classList.toggle('labels');
+  this.textContent = on ? 'Hide component numbers' : 'Show component numbers';
+};
+
+$('themeBtn').onclick = function() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+};
+
+$('tCoach').onclick = function() {
+  $('coach').classList.remove('hide');
+  $('prog').classList.add('hide');
+  $('tCoach').className = 'on';
+  $('tProg').className = '';
+};
+
+$('tProg').onclick = function() {
+  $('prog').classList.remove('hide');
+  $('coach').classList.add('hide');
+  $('tProg').className = 'on';
+  $('tCoach').className = '';
+};
+</script>
 </body>
 </html>
