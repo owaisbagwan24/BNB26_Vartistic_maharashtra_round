@@ -160,8 +160,7 @@ def health():
         "status": "healthy",
         "labels_loaded": len(LABELS),
         "gold_samples": len(GOLD_SAMPLES),
-        "ml_classifier_loaded": LOCAL_CLASSIFIER is not None,
-        "db": str(DB_PATH)
+        "ml_classifier_loaded": LOCAL_CLASSIFIER is not None
     }
 
 @app.post("/run")

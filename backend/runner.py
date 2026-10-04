@@ -128,7 +128,8 @@ def execute_sandbox_code(code: str, timeout: float = 3.5) -> Dict[str, Any]:
         )
         elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
 
-        stderr_output = proc.stderr
+        # Sanitize internal temporary file paths so no filesystem paths leak in the API
+        stderr_output = re.sub(r'File ".*?[\\/]([^\\/"]+\.py)"', r'File "\1"', proc.stderr)
         parsed_err = parse_traceback(stderr_output)
 
         return {
