@@ -1,0 +1,62 @@
+{
+  "evaluation": "leave_one_label_out_abstention",
+  "confidence_threshold": 0.58,
+  "mean_unseen_abstention_rate": 0.6972,
+  "per_label_unseen_results": {
+    "M-01": {
+      "test_samples": 28,
+      "abstained_to_unknown": 4,
+      "abstention_rate": 0.1429,
+      "mean_confidence": 0.677
+    },
+    "M-02": {
+      "test_samples": 30,
+      "abstained_to_unknown": 19,
+      "abstention_rate": 0.6333,
+      "mean_confidence": 0.5232
+    },
+    "M-03": {
+      "test_samples": 34,
+      "abstained_to_unknown": 34,
+      "abstention_rate": 1.0,
+      "mean_confidence": 0.2479
+    },
+    "M-04": {
+      "test_samples": 28,
+      "abstained_to_unknown": 28,
+      "abstention_rate": 1.0,
+      "mean_confidence": 0.2138
+    },
+    "M-05": {
+      "test_samples": 28,
+      "abstained_to_unknown": 10,
+      "abstention_rate": 0.3571,
+      "mean_confidence": 0.5163
+    },
+    "M-06": {
+      "test_samples": 27,
+      "abstained_to_unknown": 27,
+      "abstention_rate": 1.0,
+      "mean_confidence": 0.3265
+    },
+    "M-07": {
+      "test_samples": 35,
+      "abstained_to_unknown": 34,
+      "abstention_rate": 0.9714,
+      "mean_confidence": 0.3357
+    },
+    "M-08": {
+      "test_samples": 28,
+      "abstained_to_unknown": 22,
+      "abstention_rate": 0.7857,
+      "mean_confidence": 0.3771
+    },
+    "M-09": {
+      "test_samples": 52,
+      "abstained_to_unknown": 20,
+      "abstention_rate": 0.3846,
+      "mean_confidence": 0.6379
+    }
+  },
+  "scientific_summary": "In open-set evaluation, a model cannot guess a label withheld from training. The scientific standard is Out-of-Distribution (OOD) Abstention: assigning low confidence and triggering the UNKNOWN class to prompt diagnostic probing rather than hallucinating."
+}

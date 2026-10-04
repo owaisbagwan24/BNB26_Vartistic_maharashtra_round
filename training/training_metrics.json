@@ -21,7 +21,9 @@
   "sloppiness_precision": 1.0,
   "sloppiness_recall": 1.0,
   "unseen_abstention_rate": 1.0,
-  "confidence_threshold": 0.6,
+  "lolo_mean_unseen_abstention_rate": 0.697,
+  "real_student_pilot_accuracy": 0.80,
+  "confidence_threshold": 0.58,
   "benchmark_comparison": {
     "baseline_unigram_tfidf": {
       "accuracy": 0.9714,
