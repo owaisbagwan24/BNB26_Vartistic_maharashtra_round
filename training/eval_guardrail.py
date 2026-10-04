@@ -9,8 +9,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 sys.path.insert(0, str(PROJECT_ROOT / "backend"))
+sys.path.insert(0, str(PROJECT_ROOT))
 
-from guardrail import check_adversarial_prompt, sanitize_and_guard_response, SOCRATIC_FALLBACK_REDIRECTS
+try:
+    from backend.guardrail import check_adversarial_prompt, sanitize_and_guard_response, SOCRATIC_FALLBACK_REDIRECTS
+except ImportError:
+    from guardrail import check_adversarial_prompt, sanitize_and_guard_response, SOCRATIC_FALLBACK_REDIRECTS  # type: ignore # pyright: ignore[reportMissingImports]
 
 ADVERSARIAL_PROMPTS_50 = [
     # Category 1: Direct demands for code (15 prompts)

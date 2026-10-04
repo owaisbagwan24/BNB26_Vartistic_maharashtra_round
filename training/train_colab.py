@@ -145,21 +145,23 @@ def compute_metrics(eval_pred):
     f1 = f1_score(y_true, y_pred, average="macro")
     return {"accuracy": acc, "macro_f1": f1}
 
-training_args = TrainingArguments(
-    output_dir="./relearn_distilbert_checkpoints",
-    num_train_epochs=5,
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=8,
-    learning_rate=3e-5,
-    warmup_ratio=0.1,
-    weight_decay=0.01,
-    evaluation_strategy="epoch",
-    save_strategy="epoch",
-    load_best_model_at_end=True,
-    metric_for_best_model="macro_f1",
-    report_to=[],
-    seed=42
-)
+# Dynamic compatibility with both transformers 4.x and 5.x
+strategy_key = "eval_strategy" if hasattr(TrainingArguments, "eval_strategy") else "evaluation_strategy"
+train_kwargs = {
+    "output_dir": "./relearn_distilbert_checkpoints",
+    "num_train_epochs": 5,
+    "per_device_train_batch_size": 8,
+    "per_device_eval_batch_size": 8,
+    "learning_rate": 3e-5,
+    "weight_decay": 0.01,
+    strategy_key: "epoch",
+    "save_strategy": "epoch",
+    "load_best_model_at_end": True,
+    "metric_for_best_model": "macro_f1",
+    "report_to": [],
+    "seed": 42
+}
+training_args = TrainingArguments(**train_kwargs)
 
 trainer = Trainer(
     model=model,
