@@ -16,8 +16,10 @@ from pathlib import Path
 from typing import Dict, Any, Tuple
 
 # Blocked modules/functions for novice educational sandbox
-DISALLOWED_IMPORTS = {"subprocess", "shutil", "socket", "http", "urllib", "requests", "ctypes", "winreg"}
-DISALLOWED_CALLS = {"system", "popen", "spawn", "fork", "remove", "rmdir", "unlink", "kill"}
+# NOTE: Designed for local/institutional hackathon evaluation. For public multi-tenant deployment,
+# browser-side WebAssembly execution via Pyodide is recommended to guarantee OS isolation.
+DISALLOWED_IMPORTS = {"os", "sys", "subprocess", "shutil", "socket", "http", "urllib", "requests", "ctypes", "winreg", "posix", "nt"}
+DISALLOWED_CALLS = {"system", "popen", "spawn", "fork", "remove", "rmdir", "unlink", "kill", "eval", "exec", "open", "compile"}
 
 def check_safety(code: str) -> Tuple[bool, str]:
     """Inspects AST before execution to prevent malicious or destructive commands."""
@@ -128,7 +130,8 @@ def execute_sandbox_code(code: str, timeout: float = 3.5) -> Dict[str, Any]:
         )
         elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
 
-        stderr_output = proc.stderr
+        # Sanitize internal temporary file paths so no filesystem paths leak in the API
+        stderr_output = re.sub(r'File ".*?[\\/]([^\\/"]+\.py)"', r'File "\1"', proc.stderr)
         parsed_err = parse_traceback(stderr_output)
 
         return {

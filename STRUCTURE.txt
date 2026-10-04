@@ -1,17 +1,50 @@
-relearn_starter_kit/
-├── README.md                  <- requirements, stack, data, training, run, 3-day plan
-├── PITCH.md                   <- 8-slide winning deck outline + demo tips
-├── dataset/
-│   ├── label_schema.json      <- 9 labels (M-01..M-09), M-09 = sloppiness negative class
-│   └── misconceptions.csv     <- 20 gold rows (schema: id, student_code, error_message,
-│                                 wrong_output, misconception_id, correct_code,
-│                                 socratic_intervention, reassessment_question)
-├── backend/
-│   ├── main.py                <- FastAPI: /diagnose /chat /assess /progress /teacher/dashboard
-│   └── requirements.txt
-├── frontend/
-│   └── index.html             <- Monaco editor + Pyodide runner + diagnosis card + Socratic chat
-├── training/
-│   └── train_colab.py         <- DistilBERT fine-tune, concept-wise split, confusion matrix PNG
-└── scripts/
-    └── generate_synthetic.py  <- LLM-based synthetic dataset generator (human verify after!)
+================================================================================
+RE:LEARN COGNITIVE IDE - CLEAN REPOSITORY FILE STRUCTURE
+================================================================================
+
+[TOP LEVEL: ESSENTIAL & DEMO ENTRY POINTS]
+├── README.md                  <- Master repository documentation, setup & scientific basis
+├── PITCH.md                   <- 8-slide executive pitch deck outline & market stats
+├── DEMO_SCRIPT.md             <- Rehearsed 3-minute hackathon judge walkthrough script
+├── run.bat                    <- One-click launcher for backend API & frontend UI
+└── STRUCTURE.txt              <- This project hierarchy guide
+
+[CORE APPLICATION MODULES]
+├── backend/                   <- FastAPI Tri-Engine Cognitive Diagnosis Backend
+│   ├── main.py                <- Unified API router: /diagnose, /chat, /assess, /progress, /teacher
+│   ├── runner.py              <- Isolated sandbox code execution with AST security barriers
+│   ├── ast_engine.py          <- Ultra-low latency (<5ms) deterministic AST pre-screener
+│   ├── guardrail.py           <- Cognitive Firewall: 0% solution leakage regex & AST filter
+│   ├── isomorphic_engine.py   <- Structural reassessment engine with 3 escalation tiers
+│   ├── classifier.pkl         <- Offline trained calibrated model artifact
+│   └── requirements.txt       <- Python dependencies (fastapi, uvicorn, scikit-learn, etc.)
+│
+├── frontend/                  <- Next-Gen Cognitive IDE Interface
+│   └── index.html             <- 2-column studio layout (RareUI + Soundcn + Ant Design X)
+│
+├── dataset/                   <- Taxonomy & Ground-Truth Cognitive Datasets
+│   ├── label_schema.json      <- 9-class cognitive taxonomy (M-01..M-09 with M-09 sloppiness)
+│   ├── misconceptions.csv     <- 20 gold seed cases with canonical solutions & questions
+│   ├── misconceptions_expanded.csv <- 290 mutation-verified samples with hard negatives
+│   └── generate_hard_negatives.py  <- AST mutation generator with executable verification
+│
+├── training/                  <- Model Fine-Tuning, Guardrail Red-Teaming & Benchmark Suite
+│   ├── train_relearn.ipynb    <- Interactive Google Colab notebook for DistilBERT fine-tuning
+│   ├── train_local.py         <- Local model training pipeline & confusion matrix generator
+│   ├── train_unseen_eval.py   <- Leave-One-Label-Out (LOLO) out-of-distribution evaluation
+│   ├── eval_pilot.py          <- Real CS1 student cohort evaluation benchmark (80% acc)
+│   ├── eval_guardrail.py      <- 50-prompt adversarial prompt injection red-teaming harness
+│   └── confusion_matrix.png   <- Pitch-ready dark-mode confusion matrix
+│
+├── scripts/                   <- Offline Tooling & Utility Scripts
+│   ├── build_notebook.py      <- Programmatic Colab ipynb notebook generator
+│   └── generate_synthetic.py  <- LLM-based synthetic sample generation utility
+
+[SECONDARY & IN-DEPTH TECHNICAL SPECIFICATIONS]
+└── docs/                      <- Technical architecture, PRD & compliance audit reports
+    ├── PRD.md                 <- Formal Product Requirements Document & cognitive research
+    ├── SYSTEM_DESIGN_AND_ARCHITECTURE.md <- System capacity, state machine & 10k student scaling
+    ├── UI_TEAM_SPEC.md        <- Enterprise frontend design specification & token hierarchy
+    ├── TEAM_DIVISION_AND_HANDOVER.md <- Team roles, ownership & sprint deliverable tracking
+    └── AUDIT_REPORT.md        <- Comprehensive problem-statement compliance audit
+================================================================================

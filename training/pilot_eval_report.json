@@ -1,0 +1,102 @@
+{
+  "pilot_sample_count": 15,
+  "accuracy": 0.8,
+  "student_cohorts": [
+    "CS1-Week1",
+    "CS1-Week2",
+    "CS1-Week3",
+    "CS1-Week4"
+  ],
+  "details": [
+    {
+      "id": "PILOT-01",
+      "true_label": "M-01",
+      "predicted_label": "M-01",
+      "correct": true
+    },
+    {
+      "id": "PILOT-02",
+      "true_label": "M-09",
+      "predicted_label": "M-01",
+      "correct": false
+    },
+    {
+      "id": "PILOT-03",
+      "true_label": "M-02",
+      "predicted_label": "M-02",
+      "correct": true
+    },
+    {
+      "id": "PILOT-04",
+      "true_label": "M-02",
+      "predicted_label": "M-02",
+      "correct": true
+    },
+    {
+      "id": "PILOT-05",
+      "true_label": "M-03",
+      "predicted_label": "M-03",
+      "correct": true
+    },
+    {
+      "id": "PILOT-06",
+      "true_label": "M-04",
+      "predicted_label": "M-04",
+      "correct": true
+    },
+    {
+      "id": "PILOT-07",
+      "true_label": "M-05",
+      "predicted_label": "M-05",
+      "correct": true
+    },
+    {
+      "id": "PILOT-08",
+      "true_label": "M-05",
+      "predicted_label": "M-05",
+      "correct": true
+    },
+    {
+      "id": "PILOT-09",
+      "true_label": "M-06",
+      "predicted_label": "M-06",
+      "correct": true
+    },
+    {
+      "id": "PILOT-10",
+      "true_label": "M-07",
+      "predicted_label": "M-07",
+      "correct": true
+    },
+    {
+      "id": "PILOT-11",
+      "true_label": "M-08",
+      "predicted_label": "M-08",
+      "correct": true
+    },
+    {
+      "id": "PILOT-12",
+      "true_label": "M-08",
+      "predicted_label": "M-07",
+      "correct": false
+    },
+    {
+      "id": "PILOT-13",
+      "true_label": "M-09",
+      "predicted_label": "M-09",
+      "correct": true
+    },
+    {
+      "id": "PILOT-14",
+      "true_label": "M-09",
+      "predicted_label": "M-03",
+      "correct": false
+    },
+    {
+      "id": "PILOT-15",
+      "true_label": "M-02",
+      "predicted_label": "M-02",
+      "correct": true
+    }
+  ]
+}
