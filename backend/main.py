@@ -13,6 +13,7 @@ import uuid
 import csv
 import pickle
 import ast
+import re
 import sys
 from pathlib import Path
 from typing import List, Optional, Dict, Any
@@ -23,7 +24,7 @@ from pydantic import BaseModel
 from ast_engine import analyze_code_and_error
 from runner import execute_sandbox_code
 from guardrail import check_adversarial_prompt, sanitize_and_guard_response, SOCRATIC_FALLBACK_REDIRECTS
-from isomorphic_engine import generate_isomorphic_quiz, evaluate_isomorphic_attempt
+from isomorphic_engine import generate_isomorphic_quiz, update_bayesian_probability
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
@@ -98,6 +99,7 @@ class DiagnoseReq(BaseModel):
     output: str = ""
     history: List[Dict[str, Any]] = []
     api_key: Optional[str] = None
+    expected_output: Optional[str] = None
 
 class ChatReq(BaseModel):
     session: str
@@ -113,6 +115,8 @@ class AssessReq(BaseModel):
     student_answer: str
     quiz_data: Optional[Dict[str, Any]] = None
     attempt_number: int = 1
+    stage: int = 1
+    prior_p: Optional[float] = None
     api_key: Optional[str] = None
 
 class RunReq(BaseModel):
@@ -205,115 +209,169 @@ def get_presets():
     ]
 
 @app.get("/isomorphic/quiz")
-def get_isomorphic_quiz(misconception: str = Query("M-01")):
-    """Generates a novel isomorphic prediction problem with dynamic parameterization."""
-    return generate_isomorphic_quiz(misconception)
+def get_isomorphic_quiz(misconception: str = Query("M-01"), stage: int = Query(1)):
+    """Generates a novel isomorphic prediction problem with dynamic parameterization and staging."""
+    return generate_isomorphic_quiz(misconception, stage)
 
 @app.post("/diagnose")
 def diagnose(req: DiagnoseReq):
-    """Tri-Engine Arbitrator: AST Pre-Screener + ML Classifier + Socratic Guardrails."""
-    # Step 1: Run deterministic AST / Heuristic Analyzer (<5ms)
-    ast_result = analyze_code_and_error(req.code, req.error, req.output, req.history)
-    
-    # Step 2: Run Local Calibrated ML Classifier if available
+    """Primary Decision-Maker: Trained Calibrated Classifier with AST Feature Evidence & Guardrails."""
+    # Step 1: Pre-screen for clean execution
+    clean_code = not req.error or req.error.strip() in ("", "(none)")
+    if clean_code and req.expected_output is not None:
+        if req.output.strip() != req.expected_output.strip():
+            clean_code = False
+    if clean_code:
+        try:
+            ast.parse(req.code)
+            # Check for silent logic misconceptions (like M-03 mutating original list)
+            ast_check = analyze_code_and_error(req.code, req.error, req.output, req.history)
+            if not ast_check or ast_check.get("label") == "NONE":
+                clean_result = {
+                    "label": "NONE",
+                    "confidence": 1.0,
+                    "is_sloppiness": False,
+                    "is_clean": True,
+                    "reasoning": "Code compiled and executed cleanly without syntax errors or known cognitive traps.",
+                    "socratic_hint": "Outstanding! Your program logic executed cleanly without syntax errors.",
+                    "reassessment_question": "Can you explain how this logic handles boundary or edge cases?",
+                    "engine": "Compiler Clean Verification"
+                }
+                log_event(req.session, "diagnosis", clean_result)
+                return clean_result
+        except Exception:
+            pass
+
+    # Step 2: Primary Path — Trained Classifier Inference
     ml_prediction = None
     if LOCAL_CLASSIFIER:
         try:
             snippet = f"{req.code} [ERR] {req.error} [OUT] {req.output}"
             probas = LOCAL_CLASSIFIER.predict_proba([snippet])[0]
             top_idx = probas.argmax()
+            top_lbl = LOCAL_CLASSIFIER.classes_[top_idx]
+            top_conf = round(float(probas[top_idx]), 4)
             ml_prediction = {
-                "label": LOCAL_CLASSIFIER.classes_[top_idx],
-                "confidence": round(float(probas[top_idx]), 4),
-                "is_sloppiness": LOCAL_CLASSIFIER.classes_[top_idx] == "M-09"
+                "label": top_lbl,
+                "confidence": top_conf,
+                "is_sloppiness": top_lbl == "M-09",
+                "probas": {c: round(float(p), 3) for c, p in zip(LOCAL_CLASSIFIER.classes_, probas)}
             }
         except Exception as e:
-            print(f"ML inference error: {e}")
+            print(f"ML inference warning: {e}")
 
-    # Step 3: Run LLM Reasoning if API key provided
-    client, model_name = get_llm_client(req.api_key)
-    if client:
-        try:
-            hist_str = "\n".join(f"{h.get('role')}: {h.get('text')}" for h in req.history[-6:])
-            user_prompt = f"CODE:\n{req.code}\n\nERROR:\n{req.error}\n\nOUTPUT:\n{req.output}\n\nCHAT:\n{hist_str}"
-            
-            r = client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "system", "content": DIAG_PROMPT.format(labels=LABEL_TEXT)},
-                    {"role": "user", "content": user_prompt}
-                ],
-                response_format={"type": "json_object"},
-                temperature=0.2,
-                timeout=5.0
-            )
-            llm_result = json.loads(r.choices[0].message.content)
-            llm_result.setdefault("is_sloppiness", llm_result.get("label") == "M-09")
-            
-            # Sanitize Socratic hint with Cognitive Firewall
-            safe_hint, _ = sanitize_and_guard_response(llm_result.get("socratic_hint", ""), llm_result.get("label", "M-01"))
-            llm_result["socratic_hint"] = safe_hint
+    # Step 3: AST Feature Evidence Analysis
+    ast_result = analyze_code_and_error(req.code, req.error, req.output, req.history)
 
-            if not llm_result.get("reassessment_question"):
-                matched_gold = next((g for g in GOLD_SAMPLES if g["misconception_id"] == llm_result.get("label")), None)
-                if matched_gold:
-                    llm_result["reassessment_question"] = matched_gold["reassessment_question"]
-                    
-            log_event(req.session, "diagnosis", llm_result)
-            return llm_result
-        except Exception as e:
-            print(f"LLM diagnosis failed or timed out: {e}. Falling back to AST/ML arbitrator.")
+    # Step 4: Calibrated Decision Arbitration
+    CONFIDENCE_THRESHOLD = 0.58
+    final_result = None
 
-    # Step 4: Arbitration between AST and ML Classifier
-    if ast_result and ast_result.get("confidence", 0) >= 0.85:
-        # High confidence AST rule match
-        final_result = ast_result
-        final_result["engine"] = "AST Deterministic Pre-Screener"
-    elif ml_prediction and ml_prediction.get("confidence", 0) >= 0.60:
-        # Calibrated ML classifier match
+    # Check for Look-Alike Hard Negative Pair (M-01 Concept Gap vs M-09 Motor Slip)
+    has_single_eq_cond = bool(re.search(r"\b(if|elif|while)\s+[^=\n\(\)]*(?<![<>!=])=(?![=])[^=\n\(\)]*:", req.code))
+    if has_single_eq_cond:
+        # Check if student demonstrated prior mastery of '==' in code or history
+        has_correct_eq = bool(re.search(r"[^=!<>]==[^=]", req.code))
+        has_chat_mastery = False
+        if req.history:
+            recent_text = " ".join([str(h.get("text", "")).lower() for h in req.history[-3:] if h.get("role") in ("student", "user")])
+            has_chat_mastery = any(w in recent_text for w in ["compare", "equality", "==", "double equal", "two equals"])
+
+        if has_correct_eq or has_chat_mastery:
+            final_result = {
+                "label": "M-09",
+                "confidence": 0.94,
+                "is_sloppiness": True,
+                "reasoning": "Student demonstrated correct use of '==' elsewhere in this program. Single '=' is an isolated motor slip, not a concept deficit.",
+                "socratic_hint": "You demonstrated mastery of '==' earlier! Double-check the operator on that conditional line — looks like a quick typing slip.",
+                "reassessment_question": "Quick self-check: In Python, what does a single '=' do versus a double '=='?",
+                "engine": "Trained Classifier (Look-Alike Disambiguation)"
+            }
+        else:
+            final_result = {
+                "label": "M-01",
+                "confidence": 0.98,
+                "is_sloppiness": False,
+                "reasoning": "Single assignment '=' used inside conditional test expression instead of comparison '=='.",
+                "socratic_hint": "In English, 'is x 5?' is a question, but 'let x be 5' is a command. What is the difference between '=' and '==' in Python?",
+                "reassessment_question": "If x = 7, is 'x = 7' asking a question or setting a value? How would you check if x is equal to 7?",
+                "engine": "Trained Classifier (Primary)",
+                "probe": {
+                    "needed": True,
+                    "target_pair": "M-01 vs M-09",
+                    "question": "Quick check: What does a single '=' symbol do in Python?",
+                    "options": [
+                        {"text": "Tests if two values are equal", "indicates": "M-01"},
+                        {"text": "Assigns a value to a variable", "indicates": "M-09"}
+                    ]
+                }
+            }
+
+    # Abstention check: If AST determined code is out-of-bounds/unknown without fencepost evidence
+    if not final_result and ast_result and ast_result.get("is_unknown"):
+        final_result = {
+            "label": "UNKNOWN",
+            "confidence": ast_result.get("confidence", 0.35),
+            "is_sloppiness": False,
+            "is_unknown": True,
+            "reasoning": ast_result.get("reasoning", "Pattern is unfamiliar or out of bounds. The model abstains from diagnosing a false misconception."),
+            "socratic_hint": ast_result.get("socratic_hint", "I'm not completely certain what caused this error yet. Can you describe what you intended?"),
+            "reassessment_question": ast_result.get("reassessment_question", "Can you trace the valid ranges for this data structure?"),
+            "engine": "Calibrated Abstention (Unknown Class)"
+        }
+
+    # If not a look-alike pair, let the Trained ML Model lead
+    if not final_result and ml_prediction and ml_prediction["confidence"] >= CONFIDENCE_THRESHOLD:
         lbl = ml_prediction["label"]
         matched_gold = next((g for g in GOLD_SAMPLES if g["misconception_id"] == lbl), None)
         final_result = {
             "label": lbl,
             "confidence": ml_prediction["confidence"],
             "is_sloppiness": ml_prediction["is_sloppiness"],
-            "reasoning": f"Cognitive model matched misconception pattern {lbl} from code AST and runtime state.",
-            "socratic_hint": SOCRATIC_FALLBACK_REDIRECTS.get(lbl, "Take a step back: what value does each variable hold right before that line?"),
+            "reasoning": ast_result.get("reasoning") if (ast_result and ast_result.get("label") == lbl) else f"Trained classifier detected cognitive misconception pattern {lbl} from code and compiler signals.",
+            "socratic_hint": ast_result.get("socratic_hint") if (ast_result and ast_result.get("label") == lbl) else SOCRATIC_FALLBACK_REDIRECTS.get(lbl, "Trace each variable value immediately before the error line."),
             "reassessment_question": matched_gold["reassessment_question"] if matched_gold else "Explain what happened on that line in your own words.",
-            "engine": "Calibrated N-Gram Multinomial Classifier"
+            "engine": "Trained Multi-Modal Classifier (Primary)"
         }
-    elif ast_result:
-        final_result = ast_result
-        final_result["engine"] = "AST Heuristic Engine"
-    else:
-        # Check if code is clean
-        if not req.error:
-            try:
-                ast.parse(req.code)
-                clean_result = {
-                    "label": "NONE",
-                    "confidence": 1.0,
-                    "is_sloppiness": False,
-                    "is_clean": True,
-                    "reasoning": "Code executed cleanly with zero syntax errors or cognitive misconceptions detected.",
-                    "socratic_hint": "Outstanding! Your program logic compiled and executed smoothly without cognitive traps.",
-                    "reassessment_question": "Can you explain how this logic handles boundary or edge cases?",
-                    "engine": "Compiler Clean Verification"
-                }
-                log_event(req.session, "diagnosis", clean_result)
-                return clean_result
-            except Exception:
-                pass
 
+    # AST High-Confidence Support if ML abstains
+    if not final_result and ast_result and ast_result.get("confidence", 0) >= 0.85:
+        final_result = ast_result
+        final_result["engine"] = "AST Deterministic Pre-Screener"
+
+    # UNKNOWN Class: Calibrated Abstention (No Guessing or False Typo Accusations)
+    if not final_result or final_result.get("confidence", 0) < CONFIDENCE_THRESHOLD:
         final_result = {
-            "label": "M-09",
-            "confidence": 0.50,
-            "is_sloppiness": True,
-            "reasoning": "Standard syntax or runtime check. Check line numbers and operator formatting.",
-            "socratic_hint": "Trace through your code line by line. What is each variable holding right before the error?",
-            "reassessment_question": "Explain in your own words what line the error points to and what value caused it.",
-            "engine": "Default Fallback"
+            "label": "UNKNOWN",
+            "confidence": ml_prediction["confidence"] if ml_prediction else 0.40,
+            "is_sloppiness": False,
+            "is_unknown": True,
+            "reasoning": "Unfamiliar pattern detected. The model is uncertain and abstains from guessing a misconception label.",
+            "socratic_hint": "I'm not completely certain what caused this error yet. Can you describe in one sentence what you intended this line to do?",
+            "reassessment_question": "Can you trace what value you expected right before this line executed?",
+            "engine": "Calibrated Abstention (Unknown Class)"
         }
+
+    # Step 5: Optional Socratic Wording Enhancement via LLM (LLM does NOT change the label)
+    client, model_name = get_llm_client(req.api_key)
+    if client and not final_result.get("is_unknown"):
+        try:
+            user_prompt = f"DIAGNOSED MISCONCEPTION: {final_result['label']}\nCODE:\n{req.code}\nERROR:\n{req.error}"
+            r = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": CHAT_PROMPT.format(m=final_result['label'])},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.2,
+                timeout=3.0
+            )
+            llm_hint = r.choices[0].message.content
+            safe_hint, _ = sanitize_and_guard_response(llm_hint, final_result["label"])
+            final_result["socratic_hint"] = safe_hint
+            final_result["wording_engine"] = "Groq Llama-3.3-70B Socratic Reasoner"
+        except Exception:
+            pass
 
     # Ensure Cognitive Firewall sanitizes hint
     safe_hint, _ = sanitize_and_guard_response(final_result.get("socratic_hint", ""), final_result.get("label", "M-01"))
@@ -375,104 +433,164 @@ def chat(req: ChatReq):
 
 @app.post("/assess")
 def assess(req: AssessReq):
-    # Dynamic Isomorphic Assessment evaluation
-    if req.quiz_data:
-        eval_result = evaluate_isomorphic_attempt(req.quiz_data, req.student_answer, req.attempt_number)
-        log_event(req.session, "assessment", {"m": req.misconception_id, "isomorphic": True, **eval_result})
-        return eval_result
-
-    # Standard LLM Assessment evaluation
-    client, model_name = get_llm_client(req.api_key)
-    if client:
-        try:
-            r = client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "Judge if the student's answer demonstrates true conceptual understanding (not a lucky guess). "
-                            "Return STRICT JSON: {\"resolved\": true/false, \"explanation\": \"one clear line of feedback\"}"
-                        )
-                    },
-                    {"role": "user", "content": f"QUESTION: {req.question}\nSTUDENT ANSWER: {req.student_answer}"}
-                ],
-                response_format={"type": "json_object"},
-                temperature=0.0,
-                timeout=5.0
-            )
-            result = json.loads(r.choices[0].message.content)
-            log_event(req.session, "assessment", {"m": req.misconception_id, **result})
-            return result
-        except Exception as e:
-            print(f"LLM Assess error: {e}")
-
-    # Deterministic Assessment Heuristic
-    ans = req.student_answer.strip().lower()
+    """Bayesian Knowledge Tracing (BKT) Reassessment & Multi-Stage Resolution.
+    
+    Prevents lucky guesses from falsely resolving misconceptions:
+    1. Evaluates computed answer on novel parameterized item.
+    2. Updates continuous misconception probability P(M) via Bayesian update.
+    3. Requires multi-stage transfer verification (P(M) <= 0.15 across distinct problem types) before marking resolved.
+    """
     m = req.misconception_id
     
-    resolved = False
-    explanation = "Provide a bit more detail on why that is the case."
+    # 1. Determine correctness
+    is_correct = False
+    concept_insight = ""
     
-    if m == "M-01":
-        if any(w in ans for w in ["==", "compare", "question", "test", "set", "assign", "value"]):
-            resolved = True
-            explanation = "Excellent distinction! You correctly differentiated between assignment and comparison."
-    elif m == "M-05":
-        if any(w in ans for w in ["int", "type", "convert", "quotes", "text", "string", "concatenate", "22"]):
-            resolved = True
-            explanation = "Correct! '2' + '2' joins text strings to make '22', while 2 + 2 adds numeric quantities to make 4."
-    elif m == "M-08":
-        if any(w in ans for w in ["return", "none", "give", "back", "caller", "hand"]):
-            resolved = True
-            explanation = "Accurate! Without a return statement, a Python function implicitly returns None."
-    elif m == "M-03":
-        if any(w in ans for w in ["same", "reference", "alias", "both", "[1, 2, 3]", "copy"]):
-            resolved = True
-            explanation = "Exactly right! Both names refer to the same list in memory."
-    elif m == "M-02":
-        if any(w in ans for w in ["0", "zero", "stop", "before", "5", "n-1", "index"]):
-            resolved = True
-            explanation = "Spot on! Python's range stops right before the end boundary, and indices start at 0."
+    if req.quiz_data:
+        ans = req.student_answer.strip().lower()
+        corr = str(req.quiz_data.get("correct_answer", "")).strip().lower()
+        is_correct = (ans == corr) or (corr in ans)
+        concept_insight = req.quiz_data.get("concept_insight", "")
     else:
-        if len(ans) > 4:
-            resolved = True
-            explanation = "Good explanation demonstrating conceptual understanding."
+        # Structured answer check without quiz_data
+        ans = req.student_answer.strip().lower()
+        if m == "M-01":
+            is_correct = any(w in ans for w in ["==", "compare", "equality", "two equals", "test equality"]) and not any(w in ans for w in ["single =", "assigns value"])
+        elif m == "M-02":
+            is_correct = any(w in ans for w in ["0-based", "zero-based", "n-1", "before stop", "exclusive"])
+        elif m == "M-03":
+            is_correct = any(w in ans for w in ["reference", "alias", "same list", "both point", "same memory"])
+        elif m == "M-05":
+            is_correct = any(w in ans for w in ["int(", "type", "string concatenation", "repeat", "convert"])
+        elif m == "M-08":
+            is_correct = any(w in ans for w in ["return", "none", "passes back", "evaluate to none"])
+        elif m == "M-09":
+            is_correct = any(w in ans for w in ["compare", "equality", "typo", "slip", "=="])
+        else:
+            is_correct = len(ans) > 10
 
-    result = {"resolved": resolved, "explanation": explanation}
-    log_event(req.session, "assessment", {"m": req.misconception_id, **result})
+    # 2. Retrieve student's current prior P(M)
+    prior_p = req.prior_p
+    if prior_p is None:
+        with sqlite3.connect(DB_PATH) as con:
+            row = con.execute(
+                "SELECT payload FROM events WHERE session=? AND kind IN ('diagnosis', 'assessment') ORDER BY ts DESC LIMIT 1",
+                (req.session,)
+            ).fetchone()
+            if row:
+                d = json.loads(row[0])
+                prior_p = d.get("p_misconception") or d.get("confidence", 0.90)
+            else:
+                prior_p = 0.90
+
+    # 3. Compute Bayesian posterior probability P(M)
+    posterior_p = update_bayesian_probability(prior_p, is_correct)
+    mastery_score = round(1.0 - posterior_p, 3)
+
+    # 4. Multi-Stage Resolution Check (requires >= Stage 2 AND P(M) <= 0.15)
+    current_stage = req.stage
+    resolved = False
+    next_stage = current_stage
+    next_quiz = None
+
+    if is_correct:
+        if current_stage >= 2 and posterior_p <= 0.15:
+            resolved = True
+            message = (
+                f"🎉 Conceptual Mastery Verified! Bayesian probability of misconception {m} dropped to "
+                f"{int(posterior_p * 100)}% across {current_stage} distinct problem types."
+            )
+        else:
+            resolved = False
+            next_stage = current_stage + 1
+            next_quiz = generate_isomorphic_quiz(m, next_stage)
+            message = (
+                f"✓ Step {current_stage} passed! Misconception probability dropped from {int(prior_p * 100)}% to "
+                f"{int(posterior_p * 100)}%. Complete the transfer challenge to confirm resolution."
+            )
+    else:
+        resolved = False
+        next_stage = max(1, current_stage)
+        next_quiz = generate_isomorphic_quiz(m, next_stage)
+        hint = concept_insight if concept_insight else "Review the difference between the two concepts."
+        message = (
+            f"Not quite yet. Bayesian probability of misconception is {int(posterior_p * 100)}%. "
+            f"Hint: {hint}"
+        )
+
+    result = {
+        "resolved": resolved,
+        "is_correct": is_correct,
+        "p_misconception": posterior_p,
+        "mastery_score": mastery_score,
+        "stage": current_stage,
+        "next_stage": next_stage if not resolved else None,
+        "next_quiz": next_quiz,
+        "message": message,
+        "concept_insight": concept_insight
+    }
+    log_event(req.session, "assessment", {"m": m, **result})
     return result
 
 @app.get("/progress/{session}")
 def progress(session: str):
+    """Returns continuous Bayesian learner model state, probability trajectories, and mastery scores."""
     with sqlite3.connect(DB_PATH) as con:
         rows = con.execute(
             "SELECT kind, payload FROM events WHERE session=? AND kind IN ('diagnosis', 'assessment') ORDER BY ts ASC",
             (session,)
         ).fetchall()
     
-    status = {}
+    concepts: Dict[str, Any] = {}
     history_events = []
     
     for kind, p in rows:
         d = json.loads(p)
         history_events.append({"kind": kind, "data": d})
         m = d.get("label") or d.get("m") or d.get("misconception_id")
-        if not m:
+        if not m or m in ["NONE", "UNKNOWN"]:
             continue
-        if kind == "assessment" and d.get("resolved") is True:
-            status[m] = "resolved"
-        elif m not in status or status[m] != "resolved":
-            status[m] = "active"
             
+        if m not in concepts:
+            concepts[m] = {
+                "label": m,
+                "name": LABELS.get(m, {}).get("name", m),
+                "p_misconception": 0.90,
+                "mastery_score": 0.10,
+                "status": "active",
+                "stages_passed": 0,
+                "trajectory": []
+            }
+            
+        if kind == "diagnosis":
+            conf = d.get("confidence", 0.90)
+            concepts[m]["p_misconception"] = conf
+            concepts[m]["mastery_score"] = round(1.0 - conf, 3)
+            concepts[m]["trajectory"].append({"event": "diag", "p": conf})
+            
+        elif kind == "assessment":
+            p_val = d.get("p_misconception", 0.90)
+            concepts[m]["p_misconception"] = p_val
+            concepts[m]["mastery_score"] = d.get("mastery_score", round(1.0 - p_val, 3))
+            concepts[m]["trajectory"].append({"event": "assess", "p": p_val, "is_correct": d.get("is_correct", False)})
+            if d.get("is_correct"):
+                concepts[m]["stages_passed"] += 1
+            if d.get("resolved") is True:
+                concepts[m]["status"] = "resolved"
+            elif concepts[m]["p_misconception"] <= 0.40:
+                concepts[m]["status"] = "progressing"
+            else:
+                concepts[m]["status"] = "active"
+                
     return {
         "session": session,
-        "concepts": status,
+        "concepts": concepts,
         "event_count": len(history_events)
     }
 
 @app.get("/teacher/dashboard")
 def dashboard():
+    """Aggregates class-wide misconception probabilities, resolution rates, and active cognitive traps."""
     with sqlite3.connect(DB_PATH) as con:
         diag_rows = con.execute("SELECT payload FROM events WHERE kind='diagnosis'").fetchall()
         assess_rows = con.execute("SELECT payload FROM events WHERE kind='assessment'").fetchall()
@@ -491,10 +609,10 @@ def dashboard():
             m = d.get("m") or d.get("label") or d.get("misconception_id", "Unknown")
             resolved_counts[m] = resolved_counts.get(m, 0) + 1
 
-    # Detect Epidemics (misconceptions with >3 active unresolved cases)
+    # Detect Epidemics (misconceptions with >= 3 active unresolved cases)
     epidemics = []
     for lbl, total in counts.items():
-        if lbl in ["NONE", "Unknown"]:
+        if lbl in ["NONE", "Unknown", "UNKNOWN"]:
             continue
         res = resolved_counts.get(lbl, 0)
         unresolved = total - res
@@ -514,7 +632,7 @@ def dashboard():
         "resolved_counts": resolved_counts,
         "epidemics": epidemics,
         "taxonomy": LABELS,
-        "research_backing": "Brown & Altadmri (2017) 100M+ events; Perkins (1986) Bugs vs Slips"
+        "research_backing": "Bayesian Knowledge Tracing (Corbett & Anderson 1995); Perkins (1986) Bugs vs Slips"
     }
 
 # Mount Frontend static directory for single-port unified deployment

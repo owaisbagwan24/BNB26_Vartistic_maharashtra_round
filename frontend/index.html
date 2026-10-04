@@ -1080,12 +1080,12 @@
     <!-- PRESET TEST BUTTONS (RareUI Floating Chips) -->
     <div class="titlebar-presets">
       <span class="preset-label">Scenarios:</span>
-      <button class="preset-chip active" id="chip-demo-m01" onclick="switchPreset('demo-m01')">if x = 5 (M-01)</button>
-      <button class="preset-chip" id="chip-demo-m09-pair" onclick="switchPreset('demo-m09-pair')" style="border-color: #38bdf8; color: #38bdf8;">⚖️ Hard Negative (M-09)</button>
-      <button class="preset-chip" id="chip-demo-m05" onclick="switchPreset('demo-m05')">'5' + 3 (M-05)</button>
-      <button class="preset-chip" id="chip-demo-m08" onclick="switchPreset('demo-m08')">print vs return (M-08)</button>
-      <button class="preset-chip" id="chip-demo-m03" onclick="switchPreset('demo-m03')">b = a (M-03)</button>
-      <button class="preset-chip" id="chip-demo-m09" onclick="switchPreset('demo-m09')">pritn() typo (M-09)</button>
+      <button class="preset-chip active" id="chip-demo-m01" onclick="switchPreset('demo-m01')">= vs == (Equality)</button>
+      <button class="preset-chip" id="chip-demo-m09-pair" onclick="switchPreset('demo-m09-pair')" style="border-color: #38bdf8; color: #38bdf8;">⚖️ Slip vs Misconception</button>
+      <button class="preset-chip" id="chip-demo-m05" onclick="switchPreset('demo-m05')">🔤 String + Number</button>
+      <button class="preset-chip" id="chip-demo-m08" onclick="switchPreset('demo-m08')">📤 print vs return</button>
+      <button class="preset-chip" id="chip-demo-m03" onclick="switchPreset('demo-m03')">🧬 List Copy vs Alias</button>
+      <button class="preset-chip" id="chip-demo-m09" onclick="switchPreset('demo-m09')">⚡ Isolated Typo</button>
     </div>
 
     <!-- COGNITIVE STATE MACHINE MODE SWITCHER (AntD Segmented / State-Driven) -->
@@ -1272,9 +1272,24 @@ if x = 5:
             Single assignment '=' used inside conditional test expression instead of comparison '=='.
           </div>
 
-          <!-- 1-CLICK VERIFICATION QUIZ -->
-          <div class="quiz-panel" id="quiz-panel">
-            <div class="quiz-title">🎯 1-Click Verification Quiz</div>
+          <!-- LOOK-ALIKE DISAMBIGUATION PROBE -->
+          <div class="probe-panel" id="probe-panel" style="display: none; margin-top: 12px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; padding: 12px;">
+            <div style="font-size: 0.72rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">
+              ⚖️ Diagnostic Disambiguation Probe
+            </div>
+            <div id="probe-question" style="font-size: 0.8rem; color: #f1f5f9; font-weight: 600; margin-bottom: 8px;"></div>
+            <div id="probe-options" style="display: flex; flex-direction: column; gap: 6px;"></div>
+          </div>
+
+          <!-- CLOSED-LOOP BAYESIAN RESOLUTION ENGINE -->
+          <div class="quiz-panel" id="quiz-panel" style="margin-top: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div class="quiz-title" id="quiz-title" style="margin-bottom: 0;">🎯 Closed-Loop Resolution</div>
+              <span id="quiz-stage-badge" style="font-size: 0.68rem; padding: 2px 8px; border-radius: 9999px; background: rgba(14, 165, 233, 0.15); color: #38bdf8; font-family: var(--font-mono); font-weight: 600;">Stage 1/2</span>
+            </div>
+            <div id="bkt-bar-container" style="background: rgba(255,255,255,0.08); height: 5px; border-radius: 3px; margin-bottom: 10px; overflow: hidden;">
+              <div id="bkt-bar-fill" style="width: 15%; height: 100%; background: #38bdf8; transition: width 0.3s ease;"></div>
+            </div>
             <div class="quiz-question" id="quiz-question">
               What is the fundamental difference between '=' and '==' in Python?
             </div>
@@ -1877,6 +1892,13 @@ if x = 5:
           document.getElementById('coach-head').textContent = `Typo Slip ${diag.label} Flagged!`;
           document.getElementById('sb-issue').textContent = `⚡ ${diag.label} Typo Slip`;
           document.getElementById('sb-issue').style.color = "#f59e0b";
+        } else if (diag.is_unknown) {
+          badge.className = "diag-badge badge-warn";
+          document.getElementById('diag-name').textContent = "❓ Unfamiliar Pattern (Calibrated Abstention)";
+          document.getElementById('coach-icon').textContent = "❓";
+          document.getElementById('coach-head').textContent = "Model Abstaining: Needs Clarification";
+          document.getElementById('sb-issue').textContent = "❓ Pattern Uncertain";
+          document.getElementById('sb-issue').style.color = "#38bdf8";
         } else {
           badge.className = "diag-badge badge-error";
           const match = TAXONOMY.find(t => t.id === diag.label);
@@ -1891,6 +1913,25 @@ if x = 5:
         document.getElementById('coach-sub').textContent = diag.reasoning || "Cognitive error diagnosed.";
         coachBar.style.display = 'flex';
 
+        // Disambiguation Probe Handling
+        const probePanel = document.getElementById('probe-panel');
+        if (diag.probe && diag.probe.needed) {
+          probePanel.style.display = 'block';
+          document.getElementById('probe-question').textContent = diag.probe.question;
+          const probeOpts = document.getElementById('probe-options');
+          probeOpts.innerHTML = '';
+          diag.probe.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'preset-chip';
+            btn.style.cssText = 'text-align: left; width: 100%; border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 12px; font-size: 0.78rem; border-radius: 6px; background: rgba(0,0,0,0.35); color: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: space-between;';
+            btn.innerHTML = `<span><span style="color: #38bdf8; font-weight: 700; margin-right: 8px;">▶</span>${escapeHtml(opt.text)}</span><span style="font-size: 0.65rem; color: #94a3b8; font-family: var(--font-mono);">${opt.indicates === 'M-09' ? 'Slip' : 'Misconception'}</span>`;
+            btn.onclick = () => answerProbe(opt.indicates);
+            probeOpts.appendChild(btn);
+          });
+        } else {
+          probePanel.style.display = 'none';
+        }
+
         // Update Ant Design Problems Table with exact line, col, and jump click
         const errLine = (parsedError && parsedError.line) ? parsedError.line : 2;
         const errCol = (parsedError && parsedError.column) ? `:${parsedError.column}` : '';
@@ -1898,7 +1939,7 @@ if x = 5:
         probCount.textContent = '1';
         probBody.innerHTML = `
           <tr onclick="focusEditorLine(${errLine})">
-            <td><span class="prob-tag ${diag.is_sloppiness ? 'prob-tag-warn' : 'prob-tag-err'}">${diag.is_sloppiness ? 'Warning' : 'Error'}</span></td>
+            <td><span class="prob-tag ${diag.is_sloppiness ? 'prob-tag-warn' : (diag.is_unknown ? 'prob-tag-ok' : 'prob-tag-err')}">${diag.is_sloppiness ? 'Warning' : (diag.is_unknown ? 'Notice' : 'Error')}</span></td>
             <td style="color: #38bdf8; font-weight: 600;">${curFile} [Ln ${errLine}${errCol}]</td>
             <td><span class="model-badge">${diag.label}</span></td>
             <td>${diag.reasoning}</td>
@@ -1912,41 +1953,51 @@ if x = 5:
       }
     }
 
+    function answerProbe(indicatedLabel) {
+      document.getElementById('probe-panel').style.display = 'none';
+      if (indicatedLabel === 'M-09') {
+        currentDiag.label = 'M-09';
+        currentDiag.is_sloppiness = true;
+        document.getElementById('diag-badge').className = "diag-badge badge-typo";
+        document.getElementById('diag-badge').textContent = "M-09";
+        document.getElementById('diag-name').textContent = "⚡ Sloppiness Slip (Mental Model Intact)";
+        document.getElementById('diag-why').textContent = "Student understands what '=' does! Writing it in conditional was an isolated typing slip.";
+        document.getElementById('sb-issue').textContent = "⚡ M-09 Typo Slip";
+        document.getElementById('sb-issue').style.color = "#f59e0b";
+        addChatMsg('ai', "💡 Disambiguation Probe Confirmed: You know how assignment '=' works! Writing it in an 'if' test was an isolated motor slip. Mental model is intact.");
+      } else {
+        document.getElementById('diag-badge').className = "diag-badge badge-error";
+        document.getElementById('diag-badge').textContent = "M-01";
+        document.getElementById('diag-name').textContent = "⚠️ Misconception: Assignment vs Comparison";
+        document.getElementById('diag-why').textContent = "Probe confirmed: student believes single '=' checks equality in Python.";
+        addChatMsg('ai', "💡 In Python, single '=' always assigns data into memory. To test equality without modifying data, Python requires double equals '=='.");
+      }
+      renderQuizCards(indicatedLabel);
+    }
+
     /* ==========================================================================
-       1-CLICK DYNAMIC ISOMORPHIC VERIFICATION QUIZ & RESOLUTION
+       CLOSED-LOOP BAYESIAN ISOMORPHIC RESOLUTION ENGINE
        ========================================================================== */
     let currentIsomorphicQuiz = null;
     let quizAttemptCount = 1;
+    let currentLearnerP = 0.90;
 
     async function renderQuizCards(label) {
       currentIsomorphicQuiz = null;
       quizAttemptCount = 1;
+      currentLearnerP = 0.90;
       document.getElementById('quiz-alert').style.display = 'none';
+      document.getElementById('bkt-bar-fill').style.width = '15%';
+      document.getElementById('quiz-stage-badge').textContent = 'Stage 1/2';
       const list = document.getElementById('quiz-list');
       list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.75rem; padding: 10px;">Generating isomorphic prediction check...</div>';
       document.getElementById('quiz-panel').style.display = 'block';
 
       try {
-        const res = await fetch(`${API_BASE}/isomorphic/quiz?misconception=${encodeURIComponent(label)}`);
+        const res = await fetch(`${API_BASE}/isomorphic/quiz?misconception=${encodeURIComponent(label)}&stage=1`);
         if (res.ok) {
           const data = await res.json();
-          currentIsomorphicQuiz = data;
-          
-          // Render question with fresh isomorphic code preview
-          document.getElementById('quiz-question').innerHTML = `
-            <div style="font-weight: 700; margin-bottom: 6px; color: #f1f5f9;">${escapeHtml(data.question)}</div>
-            ${data.code_snippet ? `<pre style="background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.76rem; color: #38bdf8; margin: 6px 0 10px 0; overflow-x: auto;"><code>${escapeHtml(data.code_snippet)}</code></pre>` : ''}
-          `;
-
-          list.innerHTML = '';
-          const letters = ['A', 'B', 'C', 'D'];
-          data.options.forEach((optText, idx) => {
-            const card = document.createElement('div');
-            card.className = 'quiz-card';
-            card.innerHTML = `<span class="card-letter">${letters[idx] || (idx+1)}</span><span>${escapeHtml(optText)}</span>`;
-            card.onclick = () => selectQuizCard(optText, optText === data.correct_answer, card);
-            list.appendChild(card);
-          });
+          loadQuizData(data);
           return;
         }
       } catch (err) {
@@ -1967,7 +2018,29 @@ if x = 5:
       });
     }
 
-    async function selectQuizCard(text, isCorrect, cardEl) {
+    function loadQuizData(data) {
+      currentIsomorphicQuiz = data;
+      document.getElementById('quiz-alert').style.display = 'none';
+      document.getElementById('quiz-stage-badge').textContent = `Stage ${data.stage || 1}/2`;
+      
+      document.getElementById('quiz-question').innerHTML = `
+        <div style="font-weight: 700; margin-bottom: 6px; color: #f1f5f9;">${escapeHtml(data.question)}</div>
+        ${data.code_snippet ? `<pre style="background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.76rem; color: #38bdf8; margin: 6px 0 10px 0; overflow-x: auto;"><code>${escapeHtml(data.code_snippet)}</code></pre>` : ''}
+      `;
+
+      const list = document.getElementById('quiz-list');
+      list.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+      data.options.forEach((optText, idx) => {
+        const card = document.createElement('div');
+        card.className = 'quiz-card';
+        card.innerHTML = `<span class="card-letter">${letters[idx] || (idx+1)}</span><span>${escapeHtml(optText)}</span>`;
+        card.onclick = () => selectQuizCard(optText, optText === data.correct_answer, card);
+        list.appendChild(card);
+      });
+    }
+
+    async function selectQuizCard(text, isCorrectLocal, cardEl) {
       document.querySelectorAll('.quiz-card').forEach(c => {
         c.classList.remove('selected-correct', 'selected-incorrect');
       });
@@ -1975,42 +2048,66 @@ if x = 5:
       const alertBox = document.getElementById('quiz-alert');
       alertBox.style.display = 'block';
 
-      if (isCorrect) {
-        cardEl.classList.add('selected-correct');
-        Soundcn.success();
-        if (typeof confetti === 'function') {
-          confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
-        }
-        alertBox.className = 'alert-pass';
-        alertBox.innerHTML = `<b>🎉 Misconception RESOLVED!</b> Isomorphic verification passed. Genuine conceptual understanding confirmed.`;
-        document.getElementById('diag-badge').className = "diag-badge badge-pass";
-        document.getElementById('sb-issue').textContent = `✅ ${currentDiag?.label || 'Concept'} Resolved`;
-        document.getElementById('sb-issue').style.color = "#34d399";
-        addChatMsg('ai', `✅ Outstanding! You solved the isomorphic prediction challenge and verified resolution of ${currentDiag?.label || 'the concept'}.`);
+      try {
+        const curStage = currentIsomorphicQuiz?.stage || 1;
+        const res = await fetch(`${API_BASE}/assess`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session: SESSION_ID,
+            misconception_id: currentDiag?.label || "M-01",
+            question: currentIsomorphicQuiz ? currentIsomorphicQuiz.question : document.getElementById('quiz-question').textContent,
+            student_answer: text,
+            quiz_data: currentIsomorphicQuiz,
+            stage: curStage,
+            prior_p: currentLearnerP,
+            attempt_number: quizAttemptCount
+          })
+        });
+        const evalData = await res.json();
+        currentLearnerP = evalData.p_misconception;
+        
+        // Update Bayesian mastery bar
+        const masteryPct = Math.round(evalData.mastery_score * 100);
+        document.getElementById('bkt-bar-fill').style.width = `${Math.max(10, masteryPct)}%`;
+        document.getElementById('diag-conf').textContent = `P(M): ${Math.round(evalData.p_misconception * 100)}% | Mastery: ${masteryPct}%`;
 
-        try {
-          await fetch(`${API_BASE}/assess`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              session: SESSION_ID,
-              misconception_id: currentDiag?.label || "M-01",
-              question: currentIsomorphicQuiz ? currentIsomorphicQuiz.question : document.getElementById('quiz-question').textContent,
-              student_answer: text,
-              quiz_data: currentIsomorphicQuiz,
-              attempt_number: quizAttemptCount
-            })
-          });
-        } catch(e){}
-      } else {
-        quizAttemptCount++;
-        cardEl.classList.add('selected-incorrect');
-        Soundcn.retry();
-        alertBox.className = 'alert-retry';
-        const hintText = currentIsomorphicQuiz?.concept_insight 
-          ? `Hint: ${currentIsomorphicQuiz.concept_insight}` 
-          : "Trace each line carefully, or ask the Socratic tutor in the chat below.";
-        alertBox.innerHTML = `<b>⚠️ Tier ${quizAttemptCount > 2 ? '3 (Flagged for Office Hours)' : '2 (Guided Trace)'}:</b> ${hintText}`;
+        if (evalData.resolved) {
+          cardEl.classList.add('selected-correct');
+          Soundcn.success();
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+          }
+          alertBox.className = 'alert-pass';
+          alertBox.innerHTML = `<b>🎉 Misconception RESOLVED!</b> ${escapeHtml(evalData.message)}`;
+          document.getElementById('diag-badge').className = "diag-badge badge-pass";
+          document.getElementById('sb-issue').textContent = `✅ ${currentDiag?.label || 'Concept'} Resolved`;
+          document.getElementById('sb-issue').style.color = "#34d399";
+          document.getElementById('quiz-stage-badge').textContent = `Verified (${masteryPct}%)`;
+          document.getElementById('quiz-stage-badge').style.color = "#34d399";
+          addChatMsg('ai', `✅ ${evalData.message}`);
+        } else if (evalData.is_correct) {
+          cardEl.classList.add('selected-correct');
+          Soundcn.success();
+          alertBox.className = 'alert-pass';
+          alertBox.innerHTML = `<b>✓ Step ${curStage} Passed!</b> Misconception probability dropped to ${Math.round(evalData.p_misconception * 100)}%. Loading transfer challenge...`;
+          document.getElementById('quiz-stage-badge').textContent = `Stage ${evalData.next_stage || 2}/2`;
+          addChatMsg('ai', `✓ ${evalData.message}`);
+          
+          if (evalData.next_quiz) {
+            setTimeout(() => {
+              loadQuizData(evalData.next_quiz);
+            }, 1200);
+          }
+        } else {
+          quizAttemptCount++;
+          cardEl.classList.add('selected-incorrect');
+          Soundcn.retry();
+          alertBox.className = 'alert-retry';
+          alertBox.innerHTML = `<b>⚠️ Tier ${quizAttemptCount > 2 ? '3 (Flagged for Office Hours)' : '2 (Guided Trace)'}:</b> ${escapeHtml(evalData.message)}`;
+        }
+      } catch(err) {
+        console.error("Assessment error:", err);
       }
     }
 

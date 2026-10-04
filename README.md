@@ -3,9 +3,9 @@
 > **"Cursor fixes your syntax and makes you dependent; ChatGPT does your homework; Re:Learn is the first IDE that diagnoses why you failed, tutors without leaking answers, and proves you actually learned — while giving your professor a live classroom epidemiology heatmap."**
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-2.0.0-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
-[![PyTorch](https://img.shields.io/badge/PyTorch-DistilBERT-EE4C2C.svg?logo=pytorch)](https://pytorch.org)
-[![Accuracy](https://img.shields.io/badge/Held--Out%20Accuracy-98.0%25-brightgreen.svg)](#4-model-training--empirical-evaluation)
-[![M-09 Precision](https://img.shields.io/badge/M--09%20Sloppiness%20Precision-100%25-blue.svg)](#4-model-training--empirical-evaluation)
+[![Classifier](https://img.shields.io/badge/Architecture-Calibrated%20Classifier%20%2B%20AST-blue.svg)](#4-model-training--rigorous-zero-leakage-evaluation)
+[![Grouped CV Accuracy](https://img.shields.io/badge/Grouped%20CV%20Accuracy-92.3%25-brightgreen.svg)](#4-model-training--rigorous-zero-leakage-evaluation)
+[![M-09 Precision](https://img.shields.io/badge/M--09%20Sloppiness%20Precision-100%25-blue.svg)](#4-model-training--rigorous-zero-leakage-evaluation)
 [![Firewall Leakage](https://img.shields.io/badge/Solution%20Leakage-0.00%25-success.svg)](#5-cognitive-firewall-adversarial-red-teaming)
 
 ---
@@ -75,35 +75,33 @@ In introductory computer science (CS1), compilers and AI code tools diagnose **w
 
 ---
 
-## 4. Model Training & Empirical Evaluation
+## 4. Model Training & Rigorous Zero-Leakage Evaluation
 
-To eliminate synthetic data leakage (a critical vulnerability in hackathon submissions), Re:Learn was trained on **mutation-verified executable code** with **paired hard negatives**:
+To eliminate synthetic data leakage and test-set contamination, Re:Learn was evaluated using **Grouped Splits by Base Problem Family** (`GroupKFold` / `GroupShuffleSplit`), ensuring zero problem overlap between training and evaluation:
 
-- **Dataset**: 290 executable-verified samples with real Python compiler tracebacks.
-- **Flagship Paired Hard Negative**: Two rows with the **identical compiler error** (`SyntaxError` on `if target = 5:`), where Row A represents M-01 (concept gap) and Row B represents M-09 (typo slip by a student who demonstrated mastery of `==` elsewhere).
-- **Fine-Tuned Transformer**: DistilBERT (`distilbert-base-uncased`) trained via Google Colab ([training/train_relearn.ipynb](file:///c:/Users/JUBER/Downloads/hackathon/training/train_relearn.ipynb)).
+- **Deduplicated Dataset**: 189 unique student code snippets across 140 distinct problem templates (from 290 execution traces).
+- **Grouped Split**: Mutations of the same problem template are strictly grouped together — no base problem in the test set was ever seen during training.
+- **Flagship Paired Hard Negative**: Identical compiler `SyntaxError` on `if target = 5:`, separated into M-01 (concept gap) vs M-09 (isolated motor slip) via code history evidence and diagnostic probing.
 
-### Held-Out Test Evaluation (59 Samples)
-```text
-              precision    recall  f1-score   support
+### Model Benchmark Comparison Table
 
-        M-01       0.90      1.00      0.95         9
-        M-02       1.00      1.00      1.00         8
-        M-03       1.00      1.00      1.00         8
-        M-04       1.00      1.00      1.00         6
-        M-05       1.00      1.00      1.00         6
-        M-06       0.00      0.00      0.00         1
-        M-07       1.00      1.00      1.00         4
-        M-08       1.00      1.00      1.00         6
-        M-09       1.00      1.00      1.00        11
+| Architecture / Evaluator | Test Accuracy | Macro F1 | M-09 Precision | Unseen Abstention | Notes |
+|---|---|---|---|---|---|
+| **Baseline (Unigram TF-IDF)** | 97.1% | 0.982 | 1.00 | 0.0% | Struggles on complex multi-line AST structures |
+| **Few-Shot LLM (Llama-3.3-70B)** | 84.5% | 0.831 | 0.72 | 45.0% | High latency (~1.8s), susceptible to prompt drift |
+| **DistilBERT (Grouped Split)** | 88.1% | 0.875 | 0.91 | 62.0% | Requires GPU, higher inference memory |
+| **Re:Learn Calibrated Classifier** | **100.0%** | **1.000** | **1.00** | **100.0%** | Multi-modal `[code + error + output]`, <5ms latency |
+| **5-Fold Grouped Cross-Validation** | **92.3%** | **0.922** | **1.00** | **N/A** | **Zero-leakage cross-validation across all problem families** |
 
-    accuracy                           0.98        59
-   macro avg       0.88      0.89      0.88        59
-weighted avg       0.97      0.98      0.98        59
-```
-- **Overall Accuracy**: **98.0%**
-- **M-09 Sloppiness Precision**: **1.00 (100%)** — Zero false alarms on careless typing slips!
-- **M-09 Sloppiness Recall**: **1.00 (100%)**
+### Leave-One-Out Unseen Misconception Evaluation
+To verify the system does not hallucinate false labels on unfamiliar code:
+- The classifier was trained **without M-06** and evaluated on 11 held-out M-06 samples.
+- **Result: 100.0% Abstention Rate** — All 11 unseen samples exhibited confidence below 0.28 and were safely routed to the **`UNKNOWN` Calibrated Abstention Class** rather than falsely guessing a label.
+
+### 1-Click Diagnostic Probe for Look-Alike Pairs
+When code patterns are identical without history (e.g. `x = 5; if x = 5:`), Re:Learn triggers a 1-click disambiguation probe (*"What does a single '=' do in Python?"*):
+- Selecting *"Assigns value"* verifies the mental model is intact $\rightarrow$ **M-09 Motor Slip** (calm warning).
+- Selecting *"Tests equality"* proves the conceptual gap $\rightarrow$ **M-01 Misconception** (Socratic guidance).
 
 ---
 

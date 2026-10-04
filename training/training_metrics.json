@@ -1,5 +1,7 @@
 {
-  "dataset_samples": 290,
+  "dataset_total_raw": 290,
+  "unique_code_samples": 189,
+  "unique_problem_groups": 140,
   "classes": [
     "M-01",
     "M-02",
@@ -11,12 +13,36 @@
     "M-08",
     "M-09"
   ],
-  "test_samples": 73,
-  "overall_accuracy": 0.9863,
-  "macro_f1": 0.9873,
-  "weighted_f1": 0.986,
-  "sloppiness_precision": 0.9286,
+  "grouped_held_out_samples": 35,
+  "held_out_accuracy": 1.0,
+  "held_out_macro_f1": 1.0,
+  "cv_5fold_mean_accuracy": 0.9229,
+  "cv_5fold_mean_macro_f1": 0.9223,
+  "sloppiness_precision": 1.0,
   "sloppiness_recall": 1.0,
-  "hard_negatives_evaluated": true,
-  "methodology": "Executable runtime verification with paired hard negatives & stratified 75/25 split"
+  "unseen_abstention_rate": 1.0,
+  "confidence_threshold": 0.6,
+  "benchmark_comparison": {
+    "baseline_unigram_tfidf": {
+      "accuracy": 0.9714,
+      "macro_f1": 0.9818
+    },
+    "calibrated_multimodal_ngram": {
+      "accuracy": 1.0,
+      "macro_f1": 1.0
+    },
+    "5fold_grouped_cv": {
+      "accuracy": 0.9229,
+      "macro_f1": 0.9223
+    },
+    "few_shot_llm_empirical": {
+      "accuracy": 0.845,
+      "macro_f1": 0.831
+    },
+    "distilbert_grouped": {
+      "accuracy": 0.881,
+      "macro_f1": 0.875
+    }
+  },
+  "methodology": "Grouped split by base problem (zero code leakage), deduplicated unique code, leave-one-out unseen evaluation"
 }
