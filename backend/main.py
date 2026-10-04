@@ -86,7 +86,15 @@ def log_event(session: str, kind: str, payload: dict):
 app = FastAPI(title="Re:Learn IDE API", version="2.0.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -149,7 +157,7 @@ Strict Guardrail Rules:
 4. Tone: warm, curious, encouraging, non-judgmental."""
 
 def get_llm_client(user_key: Optional[str] = None):
-    key = user_key or os.environ.get("GROQ_API_KEY")
+    key = os.environ.get("GROQ_API_KEY") or user_key
     if key and key != "paste-key-here" and len(key) > 8:
         try:
             from groq import Groq
