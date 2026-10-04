@@ -213,6 +213,12 @@ def get_presets():
             "name": "M-03: Mutable List Aliasing",
             "code": "a = [1, 2]\nb = a\nb.append(3)\nprint('Original list a:', a)\n",
             "description": "Thinks assignment b = a creates an independent copy."
+        },
+        {
+            "id": "demo-m09",
+            "name": "M-09: Isolated Typo Slip",
+            "code": "pritn('Hello from Re:Learn!')\n",
+            "description": "Careless typo where student concept is intact."
         }
     ]
 
