@@ -11,7 +11,8 @@ venv/
 # Sandbox temporary directories
 relearn_sandbox_*/
 
-# SQLite temporary runtime journals
+# SQLite temporary runtime journals & databases
+*.db
 *.db-journal
 *.db-wal
 *.db-shm
